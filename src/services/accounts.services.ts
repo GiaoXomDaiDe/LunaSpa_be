@@ -102,7 +102,7 @@ class AccountsService {
     })
     const { iat, exp } = await this.decodeRefreshToken(refresh_token)
     await databaseService.refreshTokens.insertOne(
-      new RefreshToken({ user_id: new ObjectId(account_id), token: refresh_token, exp, iat })
+      new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
     )
     const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account.insertedId)).toArray()
     const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
@@ -119,7 +119,7 @@ class AccountsService {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ account_id, verify })
     const { iat, exp } = await this.decodeRefreshToken(refresh_token)
     await databaseService.refreshTokens.insertOne(
-      new RefreshToken({ user_id: new ObjectId(account_id), token: refresh_token, exp, iat })
+      new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
     )
     const account = await databaseService.accounts.aggregate(buildUserRolesPipeline(new ObjectId(account_id))).toArray()
     const cleanedAccount = omitBy(account[0], (value, key) => {
@@ -135,6 +135,34 @@ class AccountsService {
     await databaseService.refreshTokens.deleteOne({ token: refresh_token })
     return {
       message: SUCCESS_RESPONSE_MESSAGE.LOGOUT_SUCCESS
+    }
+  }
+  async refreshToken({
+    account_id,
+    verify,
+    exp,
+    refresh_token
+  }: {
+    account_id: string
+    verify: AccountVerify
+    exp: number
+    refresh_token: string
+  }) {
+    const [new_access_token, new_refresh_token] = await Promise.all([
+      this.signAccessToken({ account_id, verify }),
+      this.signRefreshToken({ account_id, verify, exp })
+    ])
+    const decoded_refresh_token = await this.decodeRefreshToken(refresh_token)
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        account_id: new ObjectId(account_id),
+        token: new_refresh_token,
+        exp: decoded_refresh_token.exp,
+        iat: decoded_refresh_token.iat
+      })
+    )
+    return {
+      access_token: new_access_token
     }
   }
 }

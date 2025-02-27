@@ -23,7 +23,8 @@ export const SUCCESS_RESPONSE_MESSAGE = {
   ROLES_CREATED_SUCCESSFULLY: 'Role created successfully',
   ROLES_UPDATED_SUCCESSFULLY: 'Role updated successfully',
   ROLES_DELETED_SUCCESSFULLY: 'Role deleted successfully',
-  RESOURCE_ADDED_TO_ROLE_SUCCESSFULLY: 'Resource added to role successfully'
+  RESOURCE_ADDED_TO_ROLE_SUCCESSFULLY: 'Resource added to role successfully',
+  REFRESH_TOKEN_SUCCESS: 'Refresh token successfully'
 } as const
 export const ACCOUNT_MESSAGES = {
   EMAIL_IS_INVALID: 'Email is invalid',
