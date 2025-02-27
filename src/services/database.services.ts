@@ -1,5 +1,10 @@
 import { config } from 'dotenv'
-import { Db, MongoClient } from 'mongodb'
+import { Collection, Db, MongoClient } from 'mongodb'
+import { envConfig } from '~/constants/config'
+import Account from '~/models/schema/Account.schema'
+import RefreshToken from '~/models/schema/RefreshToken.schema'
+import Resource from '~/models/schema/Resource.schema'
+import Roles from '~/models/schema/Role.schema'
 
 config()
 
@@ -22,8 +27,19 @@ class DatabaseService {
       throw error
     }
   }
+  get accounts(): Collection<Account> {
+    return this.db.collection(envConfig.dbAccountsCollection)
+  }
+  get resources(): Collection<Resource> {
+    return this.db.collection(envConfig.dbResourcesCollection)
+  }
+  get roles(): Collection<Roles> {
+    return this.db.collection(envConfig.dbRolesCollection)
+  }
+  get refreshTokens(): Collection<RefreshToken> {
+    return this.db.collection(envConfig.dbRefreshTokensCollection)
+  }
 }
 
 const databaseService = new DatabaseService()
-
 export default databaseService
