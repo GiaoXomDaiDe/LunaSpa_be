@@ -1,0 +1,35 @@
+export interface ADMIN_PERMISSIONS {
+  CREATE_PRODUCT: 'create_product'
+  UPDATE_PRODUCT: 'update_product'
+  DELETE_PRODUCT: 'delete_product'
+  READ_PRODUCT: 'read_product'
+  READ_ALL_PRODUCTS: 'read_all_products'
+  CREATE_CATEGORY: 'create_category'
+  UPDATE_CATEGORY: 'update_category'
+  DELETE_CATEGORY: 'delete_category'
+  READ_CATEGORY: 'read_category'
+  READ_ALL_CATEGORIES: 'read_all_categories'
+  CREATE_ROLE: 'create_role'
+  UPDATE_ROLE: 'update_role'
+  DELETE_ROLE: 'delete_role'
+  READ_ROLE: 'read_role'
+  READ_USER: 'read_user'
+  READ_USERS: 'read_users'
+  UPGRADE_USER: 'upgrade_user'
+  VIEW_PRODUCT: 'view_product'
+  VIEW_CATEGORY: 'view_category'
+  READ_ME: 'read_me'
+  UPDATE_ME: 'update_me'
+}
+
+export type USER_PERMISSIONS = Pick<
+  ADMIN_PERMISSIONS,
+  | 'READ_PRODUCT'
+  | 'READ_CATEGORY'
+  | 'READ_ME'
+  | 'UPDATE_ME'
+  | 'VIEW_PRODUCT'
+  | 'VIEW_CATEGORY'
+  | 'READ_ALL_PRODUCTS'
+  | 'READ_ALL_CATEGORIES'
+>

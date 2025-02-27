@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.env
+note.md
+notev2.md
