@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import HTTP_STATUS from '~/constants/httpStatus'
-import { CONFIG_MESSAGES } from '~/constants/messages'
+import { ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
 
 type ErrorsType = Record<
   string,
@@ -22,7 +21,13 @@ export class ErrorWithStatus {
 //Lỗi dành cho việc lỗi form 422
 export class EntityError extends ErrorWithStatus {
   errors: ErrorsType
-  constructor({ message = CONFIG_MESSAGES.VALIDATION_ERROR, errors }: { message?: string; errors: ErrorsType }) {
+  constructor({
+    message = ERROR_RESPONSE_MESSAGES.VALIDATION_ERROR,
+    errors
+  }: {
+    message?: string
+    errors: ErrorsType
+  }) {
     super({ message, status: HTTP_STATUS.UNPROCESSABLE_ENTITY })
     this.errors = errors
   }
