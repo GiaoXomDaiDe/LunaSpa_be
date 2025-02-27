@@ -37,6 +37,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "lodash": "^4.17.21",
+    "lunaspa_be": "file:",
     "mongodb": "^6.13.1"
   }
 }
