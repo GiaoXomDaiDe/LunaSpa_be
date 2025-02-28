@@ -16,14 +16,14 @@ servers:
   - url: http://localhost:4000
 
 tags: #Tag for all functions
-  - name: authentication
-    description: Authentication functions
+  - name: accounts
+    description: accounts functions
   
 paths:
-  /authentication/login:
+  /accounts/login:
     post:
       tags:
-        - authentication
+        - accounts
       summary: Login
       description: Login
       operationId: login
@@ -49,21 +49,24 @@ paths:
                   result:
                     type: object
                     properties:
-                      token:
+                      access_token:
                         type: string
                         example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                      refreshToken:
+                      refresh_token:
                         type: string
                         example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                       user:
                         type: object
                         properties:
-                          name: 
+                          _id: 
                             type: string
-                            example: "Wxrdie"
+                            example: "1243879"
                           email:
                             type: string
                             example: "wxrdie@example.com"
+                          name: 
+                            type: string
+                            example: "Wxrdie"                          
                           phone_number:
                             type: string
                             example: "+1234567890"
@@ -79,9 +82,10 @@ paths:
                             type: string
                             format: date-time
                             example: "2023-01-01T12:00:00Z"
-                          updated_at:
+                          updated_at: #Can be null
                             type: string
                             format: date-time
+                            nullable: true
                             example: "2024-02-28T15:45:00Z"
                           roles:
                             type: object
@@ -128,10 +132,10 @@ paths:
                     nullable: true
                     properties: {}
     
-  /authentication/logout:
+  /accounts/logout:
     post:
       tags:
-        - authentication
+        - accounts
       summary: Logout
       description: Logout
       operationId: Logout
@@ -168,4 +172,4 @@ paths:
                   #   type: object
                   #   properties: {}       
       
-  /authentication/register:
+  /accounts/register:
