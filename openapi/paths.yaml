@@ -1,17 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Swagger Petstore - OpenAPI 3.0
-  description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
-    Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
-    You can now help us improve the API whether it's by making changes to the definition itself or to the code.
-    That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
-
-    _If you're looking for the Swagger 2.0/OAS 2.0 version of Petstore, then click [here](https://editor.swagger.io/?url=https://petstore.swagger.io/v2/swagger.yaml). Alternatively, you can load via the `Edit > Load Petstore OAS 2.0` menu option!_
-
-    Some useful links:
-    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
-    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
+  title: Swagger LunaSpa - OpenAPI 3.0  
   termsOfService: http://swagger.io/terms/
   contact:
     email: apiteam@swagger.io
@@ -22,29 +11,33 @@ info:
 externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
+#Determine server port
 servers:
   - url: http://localhost:4000
-tags:
-  - name: users
-    description: Các API liên quan đến người dùng twitter
+
+tags: #Tag for all functions
+  - name: authentication
+    description: Authentication functions
+  
 paths:
-  /users/login:
+  /authentication/login:
     post:
       tags:
-        - users
-      summary: Đăng nhập
-      description: Đăng nhập vào hệ thống x clone
+        - authentication
+      summary: Login
+      description: Login
       operationId: login
+      
       requestBody:
-        description: Thông tin đăng nhập
+        description: Login information
         content:
           application/json:
             schema:
               $ref: './components.yaml#/components/schemas/LoginBody'
         required: true
       responses:
-        '200':
-          description: Đăng nhập thành công
+        200:
+          description: Login successfully
           content:
             application/json:
               schema:
@@ -52,24 +45,127 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Login success
+                    example: "Login successfully"
                   result:
-                    $ref: './components.yaml#/components/schemas/SuccessAuthentication'
-        '422':
-          description: Invalid input
-  /users/me:
-    get:
-      tags:
-        - users
-      summary: Lấy thông tin user
-      description: Lấy thông tin user
-      operationId: getMe
-      security:
-        - BearerAuth: []
-      responses:
-        default:
-          description: Lấy thông tin user thành công
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      refreshToken:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      user:
+                        type: object
+                        properties:
+                          name: 
+                            type: string
+                            example: "Wxrdie"
+                          email:
+                            type: string
+                            example: "wxrdie@example.com"
+                          phone_number:
+                            type: string
+                            example: "+1234567890"
+                          address:
+                            type: string
+                            example: "1234 Elm Street, Springfield, IL, 62704"
+                          date_of_birth: #Can be null
+                            type: string
+                            format: date-time
+                            nullable: true
+                            example: "1990-05-15T08:30:00Z"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2023-01-01T12:00:00Z"
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: "2024-02-28T15:45:00Z"
+                          roles:
+                            type: object
+                            properties:
+                              role_id:
+                                type: string
+                                example: "167bf2f13d29bdb85bedb392d"
+                              role_name:
+                                type: string
+                                example: "user"
+
+        404: #Happens when wrong username
+          description: User not found
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/User'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User not found"
+                  result:
+                    type: object
+                    properties: {}
+                  error:
+                    type: object
+                    nullable: true
+                    properties: {}
+        400: #Happens when wrong password
+          description: Invalid password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid password"
+                  result:
+                    type: object
+                    properties: {}
+                  error:
+                    type: object
+                    nullable: true
+                    properties: {}
+    
+  /authentication/logout:
+    post:
+      tags:
+        - authentication
+      summary: Logout
+      description: Logout
+      operationId: Logout
+      
+      requestBody:
+        description: Logout
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/LogoutBody'
+        required: true
+      responses:
+        200:
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:                  
+                  message:
+                    type: string
+                    example: "Logout successfully"                  
+        404: #Happens when no refreshToken found
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "refreshToken not found"
+                  # result:
+                  #   type: object
+                  #   properties: {}       
+      
+  /authentication/register:
