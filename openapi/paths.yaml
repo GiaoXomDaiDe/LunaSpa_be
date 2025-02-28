@@ -16,14 +16,14 @@ servers:
   - url: http://localhost:4000
 
 tags: #Tag for all functions
-  - name: user
-    description: User functions
+  - name: authentication
+    description: Authentication functions
   
 paths:
-  /user/login:
-    get:
+  /authentication/login:
+    post:
       tags:
-        - user
+        - authentication
       summary: Login
       description: Login
       operationId: login
@@ -37,18 +37,15 @@ paths:
         required: true
       responses:
         200:
-          description: Login successful
+          description: Login successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  statusCode:
-                    type: integer
-                    example: 200
                   message:
                     type: string
-                    example: "Login successful"
+                    example: "Login successfully"
                   result:
                     type: object
                     properties:
@@ -58,36 +55,117 @@ paths:
                       refreshToken:
                         type: string
                         example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        404:
+                      user:
+                        type: object
+                        properties:
+                          name: 
+                            type: string
+                            example: "Wxrdie"
+                          email:
+                            type: string
+                            example: "wxrdie@example.com"
+                          phone_number:
+                            type: string
+                            example: "+1234567890"
+                          address:
+                            type: string
+                            example: "1234 Elm Street, Springfield, IL, 62704"
+                          date_of_birth: #Can be null
+                            type: string
+                            format: date-time
+                            nullable: true
+                            example: "1990-05-15T08:30:00Z"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2023-01-01T12:00:00Z"
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: "2024-02-28T15:45:00Z"
+                          roles:
+                            type: object
+                            properties:
+                              role_id:
+                                type: string
+                                example: "167bf2f13d29bdb85bedb392d"
+                              role_name:
+                                type: string
+                                example: "user"
+
+        404: #Happens when wrong username
           description: User not found
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  statusCode:
-                    type: integer
-                    example: 404
                   message:
                     type: string
                     example: "User not found"
                   result:
                     type: object
                     properties: {}
-    
-  /user/me:
-    get:
-      tags:
-        - user
-      summary: Lấy thông tin user
-      description: Lấy thông tin user
-      operationId: getMe
-      security:
-        - BearerAuth: []
-      responses:
-        default:
-          description: Lấy thông tin user thành công
+                  error:
+                    type: object
+                    nullable: true
+                    properties: {}
+        400: #Happens when wrong password
+          description: Invalid password
           content:
             application/json:
               schema:
-                $ref: './components.yaml#/components/schemas/User'
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid password"
+                  result:
+                    type: object
+                    properties: {}
+                  error:
+                    type: object
+                    nullable: true
+                    properties: {}
+    
+  /authentication/logout:
+    post:
+      tags:
+        - authentication
+      summary: Logout
+      description: Logout
+      operationId: Logout
+      
+      requestBody:
+        description: Logout
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/LogoutBody'
+        required: true
+      responses:
+        200:
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:                  
+                  message:
+                    type: string
+                    example: "Logout successfully"                  
+        404: #Happens when no refreshToken found
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "refreshToken not found"
+                  # result:
+                  #   type: object
+                  #   properties: {}       
+      
+  /authentication/register:
