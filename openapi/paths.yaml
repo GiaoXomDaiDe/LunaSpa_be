@@ -97,7 +97,7 @@ paths:
                                 type: string
                                 example: "user"
 
-        404: #Happens when wrong username
+        422: #Happens when wrong username
           description: User not found
           content:
             application/json:
@@ -158,8 +158,8 @@ paths:
                   message:
                     type: string
                     example: "Logout successfully"                  
-        404: #Happens when no refreshToken found
-          description: User not found
+        401: #Happens when no refreshToken found
+          description: User unauthorized
           content:
             application/json:
               schema:
@@ -167,9 +167,83 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "refreshToken not found"
+                    example: "refresh_token not found"
                   # result:
                   #   type: object
                   #   properties: {}       
       
   /accounts/register:
+    post:
+      tags:
+        - accounts
+      summary: Register
+      description: Register new user
+      operationId: Register      
+      requestBody:
+        description: Register
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/RegisterBody'
+        required: true
+      responses:
+        200:
+          description: Register successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Registered successfully"
+                  result:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      refresh_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      user:
+                        type: object
+                        properties:
+                          _id: 
+                            type: string
+                            example: "1243879"
+                          email:
+                            type: string
+                            example: "wxrdie@example.com"
+                          name: 
+                            type: string
+                            example: "Wxrdie"                          
+                          phone_number:
+                            type: string
+                            example: "+1234567890"
+                          address:
+                            type: string
+                            example: "1234 Elm Street, Springfield, IL, 62704"
+                          date_of_birth: #Can be null
+                            type: string
+                            format: date-time
+                            nullable: true
+                            example: "1990-05-15T08:30:00Z"
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2023-01-01T12:00:00Z"
+                          updated_at: #Can be null
+                            type: string
+                            format: date-time
+                            nullable: true
+                            example: "2024-02-28T15:45:00Z"
+                          roles:
+                            type: object
+                            properties:
+                              role_id:
+                                type: string
+                                example: "167bf2f13d29bdb85bedb392d"
+                              role_name:
+                                type: string
+                                example: "user"

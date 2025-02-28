@@ -17,6 +17,19 @@ components:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2...
 
+    RegisterBody:
+      type: object
+      properties:
+        email:
+          type: string
+          example: trollergamehuydk2@gmail.com
+        password:
+          type: string
+          example: Nguyenphathuy@123
+        confirm_password:
+          type: string
+          example: Nguyenphathuy@123
+
     #Bo khong dung nua
     # SuccessAuthentication:
     #   type: object
