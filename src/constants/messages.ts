@@ -28,6 +28,7 @@ export const SUCCESS_RESPONSE_MESSAGE = {
   REFRESH_TOKEN_SUCCESS: 'Refresh token successfully'
 } as const
 export const ACCOUNT_MESSAGES = {
+  EMAIL_IS_REQUIRED: 'Email is required',
   EMAIL_IS_INVALID: 'Email is invalid',
   EMAIL_LENGTH_MUST_BE_FROM_10_TO_50: 'Email length must be from 10 to 50',
   EMAIL_ALREADY_EXISTS: 'Email already exists',
@@ -35,16 +36,16 @@ export const ACCOUNT_MESSAGES = {
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
   PASSWORD_LENGTH_MUST_BE_FROM_5_TO_50: 'Password length must be from 5 to 50',
-  EMAIL_OR_PASSWORD_IS_INCORRECT: 'Email or password is incorrect',
+  EMAIL_IS_INCORRECT: 'Email is incorrect',
+  PASSWORD_IS_INCORRECT: 'Password is incorrect',
   EMAIL_VERIFY_TOKEN_IS_REQUIRED: 'Email verify token is required',
-  PASSWORD_NOT_STRONG:
-    'Password must be 5-50 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol',
+  PASSWORD_NOT_STRONG: 'Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol',
   CONFIRM_PASSWORD_IS_REQUIRED: 'Confirm password is required',
   CONFIRM_PASSWORD_MUST_BE_A_STRING: 'Confirm password must be a string',
   EMAIL_VERIFY_SUCCESS: 'Email verify successfully',
   CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_5_TO_50: 'Confirm password length must be from 5 to 50',
   CONFIRM_PASSWORD_NOT_STRONG:
-    'Password must be 5-50 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol',
+    'Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol',
   CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD: 'Confirm password must be the same as password'
 } as const
 export const ROLE_MESSAGES = {

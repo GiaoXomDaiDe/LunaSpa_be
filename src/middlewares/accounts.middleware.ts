@@ -27,7 +27,7 @@ export const loginValidator = validate(
   checkSchema(
     {
       email: accountsParamsSchema.emailLoginSchema,
-      password: accountsParamsSchema.passwordSchema
+      password: accountsParamsSchema.passwordLoginSchema
     },
     ['body']
   )
