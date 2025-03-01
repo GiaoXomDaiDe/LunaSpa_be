@@ -46,7 +46,13 @@ export const ACCOUNT_MESSAGES = {
   CONFIRM_PASSWORD_LENGTH_MUST_BE_FROM_5_TO_50: 'Confirm password length must be from 5 to 50',
   CONFIRM_PASSWORD_NOT_STRONG:
     'Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol',
-  CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD: 'Confirm password must be the same as password'
+  CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD: 'Confirm password must be the same as password',
+  RESEND_VERIFY_EMAIL_SUCCESS: 'Resend verify email successfully',
+  CHECK_EMAIL_FOR_RESET_PASSWORD: 'Check email for reset password',
+  FORGOT_PASSWORD_TOKEN_IS_REQUIRED: 'Forgot password token is required',
+  INVALID_FORGOT_PASSWORD_TOKEN: 'Invalid forgot password token',
+  VERIFY_FORGOT_PASSWORD_SUCCESS: 'Verify forgot password successfully',
+  RESET_PASSWORD_SUCCESS: 'Reset password successfully'
 } as const
 export const ROLE_MESSAGES = {
   DEFAULT_ROLE_NOT_FOUND: 'Default role not found',

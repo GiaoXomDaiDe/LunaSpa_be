@@ -4,14 +4,17 @@ import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { ACCOUNT_MESSAGES, ERROR_RESPONSE_MESSAGES, SUCCESS_RESPONSE_MESSAGE } from '~/constants/messages'
 import {
+  ForgotPasswordReqBody,
   LoginReqBody,
   LogoutReqBody,
   RefreshTokenReqBody,
   RegisterReqBody,
+  ResetPasswordReqBody,
   TokenPayload,
-  VerifyEmailReqBody
+  VerifyEmailReqBody,
+  VerifyForgotPasswordReqBody
 } from '~/models/request/Account.requests'
-import Account from '~/models/schema/Account.schema'
+import Account, { AccountVerify } from '~/models/schema/Account.schema'
 import accountsService from '~/services/accounts.services'
 import databaseService from '~/services/database.services'
 
@@ -102,4 +105,51 @@ export const verifyEmailController = async (
     message: ACCOUNT_MESSAGES.EMAIL_VERIFY_SUCCESS,
     result
   })
+}
+export const resendVerifyEmailController = async (req: Request, res: Response, next: NextFunction) => {
+  const { account_id } = req.decoded_authorization as TokenPayload
+  const account = await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
+  if (!account) {
+    res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: ERROR_RESPONSE_MESSAGES.ACCOUNT_NOT_FOUND
+    })
+  }
+  if (account?.verify === AccountVerify.VERIFIED) {
+    res.json({
+      message: ACCOUNT_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+  const result = await accountsService.resendVerifyEmail(account_id, (account as Account).email)
+
+  res.json(result)
+}
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, ForgotPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { _id, verify, email } = req.account as Account
+  const result = await accountsService.forgotPassword({ account_id: (_id as ObjectId).toString(), verify, email })
+  res.json(result)
+}
+
+export const verifyForgotPasswordController = async (
+  req: Request<ParamsDictionary, any, VerifyForgotPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  res.json({
+    message: ACCOUNT_MESSAGES.VERIFY_FORGOT_PASSWORD_SUCCESS
+  })
+}
+
+export const resetPasswordController = async (
+  req: Request<ParamsDictionary, any, ResetPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { account_id } = req.decoded_forgot_password_token as TokenPayload
+  const { password } = req.body
+  const result = await accountsService.resetPassword(account_id, password)
+  res.json(result)
 }

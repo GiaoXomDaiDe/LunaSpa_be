@@ -2,7 +2,7 @@ import { omitBy } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
-import { SUCCESS_RESPONSE_MESSAGE } from '~/constants/messages'
+import { ACCOUNT_MESSAGES, SUCCESS_RESPONSE_MESSAGE } from '~/constants/messages'
 import { RegisterReqBody } from '~/models/request/Account.requests'
 import Account, { AccountVerify } from '~/models/schema/Account.schema'
 import RefreshToken from '~/models/schema/RefreshToken.schema'
@@ -10,7 +10,7 @@ import { buildUserRolesPipeline } from '~/pipelines/accounts.pipeline'
 import databaseService from '~/services/database.services'
 import rolesService from '~/services/roles.services'
 import { hashPassword } from '~/utils/crypto'
-import { sendVerifyRegisterEmail } from '~/utils/email'
+import { sendForgotPasswordEmail, sendVerifyRegisterEmail } from '~/utils/email'
 import { signToken, verifyToken } from '~/utils/jwt'
 
 class AccountsService {
@@ -51,7 +51,7 @@ class AccountsService {
       }
     })
   }
-  async signEmailVerifyToken({ account_id, verify }: { account_id: string; verify: AccountVerify }) {
+  private signEmailVerifyToken({ account_id, verify }: { account_id: string; verify: AccountVerify }) {
     return signToken({
       payload: {
         account_id,
@@ -61,6 +61,19 @@ class AccountsService {
       privateKey: envConfig.jwtSecretEmailVerifyToken,
       options: {
         expiresIn: envConfig.emailVerificationTokenLife
+      }
+    })
+  }
+  private signForgotPasswordToken({ account_id, verify }: { account_id: string; verify: AccountVerify }) {
+    return signToken({
+      payload: {
+        account_id,
+        token_type: TokenType.ForgotPasswordToken,
+        verify
+      },
+      privateKey: envConfig.jwtSecretForgotPasswordToken,
+      options: {
+        expiresIn: envConfig.forgotPasswordTokenLife
       }
     })
   }
@@ -198,6 +211,57 @@ class AccountsService {
     return {
       access_token,
       refresh_token
+    }
+  }
+  async resendVerifyEmail(account_id: string, email: string) {
+    const email_verify_token = await this.signEmailVerifyToken({ account_id, verify: AccountVerify.UNVERIFIED })
+    await sendVerifyRegisterEmail(email, email_verify_token)
+    //Cập nhật lại giá trị email_verify_token
+    await databaseService.accounts.updateOne({ _id: new ObjectId(account_id) }, [
+      {
+        $set: {
+          email_verify_token,
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+    return {
+      message: ACCOUNT_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
+    }
+  }
+  async forgotPassword({ account_id, verify, email }: { account_id: string; verify: AccountVerify; email: string }) {
+    const forgot_password_token = await this.signForgotPasswordToken({
+      account_id,
+      verify
+    })
+    await databaseService.accounts.updateOne({ _id: new ObjectId(account_id) }, [
+      {
+        $set: {
+          forgot_password_token,
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+    await sendForgotPasswordEmail(email, forgot_password_token)
+    return {
+      message: ACCOUNT_MESSAGES.CHECK_EMAIL_FOR_RESET_PASSWORD
+    }
+  }
+  async resetPassword(user_id: string, password: string) {
+    databaseService.accounts.updateOne(
+      { _id: new ObjectId(user_id) },
+      {
+        $set: {
+          password: hashPassword(password),
+          forgot_password_token: ''
+        },
+        $currentDate: {
+          updated_at: true
+        }
+      }
+    )
+    return {
+      message: ACCOUNT_MESSAGES.RESET_PASSWORD_SUCCESS
     }
   }
 }
