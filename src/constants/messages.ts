@@ -54,6 +54,7 @@ export const ROLE_MESSAGES = {
 } as const
 export const RESOURCE_MESSAGE = {
   RESSOURCE_IS_REQUIRE: 'Resource is require',
+  RESOURCE_IS_EXIST: 'Resource is existed',
   RESOURCE_MUST_BE_A_STRING: 'Resource must be string',
   RESSOURCE_CANNOT_CONTAIN_SPECIAL_CHARACTER: 'Resource cannot contain special character',
   RESOURCE_DESCRIPTION_IS_REQUIRE: 'Resource description is require',
