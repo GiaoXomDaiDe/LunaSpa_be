@@ -20,5 +20,10 @@ export const envConfig = {
   forgotPasswordTokenLife: process.env.FORGOT_PASSWORD_TOKEN_EXPIRES_IN as StringValue,
   jwtSecretAccessToken: process.env.JWT_SECRET_ACCESS_TOKEN as string,
   jwtSecretRefreshToken: process.env.JWT_SECRET_REFRESH_TOKEN as string,
-  jwtSecretEmailVerifyToken: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
+  jwtSecretEmailVerifyToken: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string,
+  awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+  awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+  awsRegion: process.env.AWS_REGION as string,
+  sesFromAddress: process.env.SES_FROM_ADDRESS as string,
+  clientUrl: process.env.CLIENT_URL as string
 }

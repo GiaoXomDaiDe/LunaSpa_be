@@ -7,6 +7,7 @@ import {
   getRoleController,
   updateRoleController
 } from '~/controllers/roles.controllers'
+import { accessTokenValidator } from '~/middlewares/accounts.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const rolesRouter = Router()
@@ -16,8 +17,10 @@ const rolesRouter = Router()
  * Method: GET
  * Headers: access_token: Bearer token
  * Body: <none>
+ * CheckPermission
+ * AccessValidator
  */
-rolesRouter.get('/', wrapRequestHandler(getAllRolesController))
+rolesRouter.get('/', accessTokenValidator, wrapRequestHandler(getAllRolesController))
 
 /**
  * Description. Get Role
@@ -26,7 +29,7 @@ rolesRouter.get('/', wrapRequestHandler(getAllRolesController))
  * Headers: access_token: Bearer token
  * Body: <none>
  */
-rolesRouter.get('/:id', wrapRequestHandler(getRoleController))
+rolesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getRoleController))
 
 /**
  * Description. Create Role
@@ -35,23 +38,26 @@ rolesRouter.get('/:id', wrapRequestHandler(getRoleController))
  * Headers: access_token: Bearer token
  * Body: {  name: string, resources: ResourcePermission[]}
  * Validator:
- * Phải có access_token,
- * Phải có quyền tác động resource
- * name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
+ * Phải có access_token, done
+ * Phải có quyền tác động resource (để Huy)
+ * 
+ * name bắt buộc có, kiểu string, không chứa ký tự đặc biệt
+ * resources bắt buộc có, kiểu mảng, không rỗng
  * Với createRole:
 Khi tạo mới role, bạn sẽ kiểm tra xem tên role đã tồn tại trong database hay chưa. Nếu có thì trả về lỗi.
- * resources bắt buộc có, kiểu mảng, không rỗng
+ * chữ đầu in hoa có thể sửa sau khi tạo
  */
-rolesRouter.post('/', wrapRequestHandler(createRolesController))
+rolesRouter.post('/', accessTokenValidator, wrapRequestHandler(createRolesController))
 
 /**
- * Description. Update Resource
+ * Description. Update Role
  * Path: /:id
  * Method: Put
  * Headers: access_token: Bearer token
  * Validator:
  * Phải có access_token,
  * Phải có quyền tác động resource
+ *
  * resource_name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
  * description bắt buộc có, kiểu string, tối đa 255 ký tự
  * id bắt buộc có, kiểu string, ObjectId
@@ -62,7 +68,7 @@ rolesRouter.post('/', wrapRequestHandler(createRolesController))
  * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
  * Body: {  resource_name: string, description: string}
  */
-rolesRouter.put('/:id', wrapRequestHandler(updateRoleController))
+rolesRouter.put('/:id', accessTokenValidator, wrapRequestHandler(updateRoleController))
 /**
  * Description. Update Resource
  * Path: /:id
@@ -79,7 +85,7 @@ rolesRouter.put('/:id', wrapRequestHandler(updateRoleController))
  * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
  * Body: {  resource_name: string, description: string}
  */
-rolesRouter.put('/:id', wrapRequestHandler(updateRoleController))
+rolesRouter.put('/:id', accessTokenValidator, wrapRequestHandler(updateRoleController))
 
 /**
  * Description. Delete Resource
@@ -97,7 +103,7 @@ rolesRouter.put('/:id', wrapRequestHandler(updateRoleController))
  * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
  */
 
-rolesRouter.delete('/:id', wrapRequestHandler(deleteRoleController))
+rolesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteRoleController))
 
 /**
  * Description. Add Resource To Role
@@ -117,5 +123,9 @@ rolesRouter.delete('/:id', wrapRequestHandler(deleteRoleController))
  * Kiểm tra xem resource đã tồn tại trong role chưa, nếu có thì trả lỗi
  *
  *  */
-rolesRouter.post('/:role_id/resources/:resource_id', wrapRequestHandler(addResourceToRoleController))
+rolesRouter.post(
+  '/:role_id/resources/:resource_id',
+  accessTokenValidator,
+  wrapRequestHandler(addResourceToRoleController)
+)
 export default rolesRouter
