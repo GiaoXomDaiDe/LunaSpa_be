@@ -6,6 +6,7 @@ import {
   getResourceController,
   updateResourceController
 } from '~/controllers/resources.controllers'
+import { createResourceValidator } from '~/middlewares/resources.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const resourcesRouter = Router()
@@ -41,7 +42,7 @@ resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
 Khi tạo mới role, bạn sẽ kiểm tra xem tên role đã tồn tại trong database hay chưa. Nếu có thì trả về lỗi.
  * description bắt buộc có, kiểu string, tối đa 255 ký tự
  */
-resourcesRouter.post('/', wrapRequestHandler(createResourceController))
+resourcesRouter.post('/', createResourceValidator, wrapRequestHandler(createResourceController))
 
 /**
  * Description. Update Resource
@@ -95,6 +96,5 @@ resourcesRouter.put('/:id', wrapRequestHandler(updateResourceController))
  * Nếu role hiện tại là admin thì ko cho chỉnh sửa
  * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
  */
-
 resourcesRouter.delete('/:id', wrapRequestHandler(deleteResourceController))
 export default resourcesRouter

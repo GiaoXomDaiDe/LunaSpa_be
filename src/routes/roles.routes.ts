@@ -7,6 +7,7 @@ import {
   getRoleController,
   updateRoleController
 } from '~/controllers/roles.controllers'
+import { createRoleValidator } from '~/middlewares/roles.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const rolesRouter = Router()
@@ -42,7 +43,7 @@ rolesRouter.get('/:id', wrapRequestHandler(getRoleController))
 Khi tạo mới role, bạn sẽ kiểm tra xem tên role đã tồn tại trong database hay chưa. Nếu có thì trả về lỗi.
  * resources bắt buộc có, kiểu mảng, không rỗng
  */
-rolesRouter.post('/', wrapRequestHandler(createRolesController))
+rolesRouter.post('/', createRoleValidator, wrapRequestHandler(createRolesController))
 
 /**
  * Description. Update Resource
