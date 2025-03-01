@@ -4,7 +4,7 @@ import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
 import { envConfig } from '~/constants/config'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
+import { ACCOUNT_MESSAGES, ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
 import accountsParamsSchema from '~/constants/paramSchema'
 import { ErrorWithStatus } from '~/models/Error'
 import databaseService from '~/services/database.services'
@@ -52,7 +52,12 @@ export const accessTokenValidator = validate(
     ['headers']
   )
 )
-
+/* 
+refreshTokenValidator
+- Kiểm tra refresh_token đã gửi vào body chưa
+- Kiểm traxem refresh_token có tồn tại trong db không
+- Add refresh_token đã decoded vào req
+*/
 export const refreshTokenValidator = validate(
   checkSchema({
     refresh_token: {
@@ -91,4 +96,38 @@ export const refreshTokenValidator = validate(
       }
     }
   })
+)
+export const emailVerifyTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: ACCOUNT_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken
+              })
+              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: capitalize((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
 )

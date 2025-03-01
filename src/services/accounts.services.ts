@@ -10,6 +10,7 @@ import { buildUserRolesPipeline } from '~/pipelines/accounts.pipeline'
 import databaseService from '~/services/database.services'
 import rolesService from '~/services/roles.services'
 import { hashPassword } from '~/utils/crypto'
+import { sendVerifyRegisterEmail } from '~/utils/email'
 import { signToken, verifyToken } from '~/utils/jwt'
 
 class AccountsService {
@@ -108,7 +109,14 @@ class AccountsService {
     const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
       return value === '' || value === null
     })
-    //flow cho verify account
+    // Flow verify email
+    // 1. Server send email to user
+    // 2. User click link in email
+    // 3. Client send request to server with email_verify_token
+    // 4. Server verify email_verify_token
+    // 5. Client receive access_token and refresh_token
+    if (cleanedAccount.verify === AccountVerify.UNVERIFIED)
+      await sendVerifyRegisterEmail(payload.email, email_verify_token)
     return {
       access_token,
       refresh_token,
@@ -164,6 +172,32 @@ class AccountsService {
     return {
       access_token: new_access_token,
       refresh_token: new_refresh_token
+    }
+  }
+  async verifyEmail(account_id: string) {
+    const [token] = await Promise.all([
+      this.signAccessAndRefreshToken({ account_id, verify: AccountVerify.VERIFIED }),
+      databaseService.accounts.updateOne({ _id: new ObjectId(account_id) }, [
+        {
+          $set: {
+            email_verify_token: '',
+            verify: AccountVerify.VERIFIED
+          },
+          $currentDate: {
+            updated_at: true
+          }
+        }
+      ])
+    ])
+    const [access_token, refresh_token] = token
+    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
+    )
+
+    return {
+      access_token,
+      refresh_token
     }
   }
 }
