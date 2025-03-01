@@ -15,6 +15,10 @@ const resourcesRouter = Router()
  * Method: GET
  * Headers: access_token: Bearer token
  * Body: <none>
+ * Middleware:
+ *    accessTokenValidator
+ *    checkPermission('get', 'resource')
+ *    wrapRequestHandler(getAllResourcesController)
  */
 resourcesRouter.get('/', wrapRequestHandler(getAllResourcesController))
 
@@ -24,6 +28,11 @@ resourcesRouter.get('/', wrapRequestHandler(getAllResourcesController))
  * Method: GET
  * Headers: access_token: Bearer token
  * Body: <none>
+ * Middleware:
+ *    accessTokenValidator
+ *    checkPermission('get', 'resource')
+ *    resourceParamValidator: check resource_id từ param có không, có phải string không
+ *    wrapRequestHandler(getResourceController)
  */
 resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
 
@@ -33,14 +42,14 @@ resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
  * Method: POST
  * Headers: access_token: Bearer token
  * Body: {  resource_name: string, description: string}
- * Validator:
- * Phải có access_token,
- * Phải có quyền tác động resource
- * resource_name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
- * Với createRole:
-Khi tạo mới role, bạn sẽ kiểm tra xem tên role đã tồn tại trong database hay chưa. Nếu có thì trả về lỗi.
- * description bắt buộc có, kiểu string, tối đa 255 ký tự
- */
+ * Middleware:
+ *    accessTokenValidator
+ *    checkPermission('post', 'resource')
+ *    resourceBodyValidator:
+ *      check resource_name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
+ *      check description bắt buộc có, kiểu string, tối đa 255 ký tự,
+ *    wrapRequestHandler(getResourceController)
+ * */
 resourcesRouter.post('/', wrapRequestHandler(createResourceController))
 
 /**
@@ -48,52 +57,29 @@ resourcesRouter.post('/', wrapRequestHandler(createResourceController))
  * Path: /:id
  * Method: Put
  * Headers: access_token: Bearer token
- * Validator:
- * Phải có access_token,
- * Phải có quyền tác động resource
- * resource_name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
- * description bắt buộc có, kiểu string, tối đa 255 ký tự
- * id bắt buộc có, kiểu string, ObjectId
- * Lấy role từ trong db dựa theo param id, nếu ko tìm thấy trả lỗi
- * lấy role hiện tại của đối tượng update
- * Nếu ko có tức là role ko tìm thấy => trả lỗi
- * Nếu role hiện tại là admin thì ko cho chỉnh sửa
- * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
  * Body: {  resource_name: string, description: string}
+ * Middleware:
+ *    accessTokenValidator
+ *    checkPermission('put', 'resource')
+ *    resourceParamValidator: check resource_id từ param có không, có phải string không
+ *    resourceBodyValidator:
+ *      check resource_name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
+ *      check description bắt buộc có, kiểu string, tối đa 255 ký tự
+ *      check xem trong resource có thằng nào trùng tên không, nếu có thì trả lỗi,
+ *      xong add thằng resource vào request
+ *    wrapRequestHandler(getResourceController)
  */
 resourcesRouter.put('/:id', wrapRequestHandler(updateResourceController))
-/**
- * Description. Update Resource
- * Path: /:id
- * Method: Put
- * Headers: access_token: Bearer token
- * Validator:
- * Phải có access_token,
- * Phải có quyền tác động resource
- * id bắt buộc có, kiểu string, ObjectId
- * Lấy role từ trong db dựa theo param id, nếu ko tìm thấy trả lỗi
- * lấy role hiện tại của đối tượng update
- * Nếu ko có tức là role ko tìm thấy => trả lỗi
- * Nếu role hiện tại là admin thì ko cho chỉnh sửa
- * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
- * Body: {  resource_name: string, description: string}
- */
-resourcesRouter.put('/:id', wrapRequestHandler(updateResourceController))
-
 /**
  * Description. Delete Resource
  * Path: /:id
  * Method: Delete
  * Headers: access_token: Bearer token
- * Validator:
- * Phải có access_token,
- * Phải có quyền tác động resource
- * id bắt buộc có, kiểu string, ObjectId
- * Lấy role từ trong db dựa theo param id, nếu ko tìm thấy trả lỗi
- * lấy role hiện tại của đối tượng update
- * Nếu ko có tức là role ko tìm thấy => trả lỗi
- * Nếu role hiện tại là admin thì ko cho chỉnh sửa
- * Nếu người dùng đang cập nhật tên, kiểm tra xem tên mới đã tồn tại trong các role khác chưa
+ * Middleware:
+ *    accessTokenValidator
+ *    checkPermission('delete', 'resource')
+ *    resourceParamValidator: check resource_id từ param có không, có phải string không
+ *    wrapRequestHandler(getResourceController)
  */
 
 resourcesRouter.delete('/:id', wrapRequestHandler(deleteResourceController))
