@@ -2,7 +2,6 @@ import { Request } from 'express'
 import { checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
-import { ObjectId } from 'mongodb'
 import { envConfig } from '~/constants/config'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { ACCOUNT_MESSAGES, ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
@@ -16,7 +15,7 @@ import { validate } from '~/utils/validation'
 export const registerValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.emailRegisterSchema,
+      email: accountsParamsSchema.emailSchema,
       password: accountsParamsSchema.passwordSchema,
       confirm_password: accountsParamsSchema.confirmPasswordSchema
     },
@@ -27,7 +26,7 @@ export const registerValidator = validate(
 export const loginValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.emailLoginSchema,
+      email: accountsParamsSchema.emailSchema,
       password: accountsParamsSchema.passwordLoginSchema
     },
     ['body']
@@ -123,7 +122,6 @@ export const emailVerifyTokenValidator = validate(
                 status: HTTP_STATUS.UNAUTHORIZED
               })
             }
-
             return true
           }
         }
@@ -161,49 +159,7 @@ export const forgotPasswordValidator = validate(
 export const verifyForgotPasswordTokenValidator = validate(
   checkSchema(
     {
-      forgot_password_token: {
-        trim: true,
-        custom: {
-          options: async (value: string, { req }) => {
-            if (!value) {
-              throw new ErrorWithStatus({
-                message: ACCOUNT_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-            try {
-              const decoded_forgot_password_token = await verifyToken({
-                token: value,
-                secretOrPublicKey: envConfig.jwtSecretForgotPasswordToken
-              })
-              const { account_id } = decoded_forgot_password_token
-              const account = await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
-              if (account === null) {
-                throw new ErrorWithStatus({
-                  message: ERROR_RESPONSE_MESSAGES.ACCOUNT_NOT_FOUND,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              if (account.forgot_password_token !== value) {
-                throw new ErrorWithStatus({
-                  message: ACCOUNT_MESSAGES.INVALID_FORGOT_PASSWORD_TOKEN,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              req.decoded_forgot_password_token = decoded_forgot_password_token
-            } catch (error) {
-              if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: capitalize(error.message),
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              throw error
-            }
-            return true
-          }
-        }
-      }
+      forgot_password_token: accountsParamsSchema.forgotPasswordSchema
     },
     ['body']
   )
@@ -212,51 +168,9 @@ export const verifyForgotPasswordTokenValidator = validate(
 export const resetPasswordValidator = validate(
   checkSchema(
     {
-      password: accountsParamsSchema.passwordLoginSchema,
+      password: accountsParamsSchema.passwordSchema,
       confirm_password: accountsParamsSchema.confirmPasswordSchema,
-      forgot_password_token: {
-        trim: true,
-        custom: {
-          options: async (value: string, { req }) => {
-            if (!value) {
-              throw new ErrorWithStatus({
-                message: ACCOUNT_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
-                status: HTTP_STATUS.UNAUTHORIZED
-              })
-            }
-            try {
-              const decoded_forgot_password_token = await verifyToken({
-                token: value,
-                secretOrPublicKey: envConfig.jwtSecretForgotPasswordToken
-              })
-              const { account_id } = decoded_forgot_password_token
-              const account = await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
-              if (account === null) {
-                throw new ErrorWithStatus({
-                  message: ERROR_RESPONSE_MESSAGES.ACCOUNT_NOT_FOUND,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              if (account.forgot_password_token !== value) {
-                throw new ErrorWithStatus({
-                  message: ACCOUNT_MESSAGES.INVALID_FORGOT_PASSWORD_TOKEN,
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              req.decoded_forgot_password_token = decoded_forgot_password_token
-            } catch (error) {
-              if (error instanceof JsonWebTokenError) {
-                throw new ErrorWithStatus({
-                  message: capitalize(error.message),
-                  status: HTTP_STATUS.UNAUTHORIZED
-                })
-              }
-              throw error
-            }
-            return true
-          }
-        }
-      }
+      forgot_password_token: accountsParamsSchema.forgotPasswordSchema
     },
     ['body']
   )
