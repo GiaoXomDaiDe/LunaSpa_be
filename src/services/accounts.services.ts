@@ -194,10 +194,8 @@ class AccountsService {
         {
           $set: {
             email_verify_token: '',
-            verify: AccountVerify.VERIFIED
-          },
-          $currentDate: {
-            updated_at: true
+            verify: AccountVerify.VERIFIED,
+            updated_at: '$$NOW'
           }
         }
       ])
