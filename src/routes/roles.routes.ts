@@ -8,7 +8,10 @@ import {
   updateRoleController
 } from '~/controllers/roles.controllers'
 import { accessTokenValidator } from '~/middlewares/accounts.middleware'
+<<<<<<< HEAD
 import { addResourceToRoleValidator, createRoleValidator, updateRoleValidator } from '~/middlewares/roles.middleware'
+=======
+>>>>>>> main
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const rolesRouter = Router()
@@ -68,7 +71,11 @@ rolesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getRoleControll
  * @throws {403} - Forbidden - Không có quyền tạo role
  * @throws {409} - Conflict - Tên role đã tồn tại
  */
+<<<<<<< HEAD
 rolesRouter.post('/', accessTokenValidator, createRoleValidator, wrapRequestHandler(createRolesController))
+=======
+rolesRouter.post('/', accessTokenValidator, wrapRequestHandler(createRolesController))
+>>>>>>> main
 
 /**
  * @route PUT /roles/:id
@@ -84,6 +91,7 @@ rolesRouter.post('/', accessTokenValidator, createRoleValidator, wrapRequestHand
  * @returns {Role} 200 - Role đã được cập nhật
  *
  * @validation
+<<<<<<< HEAD
  * - Name role in hoa chữ cái đầu
  * - Không được chỉnh sửa role admin
  * - Tên mới không được trùng với các role khác
@@ -94,6 +102,15 @@ rolesRouter.post('/', accessTokenValidator, createRoleValidator, wrapRequestHand
  * - CRUD phải là boolean.
  */
 rolesRouter.put('/:id', accessTokenValidator, updateRoleValidator, wrapRequestHandler(updateRoleController))
+=======
+ * - Role phải tồn tại trong hệ thống
+ * - Không được chỉnh sửa role admin
+ * - Tên mới không được trùng với các role khác
+ * - Resource name phải bắt đầu bằng chữ in hoa
+ * - Description không được vượt quá 255 ký tự
+ */
+rolesRouter.put('/:id', accessTokenValidator, wrapRequestHandler(updateRoleController))
+>>>>>>> main
 
 /**
  * @route DELETE /roles/:id
@@ -105,6 +122,11 @@ rolesRouter.put('/:id', accessTokenValidator, updateRoleValidator, wrapRequestHa
  * @returns {Object} 200 - Thông báo xóa thành công
  *
  * @validation
+<<<<<<< HEAD
+=======
+ * - Role phải tồn tại trong hệ thống
+ * - Không được xóa role admin
+>>>>>>> main
  */
 rolesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteRoleController))
 
@@ -129,7 +151,10 @@ rolesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteRoleCo
 rolesRouter.post(
   '/:role_id/resources/:resource_id',
   accessTokenValidator,
+<<<<<<< HEAD
   addResourceToRoleValidator,
+=======
+>>>>>>> main
   wrapRequestHandler(addResourceToRoleController)
 )
 

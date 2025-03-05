@@ -11,7 +11,7 @@ export type AccountType = {
   _id?: ObjectId
   email: string
   password: string
-  role_id: ObjectId[]
+  role_id: ObjectId
   name?: string
   phone_number?: string
   address?: string
@@ -27,7 +27,7 @@ export type AccountType = {
 export default class Account {
   _id?: ObjectId
   email: string
-  role_id: ObjectId[]
+  role_id: ObjectId
   password: string
   name: string
   phone_number: string

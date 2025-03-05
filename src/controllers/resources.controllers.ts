@@ -55,8 +55,8 @@ export const updateResourceController = async (
 ) => {
   const payload = req.body
   const updateData = omitBy(payload, (value) => value === undefined || value === '')
-  console.log(updateData)
-  console.log(Object.keys(updateData).length === 0)
+  // console.log(updateData)
+  // console.log(Object.keys(updateData).length === 0)
   if (Object.keys(updateData).length === 0) {
     throw new ErrorWithStatus({
       message: ERROR_RESPONSE_MESSAGES.NO_UPDATE_FIELDS_PROVIDED,
@@ -64,7 +64,7 @@ export const updateResourceController = async (
     })
   }
   const resource_id = req.params.id
-  console.log(resource_id)
+  // console.log(resource_id)
   const result = await resourcesService.updateResource(updateData, resource_id)
   res.status(HTTP_STATUS.CREATED).json({
     message: SUCCESS_RESPONSE_MESSAGE.RESOURCE_UPDATED_SUCCESSFULLY,

@@ -1,12 +1,14 @@
-import { Request } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
 import { envConfig } from '~/constants/config'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
+import { ACCOUNT_MESSAGES, ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
 import accountsParamsSchema from '~/constants/paramSchema'
 import { ErrorWithStatus } from '~/models/Error'
+import { TokenPayload } from '~/models/request/Account.requests'
+import { AccountVerify } from '~/models/schema/Account.schema'
 import databaseService from '~/services/database.services'
 import { verifyAccessToken } from '~/utils/common'
 import { verifyToken } from '~/utils/jwt'
@@ -15,7 +17,7 @@ import { validate } from '~/utils/validation'
 export const registerValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.emailRegisterSchema,
+      email: accountsParamsSchema.emailSchema,
       password: accountsParamsSchema.passwordSchema,
       confirm_password: accountsParamsSchema.confirmPasswordSchema
     },
@@ -26,7 +28,7 @@ export const registerValidator = validate(
 export const loginValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.emailLoginSchema,
+      email: accountsParamsSchema.emailSchema,
       password: accountsParamsSchema.passwordLoginSchema
     },
     ['body']
@@ -52,7 +54,12 @@ export const accessTokenValidator = validate(
     ['headers']
   )
 )
-
+/* 
+refreshTokenValidator
+- Kiểm tra refresh_token đã gửi vào body chưa
+- Kiểm traxem refresh_token có tồn tại trong db không
+- Add refresh_token đã decoded vào req
+*/
 export const refreshTokenValidator = validate(
   checkSchema({
     refresh_token: {
@@ -89,6 +96,163 @@ export const refreshTokenValidator = validate(
           return true
         }
       }
+    }
+  })
+)
+export const emailVerifyTokenValidator = validate(
+  checkSchema(
+    {
+      email_verify_token: {
+        trim: true,
+        custom: {
+          options: async (value: string, { req }) => {
+            if (!value) {
+              throw new ErrorWithStatus({
+                message: ACCOUNT_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            try {
+              const decoded_email_verify_token = await verifyToken({
+                token: value,
+                secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken
+              })
+              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+            } catch (error) {
+              throw new ErrorWithStatus({
+                message: capitalize((error as JsonWebTokenError).message),
+                status: HTTP_STATUS.UNAUTHORIZED
+              })
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+export const forgotPasswordValidator = validate(
+  checkSchema(
+    {
+      email: {
+        isEmail: {
+          errorMessage: ACCOUNT_MESSAGES.EMAIL_IS_INVALID
+        },
+        trim: true,
+        custom: {
+          options: async (value, { req }) => {
+            const account = await databaseService.accounts.findOne({
+              email: value
+            })
+            if (account === null) {
+              throw new Error(ERROR_RESPONSE_MESSAGES.ACCOUNT_NOT_FOUND)
+            }
+            ;(req as Request).account = account
+            return true
+          }
+        }
+      }
+    },
+    ['body']
+  )
+)
+
+export const verifyForgotPasswordTokenValidator = validate(
+  checkSchema(
+    {
+      forgot_password_token: accountsParamsSchema.forgotPasswordSchema
+    },
+    ['body']
+  )
+)
+
+export const resetPasswordValidator = validate(
+  checkSchema(
+    {
+      password: accountsParamsSchema.passwordSchema,
+      confirm_password: accountsParamsSchema.confirmPasswordSchema,
+      forgot_password_token: accountsParamsSchema.forgotPasswordSchema
+    },
+    ['body']
+  )
+)
+
+export const verifiedAccountValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { verify } = req.decoded_authorization as TokenPayload
+  if (verify !== AccountVerify.VERIFIED) {
+    return next(
+      new ErrorWithStatus({
+        message: ACCOUNT_MESSAGES.ACCOUNT_NOT_VERIFIED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}
+
+export const updateMeValidator = validate(
+  checkSchema({
+    name: {
+      trim: true,
+      isString: {
+        errorMessage: ACCOUNT_MESSAGES.NAME_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 1,
+          max: 100
+        },
+        errorMessage: ACCOUNT_MESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_100
+      },
+      optional: true
+    },
+    phone_number: {
+      trim: true,
+      matches: {
+        options: /^(84|0[3|5|7|8|9])+([0-9]{8})$/,
+        errorMessage: ACCOUNT_MESSAGES.PHONE_NUMBER_IS_INVALID
+      },
+      optional: true
+    },
+    address: {
+      trim: true,
+      isString: {
+        errorMessage: ACCOUNT_MESSAGES.ADDRESS_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 1,
+          max: 255
+        },
+        errorMessage: ACCOUNT_MESSAGES.ADDRESS_LENGTH_MUST_BE_FROM_1_TO_255
+      },
+      optional: true
+    },
+    date_of_birth: {
+      trim: true,
+      isISO8601: {
+        options: {
+          strict: true,
+          strictSeparator: true
+        },
+        errorMessage: ACCOUNT_MESSAGES.DATE_OF_BIRTH_MUST_BE_ISO8601
+      },
+      optional: true
+    },
+    avatar: {
+      trim: true,
+      isString: {
+        errorMessage: ACCOUNT_MESSAGES.AVATAR_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 1,
+          max: 255
+        },
+        errorMessage: ACCOUNT_MESSAGES.AVATAR_LENGTH_MUST_BE_FROM_1_TO_255
+      },
+      optional: true
     }
   })
 )
