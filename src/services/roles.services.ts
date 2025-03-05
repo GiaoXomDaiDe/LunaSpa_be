@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { ERROR_RESPONSE_MESSAGES, ROLE_MESSAGES } from '~/constants/messages'
+import { ERROR_RESPONSE_MESSAGES, RESOURCE_MESSAGE, ROLE_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import { RoleReqBody } from '~/models/request/Role.request'
 import Roles, { ResourcePermission } from '~/models/schema/Role.schema'
@@ -32,7 +32,7 @@ class RolesService {
     const role = await databaseService.roles.aggregate(buildRoleWithResourcePipeline({ role_id })).toArray()
     if (!role[0]) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.ROLE_NOT_FOUND,
+        message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -60,7 +60,7 @@ class RolesService {
     })
     if (!role) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.ROLE_NOT_FOUND,
+        message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -90,7 +90,7 @@ class RolesService {
     )
     if (updated_role === null) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.ROLE_NOT_FOUND,
+        message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -108,7 +108,7 @@ class RolesService {
     })
     if (result === null) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.ROLE_NOT_FOUND,
+        message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -119,7 +119,7 @@ class RolesService {
     })
     if (!role) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.ROLE_NOT_FOUND,
+        message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -128,7 +128,7 @@ class RolesService {
     })
     if (!resource) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,
+        message: RESOURCE_MESSAGE.RESOURCE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -153,7 +153,7 @@ class RolesService {
     )
     if (result === null) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.ROLE_NOT_FOUND,
+        message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }

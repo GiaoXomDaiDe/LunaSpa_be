@@ -6,6 +6,8 @@ import {
   getResourceController,
   updateResourceController
 } from '~/controllers/resources.controllers'
+import { accessTokenValidator } from '~/middlewares/accounts.middleware'
+import { createResourceValidator, updateResourceValidator } from '~/middlewares/resources.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const resourcesRouter = Router()
@@ -20,7 +22,7 @@ const resourcesRouter = Router()
  *    checkPermission('get', 'resource')
  *    wrapRequestHandler(getAllResourcesController)
  */
-resourcesRouter.get('/', wrapRequestHandler(getAllResourcesController))
+resourcesRouter.get('/', accessTokenValidator, wrapRequestHandler(getAllResourcesController))
 
 /**
  * Description. Get Resource
@@ -34,7 +36,7 @@ resourcesRouter.get('/', wrapRequestHandler(getAllResourcesController))
  *    resourceParamValidator: check resource_id từ param có không, có phải string không
  *    wrapRequestHandler(getResourceController)
  */
-resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
+resourcesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getResourceController))
 
 /**
  * Description. Create Resource
@@ -50,7 +52,7 @@ resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
  *      check description bắt buộc có, kiểu string, tối đa 255 ký tự,
  *    wrapRequestHandler(getResourceController)
  * */
-resourcesRouter.post('/', wrapRequestHandler(createResourceController))
+resourcesRouter.post('/', accessTokenValidator, createResourceValidator, wrapRequestHandler(createResourceController))
 
 /**
  * Description. Update Resource
@@ -61,7 +63,6 @@ resourcesRouter.post('/', wrapRequestHandler(createResourceController))
  * Middleware:
  *    accessTokenValidator
  *    checkPermission('put', 'resource')
- *    resourceParamValidator: check resource_id từ param có không, có phải string không
  *    resourceBodyValidator:
  *      check resource_name bắt buộc có, kiểu string, chữ đầu in hoa, không chứa ký tự đặc biệt
  *      check description bắt buộc có, kiểu string, tối đa 255 ký tự
@@ -69,7 +70,8 @@ resourcesRouter.post('/', wrapRequestHandler(createResourceController))
  *      xong add thằng resource vào request
  *    wrapRequestHandler(getResourceController)
  */
-resourcesRouter.put('/:id', wrapRequestHandler(updateResourceController))
+resourcesRouter.put('/:id', accessTokenValidator, updateResourceValidator, wrapRequestHandler(updateResourceController))
+
 /**
  * Description. Delete Resource
  * Path: /:id
@@ -78,9 +80,8 @@ resourcesRouter.put('/:id', wrapRequestHandler(updateResourceController))
  * Middleware:
  *    accessTokenValidator
  *    checkPermission('delete', 'resource')
- *    resourceParamValidator: check resource_id từ param có không, có phải string không
  *    wrapRequestHandler(getResourceController)
  */
+resourcesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteResourceController))
 
-resourcesRouter.delete('/:id', wrapRequestHandler(deleteResourceController))
 export default resourcesRouter

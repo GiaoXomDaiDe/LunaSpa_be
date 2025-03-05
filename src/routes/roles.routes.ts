@@ -8,6 +8,7 @@ import {
   updateRoleController
 } from '~/controllers/roles.controllers'
 import { accessTokenValidator } from '~/middlewares/accounts.middleware'
+import { addResourceToRoleValidator, createRoleValidator, updateRoleValidator } from '~/middlewares/roles.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const rolesRouter = Router()
@@ -67,7 +68,7 @@ rolesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getRoleControll
  * @throws {403} - Forbidden - Không có quyền tạo role
  * @throws {409} - Conflict - Tên role đã tồn tại
  */
-rolesRouter.post('/', accessTokenValidator, wrapRequestHandler(createRolesController))
+rolesRouter.post('/', accessTokenValidator, createRoleValidator, wrapRequestHandler(createRolesController))
 
 /**
  * @route PUT /roles/:id
@@ -83,13 +84,16 @@ rolesRouter.post('/', accessTokenValidator, wrapRequestHandler(createRolesContro
  * @returns {Role} 200 - Role đã được cập nhật
  *
  * @validation
- * - Role phải tồn tại trong hệ thống
+ * - Name role in hoa chữ cái đầu
  * - Không được chỉnh sửa role admin
  * - Tên mới không được trùng với các role khác
- * - Resource name phải bắt đầu bằng chữ in hoa
- * - Description không được vượt quá 255 ký tự
+ * - Resource không được rỗng
+ * - Resource phải là array
+ * - Resource_id phải tồn tại trong hệ thống
+ * - Resource_id phải được validate
+ * - CRUD phải là boolean.
  */
-rolesRouter.put('/:id', accessTokenValidator, wrapRequestHandler(updateRoleController))
+rolesRouter.put('/:id', accessTokenValidator, updateRoleValidator, wrapRequestHandler(updateRoleController))
 
 /**
  * @route DELETE /roles/:id
@@ -101,8 +105,6 @@ rolesRouter.put('/:id', accessTokenValidator, wrapRequestHandler(updateRoleContr
  * @returns {Object} 200 - Thông báo xóa thành công
  *
  * @validation
- * - Role phải tồn tại trong hệ thống
- * - Không được xóa role admin
  */
 rolesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteRoleController))
 
@@ -127,6 +129,7 @@ rolesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteRoleCo
 rolesRouter.post(
   '/:role_id/resources/:resource_id',
   accessTokenValidator,
+  addResourceToRoleValidator,
   wrapRequestHandler(addResourceToRoleController)
 )
 
