@@ -90,3 +90,7 @@ export const RESOURCE_MESSAGE = {
   RESOURCE_NOT_FOUND: 'Resource not found',
   PERMISSION_MUST_BE_BOOLEAN: 'permission must be boolean'
 } as const
+export const MEDIAS_MESSAGES = {
+  UPLOAD_SUCCESS: 'Upload successfully',
+  NOT_FOUND: 'Not found'
+} as const

@@ -67,7 +67,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"resource_name\": \"Resources\",\r\n    \"description\": \"test\"\r\n}",
+							"raw": "{\r\n    \"resource_name\": \"69huydamdang\",\r\n    \"description\": \"\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -75,13 +75,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/resources/{{resource_id}}",
+							"raw": "{{host}}/resources/",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"resources",
-								"{{resource_id}}"
+								""
 							]
 						}
 					},
@@ -94,7 +94,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"resource_name\": \"Resources\",\r\n    \"description\": \"hahaha\"\r\n}",
+							"raw": "{\r\n    \"resource_name\": true,\r\n    \"description\": \"hahaha\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -189,7 +189,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"huy\",\r\n    \"resources\": [\r\n        {\r\n            \"resource_id\": \"67bf2672c85168a423842619\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2e91d29bdb85bedb392b\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2eabd29bdb85bedb392c\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        }\r\n        \r\n    ]\r\n}",
+							"raw": "{\r\n    \"name\": 1,\r\n    \"resources\": [\r\n        {\r\n            \"resource_id\": \"67bf2672c85168a423842619\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2e91d29bdb85bedb392b\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2eabd29bdb85bedb392c\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        }\r\n        \r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -326,7 +326,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"trollergamehuydk+15@gmail.com\",\r\n  \"password\": \"Nguyenphathuy@123\",\r\n  \"confirm_password\": \"Nguyenphathuy@123\"\r\n}",
+							"raw": "{\r\n  \"email\": \"trollergamehuydk@gmail.com\",\r\n  \"password\": \"Nguyenphathuy@123\",\r\n  \"confirm_password\": \"Nguyenphathuy@123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -603,7 +603,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"huynpse171503@fpt.edu.vn\",\r\n  \"password\": \"Nguyenphathuy@123\"\r\n}",
+							"raw": "{\r\n  \"email\": \"trollergamehuydk@gmail.com\",\r\n  \"password\": \"Nguyenphathuy@123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -888,6 +888,13 @@
 								"type": "text/javascript",
 								"packages": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
 						}
 					],
 					"request": {
@@ -932,6 +939,13 @@
 								],
 								"type": "text/javascript",
 								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -1047,6 +1061,13 @@
 								"type": "text/javascript",
 								"packages": {}
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [],
+								"type": "text/javascript"
+							}
 						}
 					],
 					"request": {
@@ -1073,6 +1094,51 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/accounts/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"accounts",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\" : \"HuyDepTrai\",\r\n    \"bio\": \"Toi la gay\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/accounts/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"accounts",
+								"me"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
@@ -1095,6 +1161,39 @@
 							""
 						]
 					}
+				}
+			]
+		},
+		{
+			"name": "Media",
+			"item": [
+				{
+					"name": "Upload image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/troll/Pictures/code.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{host}}/medias/upload-image",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"medias",
+								"upload-image"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
+import { ERROR_RESPONSE_MESSAGES, RESOURCE_MESSAGE } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import { ResourceReqBody } from '~/models/request/Resource.requests'
 import Resource from '~/models/schema/Resource.schema'
@@ -23,7 +23,7 @@ class ResourcesService {
     console.log(resource)
     if (!resource) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,
+        message: RESOURCE_MESSAGE.RESOURCE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -45,7 +45,7 @@ class ResourcesService {
     })
     if (!resource) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,
+        message: RESOURCE_MESSAGE.RESOURCE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -83,7 +83,7 @@ class ResourcesService {
     // console.log(result)
     if (result === null) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,
+        message: RESOURCE_MESSAGE.RESOURCE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
@@ -96,7 +96,7 @@ class ResourcesService {
     })
     if (result === null) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,
+        message: RESOURCE_MESSAGE.RESOURCE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }
