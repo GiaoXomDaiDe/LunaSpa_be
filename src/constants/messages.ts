@@ -1,10 +1,7 @@
 export const ERROR_RESPONSE_MESSAGES = {
   ACCESS_TOKEN_IS_REQUIRED: 'Access token is required',
-<<<<<<< HEAD
-=======
   ACCOUNT_NOT_FOUND: 'Account not found',
   ROLE_NOT_FOUND: 'Role not found',
->>>>>>> main
   RESOURCE_CREATION_FAILED: 'Resource creation failed',
   ROLES_CREATION_FAILED: 'Roles creation failed',
   NO_UPDATE_FIELDS_PROVIDED: 'No data to update resource',
@@ -72,7 +69,6 @@ export const ACCOUNT_MESSAGES = {
 } as const
 export const ROLE_MESSAGES = {
   DEFAULT_ROLE_NOT_FOUND: 'Default role not found',
-<<<<<<< HEAD
   ROLE_IS_REQUIRE: 'Role is require',
   ROLE_MUST_BE_A_STRING: 'Role must be string',
   ROLE_CANNOT_CONTAIN_SPECIAL_CHARACTER: 'Role cannot contain special character',
@@ -94,13 +90,3 @@ export const RESOURCE_MESSAGE = {
   RESOURCE_NOT_FOUND: 'Resource not found',
   PERMISSION_MUST_BE_BOOLEAN: 'permission must be boolean'
 } as const
-=======
-  ROLE_IS_REQUIRED: 'Role is required',
-  ROLE_MUST_NOT_HAVE_SPECIAL_CHARACTER: 'ROLE_MUST_NOT_HAVE_SPECIAL_CHARACTER'
-} as const
-export const RESOURCE_MESSAGE = {} as const
-export const MEDIAS_MESSAGES = {
-  UPLOAD_SUCCESS: 'Upload successfully',
-  NOT_FOUND: 'Not found'
-} as const
->>>>>>> main
