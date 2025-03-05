@@ -1,4 +1,4 @@
-import { Request } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { JsonWebTokenError } from 'jsonwebtoken'
 import { capitalize } from 'lodash'
@@ -7,6 +7,8 @@ import HTTP_STATUS from '~/constants/httpStatus'
 import { ACCOUNT_MESSAGES, ERROR_RESPONSE_MESSAGES } from '~/constants/messages'
 import accountsParamsSchema from '~/constants/paramSchema'
 import { ErrorWithStatus } from '~/models/Error'
+import { TokenPayload } from '~/models/request/Account.requests'
+import { AccountVerify } from '~/models/schema/Account.schema'
 import databaseService from '~/services/database.services'
 import { verifyAccessToken } from '~/utils/common'
 import { verifyToken } from '~/utils/jwt'
@@ -174,4 +176,83 @@ export const resetPasswordValidator = validate(
     },
     ['body']
   )
+)
+
+export const verifiedAccountValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { verify } = req.decoded_authorization as TokenPayload
+  if (verify !== AccountVerify.VERIFIED) {
+    return next(
+      new ErrorWithStatus({
+        message: ACCOUNT_MESSAGES.ACCOUNT_NOT_VERIFIED,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}
+
+export const updateMeValidator = validate(
+  checkSchema({
+    name: {
+      trim: true,
+      isString: {
+        errorMessage: ACCOUNT_MESSAGES.NAME_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 1,
+          max: 100
+        },
+        errorMessage: ACCOUNT_MESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_100
+      },
+      optional: true
+    },
+    phone_number: {
+      trim: true,
+      matches: {
+        options: /^(84|0[3|5|7|8|9])+([0-9]{8})$/,
+        errorMessage: ACCOUNT_MESSAGES.PHONE_NUMBER_IS_INVALID
+      },
+      optional: true
+    },
+    address: {
+      trim: true,
+      isString: {
+        errorMessage: ACCOUNT_MESSAGES.ADDRESS_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 1,
+          max: 255
+        },
+        errorMessage: ACCOUNT_MESSAGES.ADDRESS_LENGTH_MUST_BE_FROM_1_TO_255
+      },
+      optional: true
+    },
+    date_of_birth: {
+      trim: true,
+      isISO8601: {
+        options: {
+          strict: true,
+          strictSeparator: true
+        },
+        errorMessage: ACCOUNT_MESSAGES.DATE_OF_BIRTH_MUST_BE_ISO8601
+      },
+      optional: true
+    },
+    avatar: {
+      trim: true,
+      isString: {
+        errorMessage: ACCOUNT_MESSAGES.AVATAR_MUST_BE_A_STRING
+      },
+      isLength: {
+        options: {
+          min: 1,
+          max: 255
+        },
+        errorMessage: ACCOUNT_MESSAGES.AVATAR_LENGTH_MUST_BE_FROM_1_TO_255
+      },
+      optional: true
+    }
+  })
 )

@@ -1,12 +1,16 @@
 import { Router } from 'express'
 import {
   forgotPasswordController,
+  getMeController,
   loginController,
   logoutController,
+  oauthController,
+  oauthFacebookController,
   refreshTokenController,
   registerController,
   resendVerifyEmailController,
   resetPasswordController,
+  updateMeController,
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/accounts.controllers'
@@ -18,8 +22,12 @@ import {
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  updateMeValidator,
+  verifiedAccountValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/accounts.middleware'
+import { filterMiddleware } from '~/middlewares/common.middleware'
+import { UpdateMeReqBody } from '~/models/request/Account.requests'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const accountsRouter = Router()
@@ -131,5 +139,45 @@ accountsRouter.post(
 
 accountsRouter.post('/reset-password', resetPasswordValidator, wrapRequestHandler(resetPasswordController))
 
-accountsRouter.get('/me')
+/**
+ * Description. OAuth with Google
+ * Path: /oauth/google
+ * Method: GET
+ * Query: { code: string }
+ */
+
+accountsRouter.get('/oauth/google', wrapRequestHandler(oauthController))
+
+/**
+ * Description. OAuth with Facebook
+ * Path: /oauth/facebook
+ * Method: GET
+ * Query: { code: string }
+ */
+
+accountsRouter.get('/oauth/facebook', wrapRequestHandler(oauthFacebookController))
+
+/**
+ * Description. Get my profile
+ * Path: /me
+ * Method: GET
+ * Headers: { Authorization: Bearer <access_token> }
+ */
+accountsRouter.get('/me', accessTokenValidator, wrapRequestHandler(getMeController))
+
+/**
+ * Description. Update my profile
+ * Path: /me
+ * Method: PUT
+ * Headers: { Authorization: Bearer <access_token> }
+ * Body: { name: string, phone_number: string, address: string, date_of_birth: ISOString, avatar: string }
+ */
+accountsRouter.patch(
+  '/me',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  updateMeValidator,
+  filterMiddleware<UpdateMeReqBody>(['name', 'phone_number', 'address', 'date_of_birth', 'avatar']),
+  wrapRequestHandler(updateMeController)
+)
 export default accountsRouter

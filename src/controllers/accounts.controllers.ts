@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { ObjectId } from 'mongodb'
+import { envConfig } from '~/constants/config'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { ACCOUNT_MESSAGES, ERROR_RESPONSE_MESSAGES, SUCCESS_RESPONSE_MESSAGE } from '~/constants/messages'
 import {
@@ -11,6 +12,7 @@ import {
   RegisterReqBody,
   ResetPasswordReqBody,
   TokenPayload,
+  UpdateMeReqBody,
   VerifyEmailReqBody,
   VerifyForgotPasswordReqBody
 } from '~/models/request/Account.requests'
@@ -152,4 +154,41 @@ export const resetPasswordController = async (
   const { password } = req.body
   const result = await accountsService.resetPassword(account_id, password)
   res.json(result)
+}
+
+export const oauthController = async (req: Request, res: Response, next: NextFunction) => {
+  const { code } = req.query
+  const result = await accountsService.oauth(code as string)
+  const urlRedirect = `${envConfig.clientRedirectGoogleCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  return res.redirect(urlRedirect)
+}
+
+export const oauthFacebookController = async (req: Request, res: Response, next: NextFunction) => {
+  const { code } = req.query
+  const result = await accountsService.oauthFacebook(code as string)
+  const urlRedirect = `${envConfig.clientRedirectFacebookCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  return res.redirect(urlRedirect)
+}
+
+export const getMeController = async (req: Request, res: Response, next: NextFunction) => {
+  const { account_id } = req.decoded_authorization as TokenPayload
+  const account = await accountsService.getMe(account_id)
+  res.json({
+    message: SUCCESS_RESPONSE_MESSAGE.GET_ME_SUCCESS,
+    result: account
+  })
+}
+
+export const updateMeController = async (
+  req: Request<ParamsDictionary, any, UpdateMeReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { account_id } = req.decoded_authorization as TokenPayload
+  const { body } = req
+  const result = await accountsService.updateMe(account_id, body)
+  res.json({
+    message: SUCCESS_RESPONSE_MESSAGE.UPDATE_ME_SUCCESS,
+    result
+  })
 }

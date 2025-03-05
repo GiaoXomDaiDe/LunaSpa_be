@@ -80,7 +80,7 @@ class ResourcesService {
         returnDocument: 'after'
       }
     )
-    console.log(result)
+    // console.log(result)
     if (result === null) {
       throw new ErrorWithStatus({
         message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,

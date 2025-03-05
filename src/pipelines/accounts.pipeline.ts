@@ -23,7 +23,7 @@ export function buildUserRolesPipeline(userId?: ObjectId) {
     {
       $lookup: {
         from: 'roles',
-        let: { role_ids: '$role_id' },
+        let: { role_ids: ['$role_id'] },
         pipeline: [
           {
             $match: {
@@ -63,7 +63,6 @@ export function buildUserRolesPipeline(userId?: ObjectId) {
         roleDetails: 0, // Ẩn trường trung gian
         role_id: 0, // Ẩn mảng role_id gốc
         password: 0,
-        verify: 0,
         email_verify_token: 0,
         forgot_password_token: 0
       }

@@ -26,5 +26,18 @@ export const envConfig = {
   awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
   awsRegion: process.env.AWS_REGION as string,
   sesFromAddress: process.env.SES_FROM_ADDRESS as string,
-  clientUrl: process.env.CLIENT_URL as string
+  clientUrl: process.env.CLIENT_URL as string,
+  googleClientId: process.env.GOOGLE_CLIENT_ID as string,
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI as string,
+  clientRedirectGoogleCallback: process.env.CLIENT_REDIRECT_GOOGLE_CALLBACK as string,
+  clientRedirectFacebookCallback: process.env.CLIENT_REDIRECT_FACEBOOK_CALLBACK as string,
+  facebookClientId: process.env.FACEBOOK_CLIENT_ID as string,
+  facebookClientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
+  facebookRedirectUri: process.env.FACEBOOK_REDIRECT_URI as string,
+  facebookAppId: process.env.FACEBOOK_APP_ID as string,
+  s3Bucket: process.env.S3_BUCKET as string,
+  s3Region: process.env.S3_REGION as string,
+  s3AccessKeyId: process.env.S3_ACCESS_KEY_ID as string,
+  s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY as string
 }

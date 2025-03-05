@@ -25,7 +25,9 @@ export const SUCCESS_RESPONSE_MESSAGE = {
   ROLES_UPDATED_SUCCESSFULLY: 'Role updated successfully',
   ROLES_DELETED_SUCCESSFULLY: 'Role deleted successfully',
   RESOURCE_ADDED_TO_ROLE_SUCCESSFULLY: 'Resource added to role successfully',
-  REFRESH_TOKEN_SUCCESS: 'Refresh token successfully'
+  REFRESH_TOKEN_SUCCESS: 'Refresh token successfully',
+  GET_ME_SUCCESS: 'Get my profile successfully',
+  UPDATE_ME_SUCCESS: 'Update my profile successfully'
 } as const
 export const ACCOUNT_MESSAGES = {
   EMAIL_IS_REQUIRED: 'Email is required',
@@ -33,6 +35,9 @@ export const ACCOUNT_MESSAGES = {
   EMAIL_LENGTH_MUST_BE_FROM_10_TO_50: 'Email length must be from 10 to 50',
   EMAIL_ALREADY_EXISTS: 'Email already exists',
   EMAIL_ALREADY_VERIFIED_BEFORE: 'Email already verified before',
+  NAME_IS_REQUIRED: 'Name is required',
+  NAME_MUST_BE_A_STRING: 'Name must be a string',
+  NAME_LENGTH_MUST_BE_FROM_1_TO_100: 'Name length must be from 1 to 100',
   PASSWORD_IS_REQUIRED: 'Password is required',
   PASSWORD_MUST_BE_A_STRING: 'Password must be a string',
   PASSWORD_LENGTH_MUST_BE_FROM_5_TO_50: 'Password length must be from 5 to 50',
@@ -52,7 +57,16 @@ export const ACCOUNT_MESSAGES = {
   FORGOT_PASSWORD_TOKEN_IS_REQUIRED: 'Forgot password token is required',
   INVALID_FORGOT_PASSWORD_TOKEN: 'Invalid forgot password token',
   VERIFY_FORGOT_PASSWORD_SUCCESS: 'Verify forgot password successfully',
-  RESET_PASSWORD_SUCCESS: 'Reset password successfully'
+  RESET_PASSWORD_SUCCESS: 'Reset password successfully',
+  GMAIL_NOT_VERIFIED: 'Google account not verified',
+  EMAIL_NOT_FOUND: 'Email not found',
+  ACCOUNT_NOT_VERIFIED: 'Account not verified',
+  PHONE_NUMBER_IS_INVALID: 'Phone number is invalid',
+  DATE_OF_BIRTH_MUST_BE_ISO8601: 'Date of birth must be ISO8601',
+  ADDRESS_MUST_BE_A_STRING: 'Address must be a string',
+  ADDRESS_LENGTH_MUST_BE_FROM_1_TO_255: 'Address length must be from 1 to 255',
+  AVATAR_MUST_BE_A_STRING: 'Avatar must be a string',
+  AVATAR_LENGTH_MUST_BE_FROM_1_TO_255: 'Avatar length must be from 1 to 255'
 } as const
 export const ROLE_MESSAGES = {
   DEFAULT_ROLE_NOT_FOUND: 'Default role not found',
@@ -60,3 +74,7 @@ export const ROLE_MESSAGES = {
   ROLE_MUST_NOT_HAVE_SPECIAL_CHARACTER: 'ROLE_MUST_NOT_HAVE_SPECIAL_CHARACTER'
 } as const
 export const RESOURCE_MESSAGE = {} as const
+export const MEDIAS_MESSAGES = {
+  UPLOAD_SUCCESS: 'Upload successfully',
+  NOT_FOUND: 'Not found'
+} as const
