@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { ERROR_RESPONSE_MESSAGES, ROLE_MESSAGES } from '~/constants/messages'
+import { ERROR_RESPONSE_MESSAGES, RESOURCE_MESSAGE, ROLE_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import { RoleReqBody } from '~/models/request/Role.request'
 import Roles, { ResourcePermission } from '~/models/schema/Role.schema'
@@ -128,7 +128,7 @@ class RolesService {
     })
     if (!resource) {
       throw new ErrorWithStatus({
-        message: ERROR_RESPONSE_MESSAGES.RESOURCE_NOT_FOUND,
+        message: RESOURCE_MESSAGE.RESOURCE_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
       })
     }

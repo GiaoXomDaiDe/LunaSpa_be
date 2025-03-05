@@ -1,5 +1,4 @@
 export const ERROR_RESPONSE_MESSAGES = {
-  RESOURCE_NOT_FOUND: 'Resource not found',
   ACCESS_TOKEN_IS_REQUIRED: 'Access token is required',
   RESOURCE_CREATION_FAILED: 'Resource creation failed',
   ROLES_CREATION_FAILED: 'Roles creation failed',
@@ -50,14 +49,19 @@ export const ROLE_MESSAGES = {
   ROLE_CANNOT_CONTAIN_SPECIAL_CHARACTER: 'Role cannot contain special character',
   ROLE_IS_EXIST: 'Role is existed',
   ROLE_INVALID_RESOURCE: 'Invalid resource',
-  ROLE_RESOURCE_CANNOT_EMPTY: 'Resource cannot empty'
+  ROLE_RESOURCE_CANNOT_EMPTY: 'Resource cannot empty',
+  ROLE_CONTAIN_ADMIN: 'Cannot edit role admin',
+  RESOURCE_ALREADY_EXISTS_IN_ROLE: 'Resource already exists in role'
 } as const
 export const RESOURCE_MESSAGE = {
-  RESSOURCE_IS_REQUIRE: 'Resource is require',
-  RESOURCE_IS_EXIST: 'Resource is existed',
+  RESOURCE_IS_REQUIRE: 'Resource is require',
+  RESOURCE_IS_EXISTED: 'Resource is existed',
   RESOURCE_MUST_BE_A_STRING: 'Resource must be string',
   RESSOURCE_CANNOT_CONTAIN_SPECIAL_CHARACTER: 'Resource cannot contain special character',
   RESOURCE_DESCRIPTION_IS_REQUIRE: 'Resource description is require',
   RESOURCE_DESCRIPTION_MUST_BE_A_STRING: 'Resource description must be string',
-  RESOURCE_DESCRIPTION_CANNOT_LONGER_THAN_255: 'Resource description cannot longer than 255'
+  RESOURCE_DESCRIPTION_CANNOT_LONGER_THAN_255: 'Resource description cannot longer than 255',
+  RESOURCE_IS_ARRAY: 'Resource must be an array',
+  RESOURCE_NOT_FOUND: 'Resource not found',
+  PERMISSION_MUST_BE_BOOLEAN: 'permission must be boolean'
 } as const

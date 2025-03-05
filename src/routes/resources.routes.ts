@@ -6,6 +6,7 @@ import {
   getResourceController,
   updateResourceController
 } from '~/controllers/resources.controllers'
+import { accessTokenValidator } from '~/middlewares/accounts.middleware'
 import { createResourceValidator, updateResourceValidator } from '~/middlewares/resources.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -17,7 +18,7 @@ const resourcesRouter = Router()
  * Headers: access_token: Bearer token
  * Body: <none>
  */
-resourcesRouter.get('/', wrapRequestHandler(getAllResourcesController))
+resourcesRouter.get('/', accessTokenValidator, wrapRequestHandler(getAllResourcesController))
 
 /**
  * Description. Get Resource
@@ -26,7 +27,7 @@ resourcesRouter.get('/', wrapRequestHandler(getAllResourcesController))
  * Headers: access_token: Bearer token
  * Body: <none>
  */
-resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
+resourcesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getResourceController))
 
 /**
  * Description. Create Resource
@@ -42,7 +43,7 @@ resourcesRouter.get('/:id', wrapRequestHandler(getResourceController))
  *      check description bắt buộc có, kiểu string, tối đa 255 ký tự,
  *    wrapRequestHandler(getResourceController)
  * */
-resourcesRouter.post('/', createResourceValidator, wrapRequestHandler(createResourceController))
+resourcesRouter.post('/', accessTokenValidator, createResourceValidator, wrapRequestHandler(createResourceController))
 
 /**
  * Description. Update Resource
@@ -60,7 +61,7 @@ resourcesRouter.post('/', createResourceValidator, wrapRequestHandler(createReso
  *      xong add thằng resource vào request
  *    wrapRequestHandler(getResourceController)
  */
-resourcesRouter.put('/:id', updateResourceValidator, wrapRequestHandler(updateResourceController))
+resourcesRouter.put('/:id', accessTokenValidator, updateResourceValidator, wrapRequestHandler(updateResourceController))
 
 /**
  * Description. Delete Resource
@@ -72,6 +73,6 @@ resourcesRouter.put('/:id', updateResourceValidator, wrapRequestHandler(updateRe
  *    checkPermission('delete', 'resource')
  *    wrapRequestHandler(getResourceController)
  */
-resourcesRouter.delete('/:id', wrapRequestHandler(deleteResourceController))
+resourcesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteResourceController))
 
 export default resourcesRouter

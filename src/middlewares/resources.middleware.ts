@@ -8,7 +8,7 @@ export const createResourceValidator = validate(
     {
       resource_name: {
         notEmpty: {
-          errorMessage: RESOURCE_MESSAGE.RESSOURCE_IS_REQUIRE
+          errorMessage: RESOURCE_MESSAGE.RESOURCE_IS_REQUIRE
         },
         isString: {
           errorMessage: RESOURCE_MESSAGE.RESOURCE_MUST_BE_A_STRING
@@ -18,7 +18,6 @@ export const createResourceValidator = validate(
           errorMessage: RESOURCE_MESSAGE.RESSOURCE_CANNOT_CONTAIN_SPECIAL_CHARACTER
         },
         customSanitizer: {
-          // Custom sanitizer
           options: (value: string) => {
             return value.replace(/\b\w/, (char) => char.toUpperCase())
           }
@@ -46,7 +45,7 @@ export const updateResourceValidator = validate(
     {
       resource_name: {
         notEmpty: {
-          errorMessage: RESOURCE_MESSAGE.RESSOURCE_IS_REQUIRE
+          errorMessage: RESOURCE_MESSAGE.RESOURCE_IS_REQUIRE
         },
         isString: {
           errorMessage: RESOURCE_MESSAGE.RESOURCE_MUST_BE_A_STRING
@@ -67,7 +66,7 @@ export const updateResourceValidator = validate(
           options: async (values: string, { req }) => {
             const resource = await databaseService.resources.findOne({ resource_name: values })
             if (resource) {
-              return Promise.reject(RESOURCE_MESSAGE.RESOURCE_IS_EXIST)
+              throw new Error(RESOURCE_MESSAGE.RESOURCE_IS_EXISTED)
             }
           }
         }
