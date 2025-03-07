@@ -7,7 +7,7 @@ export enum AccountVerify {
   BLOCKED = 3
 }
 
-export type AccountType = {
+export interface AccountType {
   _id?: ObjectId
   email: string
   password: string
@@ -32,7 +32,7 @@ export default class Account {
   name: string
   phone_number: string
   address: string
-  date_of_birth?: Date
+  date_of_birth: Date
   avatar: string
   verify: AccountVerify
   created_at: Date
