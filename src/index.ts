@@ -6,13 +6,17 @@ import swaggerUi from 'swagger-ui-express'
 import { envConfig } from '~/constants/config'
 import { defaultErrorHandler } from '~/middlewares/error.middleware'
 import accountsRouter from '~/routes/accounts.routes'
+import bookingsRouter from '~/routes/bookings.routes'
+import branchesRouter from '~/routes/branches.routes'
 import mediasRouter from '~/routes/media.routes'
 import resourcesRouter from '~/routes/resources.routes'
 import rolesRouter from '~/routes/roles.routes'
+import servicesRouter from '~/routes/services.routes'
+import staffSlotsRouter from '~/routes/staff-slots.routes'
+import staffRouter from '~/routes/staff.routes'
 import staticRouter from '~/routes/static.routes'
 import databaseService from '~/services/database.services'
 import { initUploadFolder } from '~/utils/file'
-import '~/utils/s3'
 
 const options: swaggerJSDoc.Options = {
   definition: {
@@ -42,6 +46,11 @@ app.use('/accounts', accountsRouter)
 app.use('/resources', resourcesRouter)
 app.use('/roles', rolesRouter)
 app.use('/medias', mediasRouter)
+app.use('/services', servicesRouter)
+app.use('/branches', branchesRouter)
+app.use('/staff', staffRouter)
+app.use('/staff-slots', staffSlotsRouter)
+app.use('/bookings', bookingsRouter)
 app.use(defaultErrorHandler as ErrorRequestHandler)
 // app.use('/static', express.static(UPLOAD_DIR))
 app.use('/static', staticRouter)
