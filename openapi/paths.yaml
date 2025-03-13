@@ -11,14 +11,11 @@ info:
 externalDocs:
   description: Find out more about Swagger
   url: http://swagger.io
-#Determine server port
 servers:
   - url: http://localhost:4000
-
-tags: #Tag for all functions
+tags:
   - name: accounts
     description: accounts functions
-  
 paths:
   /accounts/login:
     post:
@@ -27,7 +24,6 @@ paths:
       summary: Login
       description: Login
       operationId: login
-      
       requestBody:
         description: Login information
         content:
@@ -36,7 +32,7 @@ paths:
               $ref: './components.yaml#/components/schemas/LoginBody'
         required: true
       responses:
-        200:
+        '200':
           description: Login successfully
           content:
             application/json:
@@ -58,22 +54,22 @@ paths:
                       user:
                         type: object
                         properties:
-                          _id: 
+                          _id:
                             type: string
                             example: "1243879"
                           email:
                             type: string
                             example: "wxrdie@example.com"
-                          name: 
+                          name:
                             type: string
-                            example: "Wxrdie"                          
+                            example: "Wxrdie"
                           phone_number:
                             type: string
                             example: "+1234567890"
                           address:
                             type: string
                             example: "1234 Elm Street, Springfield, IL, 62704"
-                          date_of_birth: #Can be null
+                          date_of_birth:
                             type: string
                             format: date-time
                             nullable: true
@@ -82,7 +78,7 @@ paths:
                             type: string
                             format: date-time
                             example: "2023-01-01T12:00:00Z"
-                          updated_at: #Can be null
+                          updated_at:
                             type: string
                             format: date-time
                             nullable: true
@@ -96,8 +92,7 @@ paths:
                               role_name:
                                 type: string
                                 example: "user"
-
-        422: #Happens when wrong username
+        '422':
           description: User not found
           content:
             application/json:
@@ -114,7 +109,7 @@ paths:
                     type: object
                     nullable: true
                     properties: {}
-        400: #Happens when wrong password
+        '400':
           description: Invalid password
           content:
             application/json:
@@ -131,7 +126,6 @@ paths:
                     type: object
                     nullable: true
                     properties: {}
-    
   /accounts/logout:
     post:
       tags:
@@ -139,7 +133,6 @@ paths:
       summary: Logout
       description: Logout
       operationId: Logout
-      
       requestBody:
         description: Logout
         content:
@@ -148,17 +141,17 @@ paths:
               $ref: './components.yaml#/components/schemas/LogoutBody'
         required: true
       responses:
-        200:
+        '200':
           description: Logout successfully
           content:
             application/json:
               schema:
                 type: object
-                properties:                  
+                properties:
                   message:
                     type: string
-                    example: "Logout successfully"                  
-        401: #Happens when no refreshToken found
+                    example: "Logout successfully"
+        '401':
           description: User unauthorized
           content:
             application/json:
@@ -168,17 +161,13 @@ paths:
                   message:
                     type: string
                     example: "refresh_token not found"
-                  # result:
-                  #   type: object
-                  #   properties: {}       
-      
   /accounts/register:
     post:
       tags:
         - accounts
       summary: Register
       description: Register new user
-      operationId: Register      
+      operationId: Register
       requestBody:
         description: Register
         content:
@@ -187,7 +176,7 @@ paths:
               $ref: './components.yaml#/components/schemas/RegisterBody'
         required: true
       responses:
-        200:
+        '200':
           description: Register successfully
           content:
             application/json:
@@ -209,22 +198,22 @@ paths:
                       user:
                         type: object
                         properties:
-                          _id: 
+                          _id:
                             type: string
                             example: "1243879"
                           email:
                             type: string
                             example: "wxrdie@example.com"
-                          name: 
+                          name:
                             type: string
-                            example: "Wxrdie"                          
+                            example: "Wxrdie"
                           phone_number:
                             type: string
                             example: "+1234567890"
                           address:
                             type: string
                             example: "1234 Elm Street, Springfield, IL, 62704"
-                          date_of_birth: #Can be null
+                          date_of_birth:
                             type: string
                             format: date-time
                             nullable: true
@@ -233,7 +222,7 @@ paths:
                             type: string
                             format: date-time
                             example: "2023-01-01T12:00:00Z"
-                          updated_at: #Can be null
+                          updated_at:
                             type: string
                             format: date-time
                             nullable: true
@@ -247,3 +236,34 @@ paths:
                               role_name:
                                 type: string
                                 example: "user"
+        '422':
+          description: Validation error - Email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Validation error"
+                  errors:
+                    type: object
+                    properties:
+                      email:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: "field"
+                          value:
+                            type: string
+                            example: "trollergamehuydk2@gmail.com"
+                          msg:
+                            type: string
+                            example: "Email already exists"
+                          path:
+                            type: string
+                            example: "email"
+                          location:
+                            type: string
+                            example: "body"

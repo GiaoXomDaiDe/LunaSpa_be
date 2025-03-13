@@ -9,14 +9,12 @@ components:
         password:
           type: string
           example: Duoc123!
-
     LogoutBody:
       type: object
       properties:
         refreshToken:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2...
-
     RegisterBody:
       type: object
       properties:
@@ -29,18 +27,6 @@ components:
         confirm_password:
           type: string
           example: Nguyenphathuy@123
-
-    #Bo khong dung nua
-    # SuccessAuthentication:
-    #   type: object
-    #   properties:
-    #     access_token:
-    #       type: string
-    #       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjRiZTBhZDJlNDNkMjQ2NDM5NGZlZWRiIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE2OTEzODMyMjYsImV4cCI6MTY5MTQ2OTYyNn0.HTLX20cB7_z0c9c8FDg3MIx6RJEELHHlmJNZa94ku-o
-    #     refresh_token:
-    #       type: string
-    #       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjRiZTBhZDJlNDNkMjQ2NDM5NGZlZWRiIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE2OTEzODMyMjYsImV4cCI6MTcwMDAyMzIyNn0.bFnaBfxWl-Q48HCwAeMpNzZwTO9LEjcBd7Zyipjqr64
-
     User:
       type: object
       properties:
@@ -67,7 +53,7 @@ components:
           format: ISO8601
           example: 2023-03-08T12:00:00Z
         verify:
-          $ref: '#/components/schemas/UserVerifyStatus'
+          $ref: './components.yaml#/components/schemas/UserVerifyStatus'
         twitter_circle:
           type: array
           items:
@@ -92,12 +78,17 @@ components:
         cover_photo:
           type: string
           example: 'http:localhost:4000/images/avatars/johndoe.jpg'
-    
     UserVerifyStatus:
       type: number
-      enum: [Unverified, Verified, Banned]
+      enum:
+        - 0
+        - 1
+        - 2
       example: 1
-  
+      description: |
+        0 - Unverified
+        1 - Verified
+        2 - Banned
   securitySchemes:
     BearerAuth:
       type: http

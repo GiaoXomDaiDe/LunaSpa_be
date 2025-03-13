@@ -9,6 +9,7 @@ import Roles from '~/models/schema/Role.schema'
 config()
 
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.jsjbw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
+//const uri = `mongodb+srv://GiaoXomDaiDe:hhycgXWalDPaUxDC@cluster0.jsjbw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
 
 class DatabaseService {
   private client: MongoClient
