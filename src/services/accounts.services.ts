@@ -186,7 +186,7 @@ class AccountsService {
     return Boolean(account)
   }
   async register(payload: RegisterReqBody) {
-    const defaultRole = await rolesService.getDefaultRoles('user')
+    const defaultRole = await rolesService.getDefaultRoles('User')
     const account_id = new ObjectId()
     const email_verify_token = await this.signEmailVerifyToken({
       account_id: account_id.toString(),

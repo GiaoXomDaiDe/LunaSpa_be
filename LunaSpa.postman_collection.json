@@ -16,7 +16,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/resources?limit=5&page=1",
+							"raw": "{{host}}/resources?limit=10&page=1",
 							"host": [
 								"{{host}}"
 							],
@@ -26,7 +26,7 @@
 							"query": [
 								{
 									"key": "limit",
-									"value": "5"
+									"value": "10"
 								},
 								{
 									"key": "page",
@@ -34,7 +34,7 @@
 								},
 								{
 									"key": "",
-									"value": null,
+									"value": "",
 									"disabled": true
 								}
 							]
@@ -67,7 +67,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"resource_name\": \"69huydamdang\",\r\n    \"description\": \"\"\r\n}",
+							"raw": "{\r\n    \"resource_name\": \"Conditions\",\r\n    \"description\": \"\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -94,7 +94,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"resource_name\": true,\r\n    \"description\": \"hahaha\"\r\n}",
+							"raw": "{\r\n    \"resource_name\": \"Service categories\",\r\n    \"description\": \"\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -138,12 +138,30 @@
 			"name": "Role",
 			"item": [
 				{
+					"name": "Get Role",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/roles/{{role_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"roles",
+								"{{role_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get All Roles",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/roles?page=1&limit=10",
+							"raw": "{{host}}/roles?limit=5&page=1",
 							"host": [
 								"{{host}}"
 							],
@@ -152,31 +170,13 @@
 							],
 							"query": [
 								{
-									"key": "page",
-									"value": "1"
+									"key": "limit",
+									"value": "5"
 								},
 								{
-									"key": "limit",
-									"value": "10"
+									"key": "page",
+									"value": "1"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Role",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{host}}/roles/{{roles_id}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"roles",
-								"{{roles_id}}"
 							]
 						}
 					},
@@ -189,7 +189,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": 1,\r\n    \"resources\": [\r\n        {\r\n            \"resource_id\": \"67bf2672c85168a423842619\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2e91d29bdb85bedb392b\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2eabd29bdb85bedb392c\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        }\r\n        \r\n    ]\r\n}",
+							"raw": "{\r\n    \"name\": \"Stata\",\r\n    \"resources\": [\r\n        {\r\n            \"resource_id\": \"67bf2e91d29bdb85bedb392b\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf27749c2be163f7c43378\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67cea0c8879dc6be2484b0c8\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67cea117879dc6be2484b0c9\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67cea6c435d5bfd4fb4576e6\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        }\r\n        \r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -216,7 +216,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"admin\",\r\n    \"resources\": [\r\n        {\r\n            \"resource_id\": \"67bf2672c85168a423842619\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2e91d29bdb85bedb392b\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf2eabd29bdb85bedb392c\",\r\n            \"create\": true,\r\n            \"read\": true,\r\n            \"update\": true,\r\n            \"delete\": true\r\n        }\r\n        \r\n    ]\r\n}",
+							"raw": "{\r\n    \"name\": \"gege\",\r\n    \"resources\": [\r\n        {\r\n            \"resource_id\": \"67bf2e91d29bdb85bedb392b\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67bf27749c2be163f7c43378\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67cea0c8879dc6be2484b0c8\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67cea117879dc6be2484b0c9\",\r\n            \"create\": false,\r\n            \"read\": true,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        },\r\n        {\r\n            \"resource_id\": \"67cea6c435d5bfd4fb4576e6\",\r\n            \"create\": false,\r\n            \"read\": false,\r\n            \"update\": false,\r\n            \"delete\": false\r\n        }\r\n        \r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -224,13 +224,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/roles/{{roles_id}}",
+							"raw": "{{host}}/roles/{{role_id}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"roles",
-								"{{roles_id}}"
+								"{{role_id}}"
 							]
 						}
 					},
@@ -242,13 +242,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{host}}/roles/{{roles_id}}",
+							"raw": "{{host}}/roles/{{role_id}}",
 							"host": [
 								"{{host}}"
 							],
 							"path": [
 								"roles",
-								"{{roles_id}}"
+								"{{role_id}}"
 							]
 						}
 					},
@@ -326,7 +326,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"trollergamehuydk@gmail.com\",\r\n  \"password\": \"Nguyenphathuy@123\",\r\n  \"confirm_password\": \"Nguyenphathuy@123\"\r\n}",
+							"raw": "{\r\n  \"email\": \"trollergamehuy4523e@gmail.com\",\r\n  \"password\": \"Nguyenphathuy@123\",\r\n  \"confirm_password\": \"Nguyenphathuy@123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -603,7 +603,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"trollergamehuydk@gmail.com\",\r\n  \"password\": \"Nguyenphathuy@123\"\r\n}",
+							"raw": "{\r\n    \"email\": \"trollergamehuydk@gmail.com\",\r\n    \"password\": \"Huy@12345\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1065,8 +1065,11 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"exec": [],
-								"type": "text/javascript"
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -1075,7 +1078,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"forgot_password_token\": \"{{forgot_password_token}}\",\r\n    \"password\": \"Nguyenphathuy@1234\",\r\n    \"confirm_password\": \"Nguyenphathuy@1234\"\r\n}",
+							"raw": "{\r\n    \"forgot_password_token\": \"{{forgot_password_token}}\",\r\n    \"password\": \"{{password}}\",\r\n    \"confirm_password\": \"Huy@12345\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1120,7 +1123,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\" : \"HuyDepTrai\",\r\n    \"bio\": \"Toi la gay\"\r\n}",
+							"raw": "{\r\n    \"name\": \"user67c12dbb63af1079a9ea1aed\",\r\n    \"phone_number\": \"\",\r\n    \"address\": \"\",\r\n    \"date_of_birth\": \"2025-02-28T03:30:03.060Z\",\r\n    \"avatar\": \"\",\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1190,6 +1193,1049 @@
 							"path": [
 								"medias",
 								"upload-image"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product Category",
+			"item": [
+				{
+					"name": "Get All Product Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/product-categories",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"product-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/product-categories/{{product_category_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"product-categories",
+								"{{product_category_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test\",\r\n    \"description\" : \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/product-categories",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"product-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product Category",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test again\",\r\n    \"description\" : \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/product-categories/{{product_category_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"product-categories",
+								"{{product_category_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product Category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/product-categories/{{product_category_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"product-categories",
+								"{{product_category_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Condition",
+			"item": [
+				{
+					"name": "Get all Conditions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/conditions/?search=h&page=1&limit=10",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"conditions",
+								""
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "h"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Condition",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/conditions/{{condition_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"conditions",
+								"{{condition_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Condition",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test\",\r\n    \"description\" : \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/conditions/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"conditions",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Condition",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test again\",\r\n    \"description\" : \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/conditions/{{condition_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"conditions",
+								"{{condition_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Condition",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/conditions/{{condition_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"conditions",
+								"{{condition_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Device",
+			"item": [
+				{
+					"name": "Get All Devices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/devices",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"devices"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "a",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Device",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/devices/{{device_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"devices",
+								"{{device_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test again\",\r\n    \"description\" : \"test\",\r\n    \"status\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/devices",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Device",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\r\n    \"status\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/devices/{{device_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"devices",
+								"{{device_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete Device",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/devices/{{device_id}}/soft-delete",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"devices",
+								"{{device_id}}",
+								"soft-delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Device",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/devices/{{device_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"devices",
+								"{{device_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Product",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/products?max_price=2500000&min_price=0&category_id=67cd73028d84f38f7341a07e&discount_price=10000000",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "max_price",
+									"value": "2500000"
+								},
+								{
+									"key": "min_price",
+									"value": "0"
+								},
+								{
+									"key": "category_id",
+									"value": "67cd73028d84f38f7341a07e"
+								},
+								{
+									"key": "discount_price",
+									"value": "10000000"
+								},
+								{
+									"key": "quantity",
+									"value": "1000",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/products/{{product_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"{{product_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Test\",\r\n    \"description\": \"test\",\r\n    \"category_id\": \"{{product_category_id}}\",\r\n    \"price\": 120000,\r\n    \"discount_price\": 100000,\r\n    \"quantity\": 100,\r\n    \"images\":[\r\n        \"https://lunaspa.s3.ap-southeast-1.amazonaws.com/fc5f14d41d91e0a559482bb00.jpg\"\r\n    ]\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/products/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Test223\",\r\n    \"description\": \"test\",\r\n    \"category_id\": \"{{product_category_id}}\",\r\n    \"price\": 120000,\r\n    \"discount_price\": 100000,\r\n    \"quantity\": 100,\r\n    \"images\":[\r\n        \"https://lunaspa.s3.ap-southeast-1.amazonaws.com/fc5f14d41d91e0a559482bb00.jpg\"\r\n    ]\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/products/{{product_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"{{product_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete Product",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/products/{{product_id}}/soft-delete",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"{{product_id}}",
+								"soft-delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/products/{{product_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"{{product_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bridge Ser-Pro",
+			"item": [
+				{
+					"name": "Get All Products By ServiceId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}/products",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}",
+								"products"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "max_price",
+									"value": "2500000",
+									"disabled": true
+								},
+								{
+									"key": "min_price",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "category_id",
+									"value": "67cd73028d84f38f7341a07e",
+									"disabled": true
+								},
+								{
+									"key": "discount_price",
+									"value": "10000000",
+									"disabled": true
+								},
+								{
+									"key": "quantity",
+									"value": "1000",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product By ServiceId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}/products/{{product_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}",
+								"products",
+								"{{product_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product In Service",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": \"67cd749a8d84f38f7341a099\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}/products",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product In Service",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"service_id\":\"67cdd8528d84f38f7341a0f7\",\r\n    \"product_id\": \"67cd749a8d84f38f7341a098\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/services/products/{{service_product_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"products",
+								"{{service_product_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}/products/{{service_product_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}",
+								"products",
+								"{{service_product_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Service",
+			"item": [
+				{
+					"name": "Get All Services",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services?device_ids[]=67cd64628d84f38f7341a03d&device_ids[]=67cd64628d84f38f7341a03e",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "asc",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "massage",
+									"disabled": true
+								},
+								{
+									"key": "max_booking_count",
+									"value": "100",
+									"disabled": true
+								},
+								{
+									"key": "min_booking_count",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "max_view_count",
+									"value": "1000",
+									"disabled": true
+								},
+								{
+									"key": "min_view_count",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "service_category_id",
+									"value": "67cd79df8d84f38f7341a0cb",
+									"disabled": true
+								},
+								{
+									"key": "device_ids[]",
+									"value": "67cd64628d84f38f7341a03d"
+								},
+								{
+									"key": "device_ids[]",
+									"value": "67cd64628d84f38f7341a03e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Service",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n    \"name\": \"Massage Thải Độc Đá Nóng\",\r\n    \"description\": \"Liệu pháp massage sử dụng đá nóng kết hợp tinh dầu thiên nhiên, hỗ trợ thải độc và thư giãn sâu.\",\r\n    \"images\": [\r\n      \"https://example.com/images/massage-detox-hotstone-1.jpg\",\r\n      \"https://example.com/images/massage-detox-hotstone-2.jpg\"\r\n    ],\r\n    \"status\": 1,\r\n    \"booking_count\": 45,\r\n    \"service_category_id\": \"67cd79df8d84f38f7341a0cb\",\r\n    \"view_count\": 120,\r\n    \"durations\": [\r\n      {\r\n        \"duration_name\": \"60 phút\",\r\n        \"price\": 300000,\r\n        \"discount_price\": 250000,\r\n        \"sub_description\": \"Liệu trình chuẩn 60 phút\",\r\n        \"duration_in_minutes\": 60\r\n      },\r\n      {\r\n        \"duration_name\": \"90 phút\",\r\n        \"price\": 450000,\r\n        \"discount_price\": 400000,\r\n        \"sub_description\": \"Liệu trình kéo dài 90 phút\",\r\n        \"duration_in_minutes\": 90\r\n      }\r\n    ],\r\n    \"device_ids\": [\r\n      \"67cd64628d84f38f7341a03d\"\r\n    ]\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/services/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": " {\r\n    \"device_ids\": [\r\n      \"67cd64628d84f38f7341a03d\",\r\n      \"67cd64628d84f38f7341a03e\"\r\n    ]\r\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Soft Delete Product",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}/soft-delete",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}",
+								"soft-delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/services/{{service_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"services",
+								"{{service_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Service Category",
+			"item": [
+				{
+					"name": "Get All Service Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/service-categories",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"service-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Service Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/service-categories/{{service_category_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"service-categories",
+								"{{service_category_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Service Category",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test\",\r\n    \"description\" : \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/service-categories",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"service-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Service Category",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"test again\",\r\n    \"description\" : \"test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/service-categories/{{service_category_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"service-categories",
+								"{{service_category_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Service Category",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/service-categories/{{service_category_id}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"service-categories",
+								"{{service_category_id}}"
 							]
 						}
 					},

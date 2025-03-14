@@ -9,7 +9,7 @@ import databaseService from '~/services/database.services'
 import { isRoleChanged } from '~/utils/helpers'
 
 class RolesService {
-  async getDefaultRoles(role: string = 'user') {
+  async getDefaultRoles(role: string = 'User') {
     const defaultRole = await databaseService.roles.findOne({ name: role })
     if (!defaultRole) {
       throw new Error(ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND)
