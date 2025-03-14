@@ -7,9 +7,11 @@ export interface PaginationOptions {
 
 export const buildRoleWithResourcePipeline = ({
   role_id,
+  role_name,
   option
 }: {
   role_id?: string
+  role_name?: string
   option?: PaginationOptions
 }) => {
   const pipeline: Document[] = []
@@ -18,6 +20,11 @@ export const buildRoleWithResourcePipeline = ({
   if (role_id) {
     pipeline.push({
       $match: { _id: new ObjectId(role_id) }
+    })
+  }
+  if (role_name) {
+    pipeline.push({
+      $match: { name: role_name }
     })
   }
 

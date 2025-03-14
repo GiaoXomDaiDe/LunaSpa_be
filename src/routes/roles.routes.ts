@@ -7,8 +7,14 @@ import {
   getRoleController,
   updateRoleController
 } from '~/controllers/roles.controllers'
-import { accessTokenValidator } from '~/middlewares/accounts.middleware'
-import { addResourceToRoleValidator, createRoleValidator, updateRoleValidator } from '~/middlewares/roles.middleware'
+import { accessTokenValidator, paginationValidator } from '~/middlewares/accounts.middleware'
+import {
+  addResourceToRoleValidator,
+  checkPermission,
+  createRoleValidator,
+  roleQueryValidator,
+  updateRoleValidator
+} from '~/middlewares/roles.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const rolesRouter = Router()
@@ -20,7 +26,13 @@ const rolesRouter = Router()
  * @returns {Array<Role>} 200 - Danh sách roles
  * @requires access_token
  */
-rolesRouter.get('/', accessTokenValidator, wrapRequestHandler(getAllRolesController))
+rolesRouter.get(
+  '/',
+  accessTokenValidator,
+  checkPermission('read', 'Roles'),
+  paginationValidator,
+  wrapRequestHandler(getAllRolesController)
+)
 
 /**
  * @route GET /roles/:id
@@ -34,7 +46,13 @@ rolesRouter.get('/', accessTokenValidator, wrapRequestHandler(getAllRolesControl
  * @throws {403} - Forbidden - Không có quyền truy cập
  * @throws {404} - Not Found - Role không tồn tại
  */
-rolesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getRoleController))
+rolesRouter.get(
+  '/:role_id',
+  accessTokenValidator,
+  checkPermission('read', 'Roles'),
+  roleQueryValidator,
+  wrapRequestHandler(getRoleController)
+)
 
 /**
  * @route POST /roles
@@ -68,7 +86,13 @@ rolesRouter.get('/:id', accessTokenValidator, wrapRequestHandler(getRoleControll
  * @throws {403} - Forbidden - Không có quyền tạo role
  * @throws {409} - Conflict - Tên role đã tồn tại
  */
-rolesRouter.post('/', accessTokenValidator, createRoleValidator, wrapRequestHandler(createRolesController))
+rolesRouter.post(
+  '/',
+  accessTokenValidator,
+  checkPermission('create', 'Roles'),
+  createRoleValidator,
+  wrapRequestHandler(createRolesController)
+)
 
 /**
  * @route PUT /roles/:id
@@ -93,7 +117,14 @@ rolesRouter.post('/', accessTokenValidator, createRoleValidator, wrapRequestHand
  * - Resource_id phải được validate
  * - CRUD phải là boolean.
  */
-rolesRouter.put('/:id', accessTokenValidator, updateRoleValidator, wrapRequestHandler(updateRoleController))
+rolesRouter.put(
+  '/:role_id',
+  accessTokenValidator,
+  checkPermission('update', 'Roles'),
+  roleQueryValidator,
+  updateRoleValidator,
+  wrapRequestHandler(updateRoleController)
+)
 
 /**
  * @route DELETE /roles/:id
@@ -106,7 +137,13 @@ rolesRouter.put('/:id', accessTokenValidator, updateRoleValidator, wrapRequestHa
  *
  * @validation
  */
-rolesRouter.delete('/:id', accessTokenValidator, wrapRequestHandler(deleteRoleController))
+rolesRouter.delete(
+  '/:role_id',
+  accessTokenValidator,
+  checkPermission('delete', 'Roles'),
+  roleQueryValidator,
+  wrapRequestHandler(deleteRoleController)
+)
 
 /**
  * @route POST /roles/:role_id/resources/:resource_id

@@ -1,5 +1,4 @@
-import { ParsedQs } from 'qs'
-export interface Pagination extends ParsedQs {
+export interface Pagination {
   limit: string
   page: string
 }

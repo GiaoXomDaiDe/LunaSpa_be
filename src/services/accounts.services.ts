@@ -212,7 +212,6 @@ class AccountsService {
       new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
     )
     const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account.insertedId)).toArray()
-    console.log(addedAccount)
     const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
       return value === '' || value === null
     })
@@ -367,7 +366,6 @@ class AccountsService {
       })
     }
     const account = await databaseService.accounts.findOne({ email: userInfo.email })
-    console.log(account)
     if (!account) {
       const password = hashPassword(Math.random().toString(36).substring(2, 15))
       const data = await this.register({
@@ -375,7 +373,6 @@ class AccountsService {
         password,
         conform_password: password
       })
-      console.log(data)
       //cap nhật lại thộng tin user sau
       await databaseService.accounts.findOneAndUpdate(
         { _id: data.user._id },
@@ -392,7 +389,7 @@ class AccountsService {
           returnDocument: 'after'
         }
       )
-      return { ...data, newUser: 1, verify: AccountVerify.UNVERIFIED }
+      return { ...data, newAccount: 1, verify: AccountVerify.UNVERIFIED }
     }
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       account_id: account._id.toString(),
@@ -402,10 +399,15 @@ class AccountsService {
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat })
     )
+    const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account._id)).toArray()
+    const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
+      return value === '' || value === null
+    })
     return {
       access_token,
       refresh_token,
-      newUser: 0,
+      account: cleanedAccount,
+      newAccount: 0,
       verify: account.verify
     }
   }
@@ -438,7 +440,7 @@ class AccountsService {
           returnDocument: 'after'
         }
       )
-      return { ...data, newUser: 1, verify: AccountVerify.UNVERIFIED }
+      return { ...accountData, newAccount: 1, verify: AccountVerify.UNVERIFIED }
     }
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       account_id: account._id.toString(),
@@ -448,16 +450,22 @@ class AccountsService {
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat })
     )
+    const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account._id)).toArray()
+    const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
+      return value === '' || value === null
+    })
     return {
       access_token,
       refresh_token,
-      newUser: 0,
+      account: cleanedAccount,
+      newAccount: 0,
       verify: account.verify
     }
   }
   async getMe(account_id: string) {
     const account = await databaseService.accounts.findOne(
       { _id: new ObjectId(account_id) },
+
       {
         projection: {
           password: 0,

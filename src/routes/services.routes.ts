@@ -1,145 +1,85 @@
-import { Router } from 'express'
-import { accessTokenValidator, verifiedAccountValidator } from '~/middlewares/accounts.middleware'
+import { RequestHandler, Router } from 'express'
+import {
+  createServiceController,
+  deleteServiceController,
+  getAllServicesController,
+  getServiceController,
+  softDeleteServiceController,
+  updateServiceController
+} from '~/controllers/services.controllers'
+import {
+  accessTokenValidator,
+  accessTokenValidatorV2,
+  paginationValidator,
+  verifiedAccountValidator
+} from '~/middlewares/accounts.middleware'
+import { checkPermission } from '~/middlewares/roles.middleware'
+import {
+  checkServiceNotInactive,
+  serviceIdValidator,
+  servicesQueryValidator,
+  serviceValidator,
+  updateServiceValidator
+} from '~/middlewares/services.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const servicesRouter = Router()
 
-/**
- * @route GET /services
- * @description Lấy danh sách tất cả dịch vụ
- * @access Public
- *
- * @query {number} [page=1] - Trang hiện tại
- * @query {number} [limit=20] - Số lượng kết quả trên một trang
- * @query {string} [category_id] - Lọc theo category
- * @query {string} [name] - Tìm kiếm theo tên
- * @query {number} [min_price] - Giá tối thiểu
- * @query {number} [max_price] - Giá tối đa
- * @query {number} [sort_by] - Sắp xếp theo (1: mới nhất, 2: cũ nhất, 3: giá tăng dần, 4: giá giảm dần)
- *
- * @returns {Object} 200 - Danh sách dịch vụ phân trang
- */
 servicesRouter.get(
   '/',
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getServicesController
-    res.json({ message: 'Get services list successfully' })
-  })
-)
-/**
- * @route GET /services/:id
- * @description Lấy chi tiết một dịch vụ
- * @access Public
- *
- * @param {string} id - ID dịch vụ
- *
- * @returns {Object} 200 - Chi tiết dịch vụ
- * @throws {404} - Dịch vụ không tồn tại
- */
-servicesRouter.get(
-  '/:id',
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getServiceDetailController
-    res.json({ message: 'Get service detail successfully' })
-  })
+  accessTokenValidatorV2,
+  checkPermission('read', 'Services'),
+  paginationValidator,
+  servicesQueryValidator,
+  wrapRequestHandler(getAllServicesController as RequestHandler)
 )
 
-/**
- * @route POST /services
- * @description Tạo mới dịch vụ
- * @access Private - Admin
- * @requires access_token
- *
- * @body {Object} request
- * @body {string} request.code - Mã dịch vụ
- * @body {string} request.name - Tên dịch vụ
- * @body {string} request.service_category_id - ID danh mục dịch vụ
- * @body {string} request.description - Mô tả dịch vụ
- * @body {Array<string>} request.images - Danh sách URL ảnh
- * @body {Array<Object>} request.durations - Các gói thời gian
- * @body {string} request.durations[].duration_name - Tên gói thời gian
- * @body {number} request.durations[].price - Giá gói
- * @body {number} [request.durations[].discount_price] - Giá khuyến mãi
- * @body {string} [request.durations[].sub_description] - Mô tả phụ
- * @body {number} request.durations[].duration_in_minutes - Thời gian (phút)
- * @body {Array<string>} [request.device_ids] - Danh sách ID thiết bị sử dụng
- *
- * @returns {Object} 201 - Dịch vụ đã được tạo
- * @throws {400} - Dữ liệu không hợp lệ
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- */
+servicesRouter.get(
+  '/:service_id',
+  accessTokenValidatorV2,
+  checkPermission('read', 'Services'),
+  serviceIdValidator,
+  checkServiceNotInactive,
+  wrapRequestHandler(getServiceController)
+)
+
 servicesRouter.post(
   '/',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement createServiceController
-    res.status(201).json({ message: 'Create service successfully' })
-  })
+  checkPermission('create', 'Services'),
+  serviceValidator,
+  wrapRequestHandler(createServiceController)
 )
 
-/**
- * @route PUT /services/:id
- * @description Cập nhật thông tin dịch vụ
- * @access Private - Admin
- * @requires access_token
- *
- * @param {string} id - ID dịch vụ
- * @body {Object} request
- * @body {string} [request.name] - Tên dịch vụ
- * @body {string} [request.service_category_id] - ID danh mục dịch vụ
- * @body {string} [request.description] - Mô tả dịch vụ
- * @body {Array<string>} [request.images] - Danh sách URL ảnh
- * @body {Array<Object>} [request.durations] - Các gói thời gian
- * @body {number} [request.status] - Trạng thái dịch vụ
- *
- * @returns {Object} 200 - Dịch vụ đã được cập nhật
- * @throws {400} - Dữ liệu không hợp lệ
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- * @throws {404} - Dịch vụ không tồn tại
- */
-servicesRouter.put(
-  '/:id',
+servicesRouter.patch(
+  '/:service_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement updateServiceController
-    res.json({ message: 'Update service successfully' })
-  })
+  checkPermission('update', 'Services'),
+  serviceIdValidator,
+  updateServiceValidator,
+  wrapRequestHandler(updateServiceController)
 )
 
-/**
- * @route DELETE /services/:id
- * @description Xóa dịch vụ
- * @access Private - Admin
- * @requires access_token
- *
- * @param {string} id - ID dịch vụ
- *
- * @returns {Object} 200 - Thông báo xóa thành công
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- * @throws {404} - Dịch vụ không tồn tại
- */
 servicesRouter.delete(
-  '/:id',
+  '/:service_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement deleteServiceController
-    res.json({ message: 'Delete service successfully' })
-  })
+  checkPermission('delete', 'Services'),
+  serviceIdValidator,
+  wrapRequestHandler(deleteServiceController)
 )
 
-/**
- * @route GET /services/categories
- * @description Lấy danh sách danh mục dịch vụ
- * @access Public
- *
- * @returns {Array<Object>} 200 - Danh sách danh mục dịch vụ
- */
+servicesRouter.patch(
+  '/:service_id/soft-delete',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  checkPermission('update', 'Services'),
+  serviceIdValidator,
+  wrapRequestHandler(softDeleteServiceController)
+)
+
 servicesRouter.get(
   '/categories',
   wrapRequestHandler(async (req, res) => {

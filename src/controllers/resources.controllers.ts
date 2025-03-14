@@ -28,7 +28,7 @@ export const getResourceController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const resource_id = req.params.id
+  const resource_id = req.params.resource_id
   const resource = await resourcesService.getResource(resource_id)
   res.status(HTTP_STATUS.OK).json({
     message: SUCCESS_RESPONSE_MESSAGE.GET_RESOURCE_SUCCESSFULLY,
@@ -55,16 +55,13 @@ export const updateResourceController = async (
 ) => {
   const payload = req.body
   const updateData = omitBy(payload, (value) => value === undefined || value === '')
-  // console.log(updateData)
-  // console.log(Object.keys(updateData).length === 0)
   if (Object.keys(updateData).length === 0) {
     throw new ErrorWithStatus({
       message: ERROR_RESPONSE_MESSAGES.NO_UPDATE_FIELDS_PROVIDED,
       status: HTTP_STATUS.BAD_REQUEST
     })
   }
-  const resource_id = req.params.id
-  // console.log(resource_id)
+  const resource_id = req.params.resource_id
   const result = await resourcesService.updateResource(updateData, resource_id)
   res.status(HTTP_STATUS.CREATED).json({
     message: SUCCESS_RESPONSE_MESSAGE.RESOURCE_UPDATED_SUCCESSFULLY,
@@ -77,9 +74,9 @@ export const deleteResourceController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const resource_id = req.params.id
+  const resource_id = req.params.resource_id
   await resourcesService.deleteResource(resource_id)
-  res.status(HTTP_STATUS.OK).json({
+  res.json({
     message: SUCCESS_RESPONSE_MESSAGE.RESOURCE_DELETED_SUCCESSFULLY
   })
 }
