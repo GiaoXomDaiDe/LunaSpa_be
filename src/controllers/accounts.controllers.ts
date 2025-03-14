@@ -98,7 +98,7 @@ export const verifyEmailController = async (
   //Đã verify rồi thì mình sẽ ko báo lỗi
   // mà mình sẽ trả về status OK vs message là user đã verify rồi
   if ((account as Account).email_verify_token === '') {
-    res.json({
+    res.status(HTTP_STATUS.CONFLICT).json({
       message: ACCOUNT_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
     })
   }
@@ -117,7 +117,7 @@ export const resendVerifyEmailController = async (req: Request, res: Response, n
     })
   }
   if (account?.verify === AccountVerify.VERIFIED) {
-    res.json({
+    res.status(HTTP_STATUS.CONFLICT).json({
       message: ACCOUNT_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
     })
   }
