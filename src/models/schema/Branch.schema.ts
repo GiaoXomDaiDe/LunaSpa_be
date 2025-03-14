@@ -2,7 +2,6 @@ import { ObjectId } from 'mongodb'
 
 export interface BranchType {
   _id?: ObjectId
-  code: string
   name: string
   address?: string
   description?: string
@@ -35,7 +34,6 @@ export interface OpeningHoursType {
 }
 export default class Branch {
   _id?: ObjectId
-  code: string
   name: string
   address: string
   description?: string
@@ -50,7 +48,6 @@ export default class Branch {
   updated_at?: Date
   constructor(branch: BranchType) {
     this._id = branch._id
-    this.code = branch.code
     this.name = branch.name
     this.address = branch.address || ''
     this.description = branch.description || ''

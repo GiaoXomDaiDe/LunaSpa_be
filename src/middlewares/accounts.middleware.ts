@@ -54,6 +54,17 @@ export const accessTokenValidator = validate(
     ['headers']
   )
 )
+export const accessTokenValidatorV2 = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (!req.headers.authorization) {
+      req.role_name = 'guest'
+      return next()
+    }
+    await accessTokenValidator(req, res, next)
+  } catch (error) {
+    next(error)
+  }
+}
 /* 
 refreshTokenValidator
 - Kiểm tra refresh_token đã gửi vào body chưa
@@ -255,4 +266,49 @@ export const updateMeValidator = validate(
       optional: true
     }
   })
+)
+
+export const paginationValidator = validate(
+  checkSchema(
+    {
+      limit: {
+        optional: true,
+        isNumeric: true,
+        custom: {
+          options: async (value: string) => {
+            const num = Number(value)
+            if (num > 100 || num < 1) {
+              throw new Error('1 <= limit <= 100')
+            }
+            return true
+          }
+        }
+      },
+      page: {
+        optional: true,
+        isNumeric: true,
+        custom: {
+          options: async (value: string) => {
+            const num = Number(value)
+            if (num < 1) {
+              throw new Error('page >= 1')
+            }
+            return true
+          }
+        }
+      },
+      _custom: {
+        custom: {
+          options: async (value: string, { req }) => {
+            const { limit, page } = (req as Request).query
+            if ((limit && !page) || (!limit && page)) {
+              throw new Error('limit và page phải được cung cấp cùng nhau')
+            }
+            return true
+          }
+        }
+      }
+    },
+    ['query']
+  )
 )

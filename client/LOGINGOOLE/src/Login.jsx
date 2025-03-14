@@ -10,7 +10,6 @@ export default function Login() {
     const refresh_token = params.get('refresh_token')
     const new_user = params.get('new_user')
     const verify = params.get('verify')
-    console.log(new_user, verify)
     // ở đây mình chỉ test UI cho trường hợp login
     // Trường hợp register thì bạn nào biết Front-end React có thể tự làm thêm UI cho nó nhé
     // Dựa vào new_user, verify để biết là user mới hay user cũ và đã verify email hay chưa

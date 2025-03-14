@@ -9,9 +9,8 @@ export enum DeviceStatus {
 
 export interface DeviceType {
   _id?: ObjectId
-  code: string
   name: string
-  description: string
+  description?: string
   status?: DeviceStatus
   created_at?: Date
   updated_at?: Date
@@ -19,7 +18,6 @@ export interface DeviceType {
 
 export default class Device {
   _id?: ObjectId
-  code: string
   name: string
   description: string
   status?: DeviceStatus
@@ -28,9 +26,8 @@ export default class Device {
   constructor(device: DeviceType) {
     const date = new Date()
     this._id = device._id
-    this.code = device.code
     this.name = device.name
-    this.description = device.description
+    this.description = device.description || ''
     this.status = device.status || DeviceStatus.ACTIVE
     this.created_at = device.created_at || date
     this.updated_at = device.updated_at || date

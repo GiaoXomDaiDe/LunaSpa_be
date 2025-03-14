@@ -14,10 +14,8 @@ export interface DurationType {
 }
 
 export interface ServiceType {
-  _id: ObjectId
-  code: string
-  name?: string
-  service_type_id: ObjectId
+  _id?: ObjectId
+  name: string
   description?: string
   images?: string[]
   status?: ServiceStatus
@@ -32,10 +30,8 @@ export interface ServiceType {
 }
 
 export default class Service {
-  _id: ObjectId
-  code: string
+  _id?: ObjectId
   name: string
-  service_type_id: ObjectId
   description: string
   images: string[]
   status: ServiceStatus
@@ -49,9 +45,7 @@ export default class Service {
   constructor(service: ServiceType) {
     const date = new Date()
     this._id = service._id
-    this.code = service.code
-    this.name = service.name || ''
-    this.service_type_id = service.service_type_id
+    this.name = service.name
     this.description = service.description || ''
     this.images = service.images || []
     this.status = service.status || ServiceStatus.ACTIVE

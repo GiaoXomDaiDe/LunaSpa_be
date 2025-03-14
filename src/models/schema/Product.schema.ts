@@ -2,15 +2,14 @@ import { ObjectId } from 'mongodb'
 
 export enum ProductStatus {
   ACTIVE = 1,
-  INACTIVE = 2
+  INACTIVE = 0
 }
 
 export interface ProductType {
   _id?: ObjectId
-  code: string
   name: string
   description?: string
-  category_id: string
+  category_id: ObjectId
   price: number
   discount_price?: number
   quantity: number
@@ -22,10 +21,9 @@ export interface ProductType {
 
 export default class Product {
   _id?: ObjectId
-  code: string
   name: string
   description: string
-  category_id: string
+  category_id: ObjectId
   price: number
   discount_price: number
   quantity: number
@@ -37,7 +35,6 @@ export default class Product {
   constructor(product: ProductType) {
     const date = new Date()
     this._id = product._id
-    this.code = product.code
     this.name = product.name
     this.description = product.description || ''
     this.category_id = product.category_id

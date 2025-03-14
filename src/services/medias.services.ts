@@ -29,7 +29,6 @@ class MediasService {
         }
       })
     )
-    console.log(result)
     return result
   }
 }

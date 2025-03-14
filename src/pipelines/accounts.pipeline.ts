@@ -2,18 +2,18 @@ import { Document, ObjectId } from 'mongodb'
 
 /**
  * Hàm buildUserRolesPipeline
- * @param userId - (tùy chọn) ObjectId của user. Nếu truyền vào, pipeline sẽ match theo userId
+ * @param account_id - (tùy chọn) ObjectId của user. Nếu truyền vào, pipeline sẽ match theo account_id
  * @returns một mảng stage (Document[]) cho Aggregation Pipeline
  */
-export function buildUserRolesPipeline(userId?: ObjectId) {
+export function buildUserRolesPipeline(account_id?: ObjectId) {
   // Bắt đầu với 1 mảng rỗng
   const pipeline: Document[] = []
 
-  // Nếu có userId, thêm bước match
-  if (userId) {
+  // Nếu có account_id, thêm bước match
+  if (account_id) {
     pipeline.push({
       $match: {
-        _id: userId
+        _id: account_id
       }
     })
   }

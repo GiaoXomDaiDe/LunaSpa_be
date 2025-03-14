@@ -16,7 +16,6 @@ export enum PaymentMethod {
 
 export interface OrderType {
   _id?: ObjectId
-  code: string
   customer_account_id: ObjectId
   branch_id: ObjectId
   created_at?: Date
@@ -35,7 +34,6 @@ export interface OrderType {
 
 export default class Order {
   _id?: ObjectId
-  code: string
   customer_account_id: ObjectId
   branch_id: ObjectId
   created_at: Date
@@ -54,7 +52,6 @@ export default class Order {
   constructor(order: OrderType) {
     const date = new Date()
     this._id = order._id
-    this.code = order.code
     this.customer_account_id = order.customer_account_id
     this.branch_id = order.branch_id
     this.created_at = order.created_at || date

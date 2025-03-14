@@ -159,14 +159,14 @@ export const resetPasswordController = async (
 export const oauthController = async (req: Request, res: Response, next: NextFunction) => {
   const { code } = req.query
   const result = await accountsService.oauth(code as string)
-  const urlRedirect = `${envConfig.clientRedirectGoogleCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirect = `${envConfig.clientRedirectGoogleCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newAccount}&verify=${result.verify}`
   return res.redirect(urlRedirect)
 }
 
 export const oauthFacebookController = async (req: Request, res: Response, next: NextFunction) => {
   const { code } = req.query
   const result = await accountsService.oauthFacebook(code as string)
-  const urlRedirect = `${envConfig.clientRedirectFacebookCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newUser}&verify=${result.verify}`
+  const urlRedirect = `${envConfig.clientRedirectFacebookCallback}?access_token=${result.access_token}&refresh_token=${result.refresh_token}&new_user=${result.newAccount}&verify=${result.verify}`
   return res.redirect(urlRedirect)
 }
 

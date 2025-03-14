@@ -6,6 +6,7 @@ import { RoleReqBody } from '~/models/request/Role.request'
 import Roles, { ResourcePermission } from '~/models/schema/Role.schema'
 import { buildRoleWithResourcePipeline, PaginationOptions } from '~/pipelines/roles.pipeline'
 import databaseService from '~/services/database.services'
+import { isRoleChanged } from '~/utils/helpers'
 
 class RolesService {
   async getDefaultRoles(role: string = 'user') {
@@ -28,8 +29,8 @@ class RolesService {
       .toArray()
     return result
   }
-  async getRole(role_id: string) {
-    const role = await databaseService.roles.aggregate(buildRoleWithResourcePipeline({ role_id })).toArray()
+  async getRole({ role_id, role_name }: { role_id?: string; role_name?: string }) {
+    const role = await databaseService.roles.aggregate(buildRoleWithResourcePipeline({ role_id, role_name })).toArray()
     if (!role[0]) {
       throw new ErrorWithStatus({
         message: ROLE_MESSAGES.DEFAULT_ROLE_NOT_FOUND,
@@ -48,7 +49,6 @@ class RolesService {
       resources
     })
     const result = await databaseService.roles.insertOne(rolesData)
-    console.log(result)
     if (!result.insertedId) {
       throw new ErrorWithStatus({
         message: ERROR_RESPONSE_MESSAGES.ROLES_CREATION_FAILED,
@@ -99,7 +99,6 @@ class RolesService {
       .aggregate(buildRoleWithResourcePipeline({ role_id: updated_role_id }))
       .toArray()
 
-    console.log(result[0].resources as ResourcePermission[])
     return result[0]
   }
   async deleteRole(role_id: string) {
@@ -157,6 +156,37 @@ class RolesService {
         status: HTTP_STATUS.NOT_FOUND
       })
     }
+    return result
+  }
+  async updateRole(role_id: string, payload: any) {
+    // Lấy role hiện tại
+    const currentRole = await databaseService.roles.findOne({ _id: new ObjectId(role_id) })
+    if (!currentRole) {
+      throw new ErrorWithStatus({
+        message: ROLE_MESSAGES.ROLE_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+
+    // Kiểm tra xem có thay đổi gì không
+    if (!isRoleChanged(currentRole, payload)) {
+      return currentRole
+    }
+
+    // Nếu có thay đổi thì mới update
+    const result = await databaseService.roles.findOneAndUpdate(
+      { _id: new ObjectId(role_id) },
+      {
+        $set: payload,
+        $currentDate: {
+          updated_at: true
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+
     return result
   }
 }

@@ -3,7 +3,6 @@ import './App.css'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 
-console.log(import.meta.env)
 const getGoogleAuthUrl = () => {
   const { VITE_GOOGLE_CLIENT_ID, VITE_GOOGLE_REDIRECT_URI } = import.meta.env
   const url = `https://accounts.google.com/o/oauth2/v2/auth`
