@@ -12,6 +12,7 @@ import RefreshToken from '~/models/schema/RefreshToken.schema'
 import { buildUserRolesPipeline } from '~/pipelines/accounts.pipeline'
 import databaseService from '~/services/database.services'
 import rolesService from '~/services/roles.services'
+import userProfilesService from '~/services/userProfiles.services'
 import { hashPassword } from '~/utils/crypto'
 import { sendForgotPasswordEmail, sendVerifyRegisterEmail } from '~/utils/email'
 import { signToken, verifyToken } from '~/utils/jwt'
@@ -203,6 +204,10 @@ class AccountsService {
         password: hashPassword(payload.password)
       })
     )
+    const user_profile = await userProfilesService.createUserProfile({
+      account_id: account_id.toString(),
+      condition_ids: []
+    })
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       account_id: account_id.toString(),
       verify: AccountVerify.UNVERIFIED
@@ -212,22 +217,13 @@ class AccountsService {
       new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
     )
     const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account.insertedId)).toArray()
-    const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
-      return value === '' || value === null
-    })
-    // Flow verify email
-    // 1. Server send email to user
-    // 2. User click link in email
-    // 3. Client send request to server with email_verify_token
-    // 4. Server verify email_verify_token
-    // 5. Client receive access_token and refresh_token
-    if (cleanedAccount.verify === AccountVerify.UNVERIFIED) {
+    if (addedAccount[0].verify === AccountVerify.UNVERIFIED) {
       await sendVerifyRegisterEmail(payload.email, email_verify_token)
     }
     return {
       access_token,
       refresh_token,
-      user: cleanedAccount
+      user_profile
     }
   }
   async login({ account_id, verify }: { account_id: string; verify: AccountVerify }) {
@@ -236,14 +232,11 @@ class AccountsService {
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
     )
-    const account = await databaseService.accounts.aggregate(buildUserRolesPipeline(new ObjectId(account_id))).toArray()
-    const cleanedAccount = omitBy(account[0], (value, key) => {
-      return value === '' || value === null
-    })
+    const user_profile = await userProfilesService.getUserProfileByAccountId(account_id)
     return {
       access_token,
       refresh_token,
-      user: cleanedAccount
+      user_profile
     }
   }
   async logout(refresh_token: string) {
@@ -375,11 +368,11 @@ class AccountsService {
       })
       //cap nhật lại thộng tin user sau
       await databaseService.accounts.findOneAndUpdate(
-        { _id: data.user._id },
+        { _id: data.user_profile.account._id },
         {
           $set: {
             name: userInfo.name,
-            avatar: userInfo.picture
+            avatar: userInfo.picture.data.url
           },
           $currentDate: {
             updated_at: true
@@ -425,7 +418,7 @@ class AccountsService {
         conform_password: password
       })
       await databaseService.accounts.findOneAndUpdate(
-        { _id: accountData.user._id },
+        { _id: accountData.user_profile.account._id },
         {
           $set: {
             name: userInfo.name,
@@ -463,22 +456,14 @@ class AccountsService {
     }
   }
   async getMe(account_id: string) {
-    const account = await databaseService.accounts.findOne(
-      { _id: new ObjectId(account_id) },
-
-      {
-        projection: {
-          password: 0,
-          email_verify_token: 0,
-          forgot_password_token: 0
-        }
-      }
-    )
-    return account
+    const user_profile = await userProfilesService.getUserProfileByAccountId(account_id)
+    return {
+      user_profile
+    }
   }
   async updateMe(account_id: string, payload: UpdateMeReqBody) {
     const _payload = payload.date_of_birth ? { ...payload, date_of_birth: new Date(payload.date_of_birth) } : payload
-    const account = await databaseService.accounts.findOneAndUpdate(
+    await databaseService.accounts.updateOne(
       { _id: new ObjectId(account_id) },
       {
         $set: {
@@ -487,17 +472,12 @@ class AccountsService {
         $currentDate: {
           updated_at: true
         }
-      },
-      {
-        returnDocument: 'after',
-        projection: {
-          password: 0,
-          email_verify_token: 0,
-          forgot_password_token: 0
-        }
       }
     )
-    return account
+    const user_profile = await userProfilesService.getUserProfileByAccountId(account_id)
+    return {
+      user_profile
+    }
   }
 }
 

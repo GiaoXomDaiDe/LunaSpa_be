@@ -88,6 +88,7 @@ export const verifyEmailController = async (
   next: NextFunction
 ) => {
   const { account_id } = req.decoded_email_verify_token as TokenPayload
+  console.log(account_id)
   const account = await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
   //Nếu ko tìm thấy user thì mình sẽ báo lỗi
   if (!account) {

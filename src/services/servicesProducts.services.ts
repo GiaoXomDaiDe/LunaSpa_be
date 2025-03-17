@@ -91,4 +91,5 @@ class ServicesProductService {
   }
 }
 
-export default new ServicesProductService()
+const servicesProductService = new ServicesProductService()
+export default servicesProductService

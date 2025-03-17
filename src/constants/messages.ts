@@ -322,3 +322,26 @@ export const CONDITION_MESSAGES = {
   INSTRUCTIONS_MUST_BE_A_STRING: 'Hướng dẫn điều kiện phải là chuỗi',
   INSTRUCTIONS_CANNOT_LONGER_THAN_255: 'Hướng dẫn điều kiện không được dài hơn 255 ký tự'
 } as const
+export const USER_PROFILES_MESSAGES = {
+  GET_ALL_USER_PROFILES_SUCCESS: 'Lấy danh sách hồ sơ người dùng thành công',
+  GET_ALL_USER_PROFILES_FAILED: 'Lấy danh sách hồ sơ người dùng thất bại',
+  GET_USER_PROFILE_SUCCESS: 'Lấy hồ sơ người dùng thành công',
+  GET_USER_PROFILE_FAILED: 'Lấy hồ sơ người dùng thất bại',
+  USER_PROFILE_NOT_FOUND: 'Hồ sơ người dùng không tồn tại',
+  USER_PROFILE_ID_REQUIRED: 'ID hồ sơ người dùng là bắt buộc',
+  USER_PROFILE_ID_INVALID: 'ID hồ sơ người dùng không hợp lệ',
+  ACCOUNT_ID_REQUIRED: 'ID tài khoản là bắt buộc',
+  ACCOUNT_ID_INVALID: 'ID tài khoản không hợp lệ',
+  CONDITION_IDS_REQUIRED: 'Danh sách ID điều kiện là bắt buộc',
+  CONDITION_IDS_INVALID: 'Danh sách ID điều kiện không hợp lệ',
+  CREATE_USER_PROFILE_FAILED: 'Tạo hồ sơ người dùng thất bại',
+  CREATE_USER_PROFILE_SUCCESS: 'Tạo hồ sơ người dùng thành công',
+  USER_PROFILE_NOT_UPDATED: 'Hồ sơ người dùng không được cập nhật',
+  UPDATE_USER_PROFILE_SUCCESS: 'Cập nhật hồ sơ người dùng thành công',
+  DELETE_USER_PROFILE_SUCCESS: 'Xóa hồ sơ người dùng thành công',
+  DELETE_USER_PROFILE_FAILED: 'Xóa hồ sơ người dùng thất bại',
+  ADD_CONDITIONS_TO_USER_PROFILE_SUCCESS: 'Thêm điều kiện vào hồ sơ người dùng thành công',
+  ADD_CONDITION_TO_USER_PROFILE_SUCCESS: 'Thêm điều kiện vào hồ sơ người dùng thành công',
+  REMOVE_CONDITION_FROM_USER_PROFILE_SUCCESS: 'Xóa điều kiện khỏi hồ sơ người dùng thành công',
+  GET_CONDITIONS_OF_USER_PROFILE_SUCCESS: 'Lấy danh sách điều kiện của hồ sơ người dùng thành công'
+} as const

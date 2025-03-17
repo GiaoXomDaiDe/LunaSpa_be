@@ -20,6 +20,7 @@ export const envConfig = {
   dbServicesProductsCollection: process.env.DB_SERVICES_PRODUCTS_COLLECTION as string,
   dbConditionsCollection: process.env.DB_CONDITIONS_COLLECTION as string,
   dbConditionProductsCollection: process.env.DB_CONDITION_PRODUCTS_COLLECTION as string,
+  dbUserProfilesCollection: process.env.DB_USER_PROFILES_COLLECTION as string,
   jwtSecret: process.env.JWT_SECRET as string,
   passwordSecret: process.env.PASSWORD_SECRET as string,
   accessTokenLife: process.env.ACCESS_TOKEN_EXPIRES_IN as StringValue,
