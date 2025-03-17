@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { omitBy } from 'lodash'
 import { ObjectId } from 'mongodb'
 import { envConfig } from '~/constants/config'
 import { TokenType } from '~/constants/enums'
@@ -372,7 +371,7 @@ class AccountsService {
         {
           $set: {
             name: userInfo.name,
-            avatar: userInfo.picture.data.url
+            avatar: userInfo.picture
           },
           $currentDate: {
             updated_at: true
@@ -392,14 +391,11 @@ class AccountsService {
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat })
     )
-    const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account._id)).toArray()
-    const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
-      return value === '' || value === null
-    })
+    const user_profile = await userProfilesService.getUserProfileByAccountId(account._id.toString())
     return {
       access_token,
       refresh_token,
-      account: cleanedAccount,
+      user_profile,
       newAccount: 0,
       verify: account.verify
     }
@@ -409,6 +405,7 @@ class AccountsService {
     const { access_token: app_access_token } = await this.getOauthFacebookAppAccessToken()
     const { data } = await this.getAccessTokenVerify(facebook_access_token, app_access_token)
     const userInfo = await this.getOauthFacebookUserInfo(data.user_id, facebook_access_token)
+    console.log('Day la user info', userInfo)
     const account = await databaseService.accounts.findOne({ email: userInfo.email })
     if (!account) {
       const password = hashPassword(Math.random().toString(36).substring(2, 15))
@@ -443,14 +440,11 @@ class AccountsService {
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat })
     )
-    const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account._id)).toArray()
-    const cleanedAccount = omitBy(addedAccount[0], (value, key) => {
-      return value === '' || value === null
-    })
+    const user_profile = await userProfilesService.getUserProfileByAccountId(account._id.toString())
     return {
       access_token,
       refresh_token,
-      account: cleanedAccount,
+      user_profile,
       newAccount: 0,
       verify: account.verify
     }
