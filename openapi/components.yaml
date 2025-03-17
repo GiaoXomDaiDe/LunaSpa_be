@@ -1,5 +1,167 @@
 components:
   schemas:
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Validation error"
+          description: A general error message indicating validation failure.
+        errors:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              type:
+                type: string
+                description: The type of error (e.g., "field").
+              value:
+                type: string
+                description: The invalid value provided.
+              msg:
+                type: string
+                description: The specific error message for the field.
+              path:
+                type: string
+                description: The field name causing the error.
+              location:
+                type: string
+                description: The location of the field (e.g., "body").
+          description: An object with field names as keys and error details as values.
+    UpdateProfileBody:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The user's name.
+        phone_number:
+          type: string
+          description: Must be a valid phone number (specific format not specified).
+        address:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: The user's address, must be between 1 and 255 characters if provided.
+        date_of_birth:
+          type: string
+          format: date-time
+          description: The user's date of birth in ISO 8601 format (e.g., "2025-02-28T03:30:03.060Z").
+        avatar:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: URL or identifier for the user's avatar, must be between 1 and 255 characters if provided.
+    VerifyEmailBody:
+      type: object
+      properties:
+        email_verify_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNjdjMTFhNzBjZWQ0NWYxMWZiN2FlZTFhIiwidG9rZW5fdHlwZSI6MywidmVyaWZ5IjowLCJpYXQiOjE3NDA3MDg0NjQsImV4cCI6MTc0MTMxMzI2NH0.4pwZyKQPW1s6IdvxgVwU7NR_E05D7CKpuQsLyth-ySw"
+    UserProfile:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "67c7dbfb447c46c81829b3f5"
+        email:
+          type: string
+          example: "trollergamehuydk@gmail.com"
+        role_id:
+          type: string
+          example: "67bf26b9c85168a42384261d"
+        name:
+          type: string
+          example: "Nguyen Phat Huy"
+        phone_number:
+          type: string
+          example: ""
+        address:
+          type: string
+          example: ""
+        date_of_birth:
+          type: string
+          format: date-time
+          example: "2025-03-05T05:07:07.872Z"
+        avatar:
+          type: string
+          example: "https://scontent.fsgn5-13.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=c379.0.1290.1290a_cp0_dst-jpg_s50x50_tt6&_nc_cat=1&ccb=1-7&_nc_sid=7565cd&_nc_ohc=4Kpl8dyvYGoQ7kNvgEZB89M&_nc_oc=AdiBXD7QtKtXr7XJgh-F3TIcCUeTIcc73O08tokt4Rjq-IwyYpIcYtx9CttCx-n0sy4&_nc_zt=24&_nc_ht=scontent.fsgn5-13.fna&edm=AP4hL3IEAAAA&_nc_gid=AwVpLxo7sjQb5Vy6yDC4FYt&oh=00_AYByHOGxXlgFMe6wk_ZqRzptSnwtFLU5c0S0WIdOhC1uMw&oe=67EF3319"
+        verify:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-03-05T05:07:07.872Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-03-14T06:52:52.742Z"
+    ResetPasswordBody:
+      type: object
+      required:
+        - forgot_password_token
+        - password
+        - confirm_password
+      properties:
+        forgot_password_token:
+          type: string
+          description: The forgotten password token sent to the user's email for verification.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        password:
+          type: string
+          description: The new password to set for the account.
+          example: "newPassword123!"
+        confirm_password:
+          type: string
+          description: Confirmation of the new password. Must match the password field.
+          example: "newPassword123!"
+    VerifyForgotPasswordBody:
+      type: object
+      required:
+        - forgot_password_token
+      properties:
+        forgot_password_token:
+          type: string
+          description: The forgotten password token sent to the user's email for verification.
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    ForgotPasswordBody:
+      type: object
+      properties:
+        email:
+          type: string
+          example: "user@example.com"
+      required:
+        - email
+    ForgotPasswordValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Validation error"
+        errors:
+          type: object
+          properties:
+            email:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "field"
+                value:
+                  type: string
+                  example: "asd"
+                msg:
+                  type: string
+                  example: "Email is invalid"
+                path:
+                  type: string
+                  example: "email"
+                location:
+                  type: string
+                  example: "body"
+      required:
+        - message
+        - errors
     LoginBody:
       type: object
       properties:

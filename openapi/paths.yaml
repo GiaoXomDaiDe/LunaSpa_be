@@ -16,151 +16,7 @@ servers:
 tags:
   - name: accounts
     description: accounts functions
-paths:
-  /accounts/login:
-    post:
-      tags:
-        - accounts
-      summary: Login
-      description: Login
-      operationId: login
-      requestBody:
-        description: Login information
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/LoginBody'
-        required: true
-      responses:
-        '200':
-          description: Login successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Login successfully"
-                  result:
-                    type: object
-                    properties:
-                      access_token:
-                        type: string
-                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                      refresh_token:
-                        type: string
-                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                      user:
-                        type: object
-                        properties:
-                          _id:
-                            type: string
-                            example: "1243879"
-                          email:
-                            type: string
-                            example: "wxrdie@example.com"
-                          name:
-                            type: string
-                            example: "Wxrdie"
-                          phone_number:
-                            type: string
-                            example: "+1234567890"
-                          address:
-                            type: string
-                            example: "1234 Elm Street, Springfield, IL, 62704"
-                          date_of_birth:
-                            type: string
-                            format: date-time
-                            nullable: true
-                            example: "1990-05-15T08:30:00Z"
-                          created_at:
-                            type: string
-                            format: date-time
-                            example: "2023-01-01T12:00:00Z"
-                          updated_at:
-                            type: string
-                            format: date-time
-                            nullable: true
-                            example: "2024-02-28T15:45:00Z"
-                          roles:
-                            type: object
-                            properties:
-                              role_id:
-                                type: string
-                                example: "167bf2f13d29bdb85bedb392d"
-                              role_name:
-                                type: string
-                                example: "user"
-        '422':
-          description: User not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "User not found"
-                  result:
-                    type: object
-                    properties: {}
-                  error:
-                    type: object
-                    nullable: true
-                    properties: {}
-        '400':
-          description: Invalid password
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Invalid password"
-                  result:
-                    type: object
-                    properties: {}
-                  error:
-                    type: object
-                    nullable: true
-                    properties: {}
-  /accounts/logout:
-    post:
-      tags:
-        - accounts
-      summary: Logout
-      description: Logout
-      operationId: Logout
-      requestBody:
-        description: Logout
-        content:
-          application/json:
-            schema:
-              $ref: './components.yaml#/components/schemas/LogoutBody'
-        required: true
-      responses:
-        '200':
-          description: Logout successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Logout successfully"
-        '401':
-          description: User unauthorized
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "refresh_token not found"
+paths: #./components.yaml#/components/schemas/
   /accounts/register:
     post:
       tags:
@@ -200,42 +56,44 @@ paths:
                         properties:
                           _id:
                             type: string
-                            example: "1243879"
+                            example: "67d3cba60d9a130514c66905"
                           email:
                             type: string
-                            example: "wxrdie@example.com"
+                            example: "trollergamehuydk+1@gmail.com"
                           name:
                             type: string
-                            example: "Wxrdie"
-                          phone_number:
-                            type: string
-                            example: "+1234567890"
-                          address:
-                            type: string
-                            example: "1234 Elm Street, Springfield, IL, 62704"
+                            example: "user67d3cba60d9a130514c66905"
                           date_of_birth:
                             type: string
                             format: date-time
-                            nullable: true
-                            example: "1990-05-15T08:30:00Z"
+                            example: "2025-03-14T06:24:38.469Z"
+                          verify:
+                            type: number
+                            enum: [0, 1, 2]
+                            example: 0
+                            description: |
+                              0 - Unverified
+                              1 - Verified
+                              2 - Banned
                           created_at:
                             type: string
                             format: date-time
-                            example: "2023-01-01T12:00:00Z"
+                            example: "2025-03-14T06:24:38.469Z"
                           updated_at:
                             type: string
                             format: date-time
-                            nullable: true
-                            example: "2024-02-28T15:45:00Z"
+                            example: "2025-03-14T06:24:38.469Z"
                           roles:
-                            type: object
-                            properties:
-                              role_id:
-                                type: string
-                                example: "167bf2f13d29bdb85bedb392d"
-                              role_name:
-                                type: string
-                                example: "user"
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                role_id:
+                                  type: string
+                                  example: "67ced55bab406d06765c13fa"
+                                role_name:
+                                  type: string
+                                  example: "User"
         '422':
           description: Validation error - Email already exists
           content:
@@ -267,3 +125,608 @@ paths:
                           location:
                             type: string
                             example: "body"
+  /accounts/login:
+    post:
+      tags:
+        - accounts
+      summary: Login
+      description: Login
+      operationId: login
+      requestBody:
+        description: Login information
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/LoginBody'
+        required: true
+      responses:
+        '200':
+          description: Login successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Login successfully"
+                  result:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      refresh_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      user:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: "67c7dbfb447c46c81829b3f5"
+                          email:
+                            type: string
+                            example: "trollergamehuydk@gmail.com"
+                          name:
+                            type: string
+                            example: "Nguyen Phat Huy"
+                          date_of_birth:
+                            type: string
+                            format: date-time
+                            example: "2025-03-05T05:07:07.872Z"
+                          avatar:
+                            type: string
+                            example: "https://scontent.fsgn5-13.fna.fbcdn.net/..."
+                          verify:
+                            type: number
+                            enum: [0, 1, 2]
+                            example: 1
+                            description: |
+                              0 - Unverified
+                              1 - Verified
+                              2 - Banned
+                          created_at:
+                            type: string
+                            format: date-time
+                            example: "2025-03-05T05:07:07.872Z"
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: "2025-03-10T07:22:23.748Z"
+                          roles:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                role_id:
+                                  type: string
+                                  example: "67bf26b9c85168a42384261d"
+                                role_name:
+                                  type: string
+                                  example: "Admin"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Validation error"
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          example: "field"
+                        msg:
+                          type: string
+                          example: "Email is required"
+                        path:
+                          type: string
+                          example: "email"
+                        location:
+                          type: string
+                          example: "body"
+              examples:
+                missing_fields:
+                  summary: Missing email and password
+                  value:
+                    message: "Validation error"
+                    errors:
+                      email:
+                        type: "field"
+                        msg: "Email is required"
+                        path: "email"
+                        location: "body"
+                      password:
+                        type: "field"
+                        msg: "Password is required"
+                        path: "password"
+                        location: "body"
+                email_incorrect:
+                  summary: Email is incorrect
+                  value:
+                    message: "Validation error"
+                    errors:
+                      email:
+                        type: "field"
+                        value: "trollergamehuyasdsadasddk@gmail.com"
+                        msg: "Email is incorrect"
+                        path: "email"
+                        location: "body"
+                password_incorrect:
+                  summary: Password is incorrect
+                  value:
+                    message: "Validation error"
+                    errors:
+                      password:
+                        type: "field"
+                        value: "Huasdasdy@12345"
+                        msg: "Password is incorrect"
+                        path: "password"
+                        location: "body"
+  /accounts/logout:
+    post:
+      tags:
+        - accounts
+      summary: Logout
+      description: Logout
+      operationId: Logout
+      requestBody:
+        description: Logout
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              required:
+                - refresh_token
+        required: true
+      responses:
+        '200':
+          description: Logout successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logout successfully"
+        '401':
+          description: Unauthorized - Invalid or missing refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - "Jwt malformed"
+                      - "Refresh token is used or not exists"
+                    example: "Jwt malformed"
+              examples:
+                jwt_malformed:
+                  summary: JWT is malformed
+                  value:
+                    message: "Jwt malformed"
+                token_used_or_not_exists:
+                  summary: Refresh token is used or does not exist
+                  value:
+                    message: "Refresh token is used or not exists"
+  /accounts/refresh-token:
+    post:
+      tags:
+        - accounts
+      summary: Refresh Token
+      description: Refreshes an access token using a valid refresh token.
+      operationId: RefreshToken
+      requestBody:
+        description: The refresh token to be used for generating new tokens.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  example: "{{refresh_token}}"
+              required:
+                - refresh_token
+        required: true
+      responses:
+        '200':
+          description: Token refreshed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Refresh token successfully"
+                  result:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNjdjN2RiZmI0NDdjNDZjODE4MjliM2Y1IiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3NDE5MzM4OTMsImV4cCI6MTc0MjAyMDI5M30.sGtucroqIGHmrxAbTetVf-guSltm-GClIA-SmwioKLs"
+                      refresh_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNjdjN2RiZmI0NDdjNDZjODE4MjliM3Y1IiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJleHAiOjE3NTA1NzM4ODYsImlhdCI6MTc0MTkzMzg5M30.lKizgwSrt96gLUnWeC1ZAqWe3M_CiXcoNcIT8XZhaR0"
+                required:
+                  - message
+                  - result
+        '401':
+          description: Unauthorized - The refresh token is invalid or has been used.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Refresh token is used or not exists"
+                required:
+                  - message
+  /accounts/verify-email:
+    post:
+      tags:
+        - accounts
+      summary: Verify Email
+      description: Verifies the user's email using the provided email verification token.
+      operationId: VerifyEmail
+      requestBody:
+        description: Email verification token
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/VerifyEmailBody'
+        required: true
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email verified successfully"
+                  result:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNjdkM2NmMDQ1NmY3YTNmMGFhN2M0OTYwIiwidG9rZW5fdHlwZSI6MCwidmVyaWZ5IjoxLCJpYXQiOjE3NDE5MzQ3MzQsImV4cCI6MTc0MjAyMTEzNH0.F8jyAHUXnWrPrfmJXXwJNBf5954CgXGhZiAet9xTXbY"
+                      refresh_token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiNjdkM2NmMDQ1NmY3YTNmMGFhN2M0OTYwIiwidG9rZW5fdHlwZSI6MSwidmVyaWZ5IjoxLCJpYXQiOjE3NDE5MzQ3MzQsImV4cCI6MTc1MDU3NDczNH0.IljY5zIZf2ojLR2Ejha8xkrUtDk9jRLd9l4NU0A4iGI"
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Jwt expired"
+        '409':
+          description: Conflict - Email already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email already verified before"
+  /accounts/resend-verify-email:
+    post:
+      tags:
+        - accounts
+      summary: Resend Verify Email
+      description: Resends the email verification token to the user's email address.
+      operationId: ResendVerifyEmail
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Verification email resent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Resend verify email successfully"
+        '409':
+          description: Conflict - Email already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email already verified before"
+  /accounts/forgot-password:
+    post:
+      tags:
+        - accounts
+      summary: Forgot Password
+      description: Requests a password reset by sending a reset token to the user's email.
+      operationId: ForgotPassword
+      requestBody:
+        description: Email address for password reset
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/ForgotPasswordBody'  # Assuming this exists
+        required: true
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Check email for password reset"
+        '422':
+          description: Validation error - Invalid email
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ForgotPasswordValidationError'
+  /accounts/verify-forgot-password:
+    post:
+      tags:
+        - accounts
+      summary: Verify Forgotten Password
+      description: Verifies the forgotten password token to allow password reset.
+      operationId: VerifyForgottenPassword
+      requestBody:
+        description: Forgotten password token
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/VerifyForgotPasswordBody'
+        required: true
+      responses:
+        '200':
+          description: Forgotten password verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Verify forgotten password successfully"
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Jwt expired"
+  /accounts/reset-password:
+    post:
+      tags:
+        - accounts
+      summary: Reset Password
+      description: Resets the user's password using the provided forgotten password token and new password.
+      operationId: ResetPassword
+      requestBody:
+        description: Forgotten password token and new password details
+        content:
+          application/json:
+            schema:
+              $ref: '#./components.yaml#/components/schemas/ResetPasswordBody'
+            example:
+              forgot_password_token: "{{forgot_password_token}}"
+              password: "{{password}}"
+              confirm_password: "Huy@12345"
+        required: true
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Reset password successfully"
+              example:
+                message: "Reset password successfully"
+        '401':
+          description: Unauthorized - Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Jwt expired"
+              example:
+                message: "Jwt expired"
+  /accounts/me:
+    get:
+      tags:
+        - accounts
+      summary: Get My Profile
+      description: Retrieves the profile of the currently authenticated user.
+      operationId: GetMyProfile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Get my profile successfully"
+                  result:
+                    $ref: './components.yaml#/components/schemas/UserProfile'
+              examples:
+                success:
+                  summary: Example response
+                  value:
+                    message: "Get my profile successfully"
+                    result:
+                      _id: "67c7dbfb447c46c81829b3f5"
+                      email: "trollergamehuydk@gmail.com"
+                      role_id: "67bf26b9c85168a42384261d"
+                      name: "Nguyen Phat Huy"
+                      phone_number: ""
+                      address: ""
+                      date_of_birth: "2025-03-05T05:07:07.872Z"
+                      avatar: "https://scontent.fsgn5-13.fna.fbcdn.net/v/t1.30497-1/84628273_176159830277856_972693363922829312_n.jpg?stp=c379.0.1290.1290a_cp0_dst-jpg_s50x50_tt6&_nc_cat=1&ccb=1-7&_nc_sid=7565cd&_nc_ohc=4Kpl8dyvYGoQ7kNvgEZB89M&_nc_oc=AdiBXD7QtKtXr7XJgh-F3TIcCUeTIcc73O08tokt4Rjq-IwyYpIcYtx9CttCx-n0sy4&_nc_zt=24&_nc_ht=scontent.fsgn5-13.fna&edm=AP4hL3IEAAAA&_nc_gid=AwVpLxo7sjQb5Vy6yDC4FYt&oh=00_AYByHOGxXlgFMe6wk_ZqRzptSnwtFLU5c0S0WIdOhC1uMw&oe=67EF3319"
+                      verify: 1
+                      created_at: "2025-03-05T05:07:07.872Z"
+                      updated_at: "2025-03-14T06:52:52.742Z"
+        '401':
+          description: Unauthorized - Access token is required or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Access token is required"
+              examples:
+                unauthorized:
+                  summary: Example error response
+                  value:
+                    message: "Access token is required"
+    patch:
+      tags:
+        - accounts
+      summary: Update My Profile
+      description: Updates the profile of the currently authenticated user.
+      operationId: UpdateMyProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Profile fields to update (all fields are optional).
+        content:
+          application/json:
+            schema:
+              $ref: './components.yaml#/components/schemas/UpdateProfileBody'
+            examples:
+              invalid-phone:
+                summary: Invalid phone number request
+                value:
+                  name: "user67c12dbb63af1079a9ea1aed"
+                  phone_number: "543"
+                  address: "124"
+                  date_of_birth: "2025-02-28T03:30:03.060Z"
+                  avatar: "124214"
+              empty-fields:
+                summary: Request with empty fields triggering validation
+                value:
+                  name: "user67c12dbb63af1079a9ea1aed"
+                  phone_number: ""
+                  address: ""
+                  date_of_birth: "2025-02-28T03:30:03.060Z"
+                  avatar: ""
+        required: true
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Update my profile successfully"
+                    description: Confirmation message.
+                  result:
+                    $ref: './components.yaml#/components/schemas/UserProfile'
+                    description: The updated user profile.
+              examples:
+                success:
+                  summary: Successful profile update
+                  value:
+                    message: "Update my profile successfully"
+                    result:
+                      _id: "67c7dbfb447c46c81829b3f5"
+                      email: "trollergamehuydk@gmail.com"
+                      role_id: "67bf26b9c85168a42384261d"
+                      name: "user67c12dbb63af1079a9ea1aed"
+                      phone_number: "0391234567"
+                      address: "124"
+                      date_of_birth: "2025-02-28T03:30:03.060Z"
+                      avatar: "124214"
+                      verify: 1
+                      created_at: "2025-03-05T05:07:07.872Z"
+                      updated_at: "2025-03-14T07:10:24.531Z"
+        '422':
+          description: Validation error due to invalid input
+          content:
+            application/json:
+              schema:
+                $ref: './components.yaml#/components/schemas/ValidationError'
+              examples:
+                multiple-errors:
+                  summary: Multiple validation errors
+                  value:
+                    message: "Validation error"
+                    errors:
+                      phone_number:
+                        type: "field"
+                        value: ""
+                        msg: "Phone number is invalid"
+                        path: "phone_number"
+                        location: "body"
+                      address:
+                        type: "field"
+                        value: ""
+                        msg: "Address length must be from 1 to 255"
+                        path: "address"
+                        location: "body"
+                      avatar:
+                        type: "field"
+                        value: ""
+                        msg: "Avatar length must be from 1 to 255"
+                        path: "avatar"
+                        location: "body"
+                invalid-phone:
+                  summary: Invalid phone number error
+                  value:
+                    message: "Validation error"
+                    errors:
+                      phone_number:
+                        type: "field"
+                        value: "543"
+                        msg: "Phone number is invalid"
+                        path: "phone_number"
+                        location: "body"
