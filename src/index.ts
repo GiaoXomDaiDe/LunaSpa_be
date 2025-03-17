@@ -22,6 +22,7 @@ import servicesProductRouter from '~/routes/servicesProducts.routes'
 import staffSlotsRouter from '~/routes/staff-slots.routes'
 import staffRouter from '~/routes/staff.routes'
 import staticRouter from '~/routes/static.routes'
+import userProfilesRouter from '~/routes/userProfiles.routes'
 import databaseService from '~/services/database.services'
 import { initUploadFolder } from '~/utils/file'
 
@@ -67,6 +68,7 @@ app.use('/staff-slots', staffSlotsRouter)
 app.use('/bookings', bookingsRouter)
 app.use('/devices', devicesRouter)
 app.use('/conditions', conditionsRouter)
+app.use('/user-profiles', userProfilesRouter)
 app.use('/product-categories', productCategoriesRouter)
 app.use('/service-categories', serviceCategoriesRouter)
 app.use(defaultErrorHandler as ErrorRequestHandler)

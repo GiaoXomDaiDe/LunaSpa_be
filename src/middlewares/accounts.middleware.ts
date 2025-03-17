@@ -128,6 +128,8 @@ export const emailVerifyTokenValidator = validate(
                 token: value,
                 secretOrPublicKey: envConfig.jwtSecretEmailVerifyToken
               })
+              console.log(value)
+              console.log(decoded_email_verify_token)
               ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
             } catch (error) {
               throw new ErrorWithStatus({

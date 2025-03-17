@@ -13,6 +13,7 @@ import Roles from '~/models/schema/Role.schema'
 import Service from '~/models/schema/Service.schema'
 import ServiceCategoy from '~/models/schema/ServiceCategory.schema'
 import ServiceProducts from '~/models/schema/ServiceProducts.schema'
+import UserProfile from '~/models/schema/UserProfile.schema'
 
 config()
 
@@ -75,6 +76,9 @@ class DatabaseService {
   }
   get conditionProducts(): Collection<ConditionProduct> {
     return this.db.collection(envConfig.dbConditionProductsCollection)
+  }
+  get userProfiles(): Collection<UserProfile> {
+    return this.db.collection(envConfig.dbUserProfilesCollection)
   }
 }
 
