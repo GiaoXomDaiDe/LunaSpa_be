@@ -1,4 +1,5 @@
 import { GetAllServicesOptions } from '~/models/request/Services.request'
+import { BranchServicesStatus } from '~/models/schema/BranchServices.schema'
 import { ServiceStatus } from '~/models/schema/Service.schema'
 
 export function buildServicesPipeline(options: GetAllServicesOptions) {
@@ -19,25 +20,27 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     max_booking_count: options.max_booking_count,
     min_view_count: options.min_view_count,
     max_view_count: options.max_view_count,
-    isAdmin: options.isAdmin
+    isAdmin: options.isAdmin,
+    include_branch_services: options.include_branch_services || false
   }
   const pipeline: Record<string, any>[] = []
   const match: Record<string, any> = {}
+
   if (!_options.isAdmin) {
     match.status = ServiceStatus.ACTIVE
   }
 
   if (_options.search) {
     match.$or = [
-      { name: { $regex: options.search, $options: 'i' } },
-      { description: { $regex: options.search, $options: 'i' } }
+      { name: { $regex: _options.search, $options: 'i' } },
+      { description: { $regex: _options.search, $options: 'i' } }
     ]
   }
 
   if (_options.service_category_id) {
     match.service_category_id = _options.service_category_id
   }
-  console.log(_options.device_ids, 'device_ids')
+
   if (_options.device_ids) {
     match.device_ids = { $all: _options.device_ids }
   }
@@ -60,21 +63,69 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     pipeline.push({ $match: match })
   }
 
-  pipeline.push({
-    $lookup: {
-      from: 'service_categories',
-      localField: 'service_category_id',
-      foreignField: '_id',
-      as: 'service_category'
-    }
-  })
-  pipeline.push({
-    $unwind: {
-      path: '$service_category',
-      preserveNullAndEmptyArrays: true
-    }
-  })
+  // Nếu include_branch_services true thì thêm các stage để nối bảng với branch_services và branches
+  if (_options.include_branch_services) {
+    // Nối bảng branch_services dựa trên service_id và trạng thái = 1
+    pipeline.push({
+      $lookup: {
+        from: 'branch_services',
+        let: { service_id: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [{ $eq: ['$service_id', '$$service_id'] }, { $eq: ['$status', BranchServicesStatus.ACTIVE] }]
+              }
+            }
+          }
+        ],
+        as: 'temp_branch_services'
+      }
+    })
+    console.log('temp_branch_services', pipeline)
 
+    // Tạo mảng branch_ids từ kết quả của branch_services
+    pipeline.push({
+      $addFields: {
+        branch_ids: {
+          $map: {
+            input: '$temp_branch_services',
+            as: 'bs',
+            in: '$$bs.branch_id'
+          }
+        }
+      }
+    })
+
+    // Nối bảng branches dựa trên branch_ids
+    pipeline.push({
+      $lookup: {
+        from: 'branches',
+        localField: 'branch_ids',
+        foreignField: '_id',
+        as: 'branches'
+      }
+    })
+
+    // Thêm các trường phụ trợ: service_status và branch_services_details
+    pipeline.push({
+      $addFields: {
+        service_status: '$status',
+        branch_services_details: {
+          $map: {
+            input: '$temp_branch_services',
+            as: 'bs',
+            in: {
+              branch_services_id: '$$bs._id',
+              branch_services_status: '$$bs.status'
+            }
+          }
+        }
+      }
+    })
+  }
+
+  // Nối bảng devices theo điều kiện device_ids và status = 1
   pipeline.push({
     $lookup: {
       from: 'devices',
@@ -88,16 +139,74 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
           }
         }
       ],
-      as: 'device'
+      as: 'devices'
     }
   })
 
+  // Nối bảng service_categories theo service_category_id
   pipeline.push({
-    $project: {
-      device_ids: 0,
-      service_category_id: 0
+    $lookup: {
+      from: 'service_categories',
+      localField: 'service_category_id',
+      foreignField: '_id',
+      as: 'service_category'
     }
   })
+
+  // Stage project: chọn các trường cần trả về
+  pipeline.push({
+    $project: {
+      _id: 1,
+      name: 1,
+      description: 1,
+      images: 1,
+      service_status: 1,
+      booking_count: 1,
+      view_count: 1,
+      durations: 1,
+      device: 1,
+      service_category: 1,
+      created_at: 1,
+      updated_at: 1,
+      branches: {
+        $cond: {
+          if: { $eq: [_options.include_branch_services, true] },
+          then: {
+            $map: {
+              input: '$branches',
+              as: 'branch',
+              in: {
+                _id: '$$branch._id',
+                name: '$$branch.name',
+                description: '$$branch.description',
+                rating: '$$branch.rating',
+                images: '$$branch.images',
+                opening_hours: '$$branch.opening_hours',
+                contact: '$$branch.contact'
+              }
+            }
+          },
+          else: '$$REMOVE'
+        }
+      },
+      branch_services_details: {
+        $cond: {
+          if: { $eq: [_options.include_branch_services, true] },
+          then: 1,
+          else: '$$REMOVE'
+        }
+      }
+    }
+  })
+
+  // Unwind mảng service_category để dễ xử lý (nếu có nhiều category)
+  pipeline.push({
+    $unwind: {
+      path: '$service_category',
+      preserveNullAndEmptyArrays: true
+    }
+  })
+
   pipeline.push({
     $facet: {
       data: [
@@ -116,6 +225,5 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
       total_count: [{ $count: 'count' }]
     }
   })
-
   return { pipeline, _options }
 }

@@ -2,13 +2,18 @@ import { config } from 'dotenv'
 import { Collection, Db, MongoClient } from 'mongodb'
 import { envConfig } from '~/constants/config'
 import Account from '~/models/schema/Account.schema'
+import Branch from '~/models/schema/Branch.schema'
+import BranchProducts from '~/models/schema/BranchProducts.schema'
+import BranchServices from '~/models/schema/BranchServices.schema'
 import Condition from '~/models/schema/Condition.schema'
 import ConditionProduct from '~/models/schema/ConditionProduct.schema'
 import Device from '~/models/schema/Device.schema'
+import Favorite from '~/models/schema/Favorite.schema'
 import Product from '~/models/schema/Product.schema'
 import ProductCategory from '~/models/schema/ProductCategory.schema'
 import RefreshToken from '~/models/schema/RefreshToken.schema'
 import Resource from '~/models/schema/Resource.schema'
+import Review from '~/models/schema/Review.schema'
 import Roles from '~/models/schema/Role.schema'
 import Service from '~/models/schema/Service.schema'
 import ServiceCategoy from '~/models/schema/ServiceCategory.schema'
@@ -79,6 +84,24 @@ class DatabaseService {
   }
   get userProfiles(): Collection<UserProfile> {
     return this.db.collection(envConfig.dbUserProfilesCollection)
+  }
+  get favorites(): Collection<Favorite> {
+    return this.db.collection(envConfig.dbFavoritesCollection)
+  }
+  get branches(): Collection<Branch> {
+    return this.db.collection(envConfig.dbBranchesCollection)
+  }
+  get reviews(): Collection<Review> {
+    return this.db.collection(envConfig.dbReviewsCollection)
+  }
+  get branchServices(): Collection<BranchServices> {
+    return this.db.collection(envConfig.dbBranchServicesCollection)
+  }
+  get branchProducts(): Collection<BranchProducts> {
+    return this.db.collection(envConfig.dbBranchProductsCollection)
+  }
+  get serviceProducts(): Collection<ServiceProducts> {
+    return this.db.collection(envConfig.dbServicesProductsCollection)
   }
 }
 

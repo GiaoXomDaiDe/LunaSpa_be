@@ -232,7 +232,6 @@ export const checkPermission = (operation: 'create' | 'read' | 'update' | 'delet
         role_id = (account as Account).role_id.toString()
         role = await rolesService.getRole({ role_id })
       }
-      console.log(role_id)
       // Kiểm tra quyền nếu role có resources
       if (role?.resources?.length) {
         const result = await databaseService.roles
@@ -265,7 +264,6 @@ export const checkPermission = (operation: 'create' | 'read' | 'update' | 'delet
             }
           ])
           .toArray()
-        console.log(result)
         // Kiểm tra quyền thao tác
         if (result.length > 0 && result[0].permission[operation] === true) {
           req.role = role as Roles

@@ -1,7 +1,10 @@
 import 'express'
 import { TokenPayload } from '~/models/request/Account.requests'
 import Account from '~/models/schema/Account.schema'
+import Branch from '~/models/schema/Branch.schema'
+import BranchServices from '~/models/schema/BranchServices.schema'
 import Device from '~/models/schema/Device.schema'
+import { ItemType } from '~/models/schema/Favorite.schema'
 import Product from '~/models/schema/Product.schema'
 import ProductCategory from '~/models/schema/ProductCategory.schema'
 import Resource from '~/models/schema/Resource.schema'
@@ -24,5 +27,8 @@ declare module 'express' {
     device?: Device
     product?: Product
     service?: Service
+    branch?: Branch
+    item_type?: ItemType
+    branch_service?: BranchServices
   }
 }

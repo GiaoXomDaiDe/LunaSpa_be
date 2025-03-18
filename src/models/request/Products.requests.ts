@@ -12,6 +12,7 @@ export interface ProductQuery extends Pagination, Query {
   discount_price?: string
   quantity?: string
   order?: string
+  include_branch_products?: string
 }
 export interface ProductReqBody {
   name: string
@@ -36,6 +37,7 @@ export interface GetAllProductsOptions {
   quantity?: number
   order?: (typeof ORDER)[number]
   isAdmin?: boolean
+  include_branch_products?: boolean
 }
 export interface ProductParams extends ParamsDictionary {
   product_id: string

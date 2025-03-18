@@ -8,17 +8,21 @@ import { envConfig } from '~/constants/config'
 import { defaultErrorHandler } from '~/middlewares/error.middleware'
 import accountsRouter from '~/routes/accounts.routes'
 import bookingsRouter from '~/routes/bookings.routes'
+import branchProductsRouter from '~/routes/branchProducts.routes'
+import branchServicesRouter from '~/routes/branchServices.routes'
 import branchesRouter from '~/routes/branches.routes'
 import conditionsRouter from '~/routes/conditions.routes'
 import devicesRouter from '~/routes/devices.routes'
+import favoritesRouter from '~/routes/favorites.routes'
 import mediasRouter from '~/routes/media.routes'
 import productCategoriesRouter from '~/routes/productCategories.routes'
 import productsRouter from '~/routes/products.routes'
 import resourcesRouter from '~/routes/resources.routes'
+import reviewsRouter from '~/routes/reviews.routes'
 import rolesRouter from '~/routes/roles.routes'
 import serviceCategoriesRouter from '~/routes/serviceCategories.routes'
+import serviceProductsRouter from '~/routes/serviceProducts.routes'
 import servicesRouter from '~/routes/services.routes'
-import servicesProductRouter from '~/routes/servicesProducts.routes'
 import staffSlotsRouter from '~/routes/staff-slots.routes'
 import staffRouter from '~/routes/staff.routes'
 import staticRouter from '~/routes/static.routes'
@@ -60,9 +64,10 @@ app.use('/resources', resourcesRouter)
 app.use('/roles', rolesRouter)
 app.use('/medias', mediasRouter)
 app.use('/services', servicesRouter)
-app.use('/services', servicesProductRouter)
 app.use('/products', productsRouter)
 app.use('/branches', branchesRouter)
+app.use('/branch-services', branchServicesRouter)
+app.use('/branch-products', branchProductsRouter)
 app.use('/staff', staffRouter)
 app.use('/staff-slots', staffSlotsRouter)
 app.use('/bookings', bookingsRouter)
@@ -71,6 +76,9 @@ app.use('/conditions', conditionsRouter)
 app.use('/user-profiles', userProfilesRouter)
 app.use('/product-categories', productCategoriesRouter)
 app.use('/service-categories', serviceCategoriesRouter)
+app.use('/favorites', favoritesRouter)
+app.use('/reviews', reviewsRouter)
+app.use('/service-products', serviceProductsRouter)
 app.use(defaultErrorHandler as ErrorRequestHandler)
 // app.use('/static', express.static(UPLOAD_DIR))
 app.use('/static', staticRouter)

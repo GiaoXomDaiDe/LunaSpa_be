@@ -13,13 +13,14 @@ export default class ServiceProducts {
   service_id: ObjectId
   product_id: ObjectId
   created_at: Date
-  updated_at: Date
-  constructor(serviceProducts: ServiceProductsType) {
+  updated_at?: Date
+
+  constructor(serviceProduct: ServiceProductsType) {
     const date = new Date()
-    this._id = serviceProducts._id
-    this.service_id = serviceProducts.service_id
-    this.product_id = serviceProducts.product_id
-    this.created_at = serviceProducts.created_at || date
-    this.updated_at = serviceProducts.updated_at || date
+    this._id = serviceProduct._id
+    this.service_id = serviceProduct.service_id
+    this.product_id = serviceProduct.product_id
+    this.created_at = serviceProduct.created_at || date
+    this.updated_at = serviceProduct.updated_at || date
   }
 }

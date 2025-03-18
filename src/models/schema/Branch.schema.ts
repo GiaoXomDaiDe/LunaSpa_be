@@ -3,22 +3,19 @@ import { ObjectId } from 'mongodb'
 export interface BranchType {
   _id?: ObjectId
   name: string
-  address?: string
   description?: string
   rating?: number
   images?: string[]
   status?: BranchStatus
   opening_hours?: OpeningHoursType[]
   contact?: ContactType
-  service_ids?: ObjectId[]
-  product_ids?: ObjectId[]
   created_at?: Date
   updated_at?: Date
 }
 
 export enum BranchStatus {
   ACTIVE = 1,
-  INACTIVE = 2
+  INACTIVE = 0
 }
 
 export interface ContactType {
@@ -28,28 +25,36 @@ export interface ContactType {
 }
 
 export interface OpeningHoursType {
-  day: number
+  day: DayType
   open: string
   close: string
 }
+
+export enum DayType {
+  MONDAY = 'Monday',
+  TUESDAY = 'Tuesday',
+  WEDNESDAY = 'Wednesday',
+  THURSDAY = 'Thursday',
+  FRIDAY = 'Friday',
+  SATURDAY = 'Saturday',
+  SUNDAY = 'Sunday'
+}
+
 export default class Branch {
   _id?: ObjectId
   name: string
-  address: string
-  description?: string
+  description: string
   rating: number
   images: string[]
   status: BranchStatus
   opening_hours: OpeningHoursType[]
   contact: ContactType
-  service_ids: ObjectId[]
-  product_ids: ObjectId[]
-  created_at?: Date
+  created_at: Date
   updated_at?: Date
   constructor(branch: BranchType) {
+    const date = new Date()
     this._id = branch._id
     this.name = branch.name
-    this.address = branch.address || ''
     this.description = branch.description || ''
     this.rating = branch.rating || 0
     this.images = branch.images || []
@@ -60,9 +65,7 @@ export default class Branch {
       email: '',
       address: ''
     }
-    this.service_ids = branch.service_ids || []
-    this.product_ids = branch.product_ids || []
-    this.created_at = branch.created_at
-    this.updated_at = branch.updated_at
+    this.created_at = branch.created_at || date
+    this.updated_at = branch.updated_at || date
   }
 }

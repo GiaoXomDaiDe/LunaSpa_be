@@ -1,4 +1,4 @@
 export interface Pagination {
-  limit: string
-  page: string
+  page?: string
+  limit?: string
 }

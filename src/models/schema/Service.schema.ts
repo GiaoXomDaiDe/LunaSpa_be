@@ -20,6 +20,7 @@ export interface ServiceType {
   images?: string[]
   status?: ServiceStatus
   booking_count?: number
+  branch_id?: ObjectId[]
   service_category_id: ObjectId
   view_count?: number
   created_at?: Date
@@ -36,6 +37,7 @@ export default class Service {
   images: string[]
   status: ServiceStatus
   view_count: number
+  branch_id: ObjectId[]
   booking_count: number
   service_category_id: ObjectId
   created_at: Date
@@ -50,6 +52,7 @@ export default class Service {
     this.images = service.images || []
     this.status = service.status || ServiceStatus.ACTIVE
     this.view_count = service.view_count || 0
+    this.branch_id = service.branch_id || []
     this.booking_count = service.booking_count || 0
     this.service_category_id = service.service_category_id
     this.created_at = service.created_at || date

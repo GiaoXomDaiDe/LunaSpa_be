@@ -13,7 +13,6 @@ class ServicesService {
     const { pipeline, _options } = buildServicesPipeline(options)
 
     const services = await databaseService.services.aggregate(pipeline).toArray()
-
     const { data, total_count } = services[0]
     const count = total_count?.[0]?.count || 0
     // if (data.length > 0) {
