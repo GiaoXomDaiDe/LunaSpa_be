@@ -4,6 +4,7 @@ import {
   deleteProductController,
   getAllProductsController,
   getProductController,
+  getServicesByProductIdController,
   softDeleteProductController,
   updateProductController
 } from '~/controllers/products.controllers'
@@ -79,6 +80,14 @@ productsRouter.patch(
   productIdValidator,
   checkProductNotInactive,
   wrapRequestHandler(softDeleteProductController)
+)
+
+productsRouter.get(
+  '/:product_id/services',
+  accessTokenValidatorV2,
+  checkPermission('read', 'Products'),
+  productIdValidator,
+  wrapRequestHandler(getServicesByProductIdController)
 )
 
 export default productsRouter

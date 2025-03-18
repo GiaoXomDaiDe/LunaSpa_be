@@ -314,3 +314,16 @@ export const paginationValidator = validate(
     ['query']
   )
 )
+
+export const isAdminValidator = async (req: Request, res: Response, next: NextFunction) => {
+  const { role } = req
+  if (role?.name !== 'Admin') {
+    return next(
+      new ErrorWithStatus({
+        message: ACCOUNT_MESSAGES.ACCOUNT_NOT_ADMIN,
+        status: HTTP_STATUS.FORBIDDEN
+      })
+    )
+  }
+  next()
+}

@@ -13,6 +13,7 @@ export interface ServiceQuery extends Pagination, Query {
   max_booking_count?: string
   min_view_count?: string
   max_view_count?: string
+  include_branch_services?: string
 }
 export interface GetAllServicesOptions {
   limit?: number
@@ -27,6 +28,7 @@ export interface GetAllServicesOptions {
   min_view_count?: number
   max_view_count?: number
   isAdmin?: boolean
+  include_branch_services?: boolean
 }
 export interface ServiceParams extends ParamsDictionary {
   service_id: string

@@ -1,4 +1,5 @@
 import { RequestHandler, Router } from 'express'
+import { getServiceProductsByServiceIdController } from '~/controllers/serviceProducts.controllers'
 import {
   createServiceController,
   deleteServiceController,
@@ -81,28 +82,11 @@ servicesRouter.patch(
 )
 
 servicesRouter.get(
-  '/categories',
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getServiceCategoriesController
-    res.json({ message: 'Get service categories successfully' })
-  })
-)
-
-/**
- * @route GET /services/popular
- * @description Lấy danh sách dịch vụ phổ biến
- * @access Public
- *
- * @query {number} [limit=10] - Số lượng dịch vụ
- *
- * @returns {Array<Object>} 200 - Danh sách dịch vụ phổ biến
- */
-servicesRouter.get(
-  '/popular',
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getPopularServicesController
-    res.json({ message: 'Get popular services successfully' })
-  })
+  '/:service_id/products',
+  accessTokenValidatorV2,
+  checkPermission('read', 'Services'),
+  serviceIdValidator,
+  wrapRequestHandler(getServiceProductsByServiceIdController)
 )
 
 export default servicesRouter

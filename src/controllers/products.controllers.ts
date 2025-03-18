@@ -4,29 +4,43 @@ import { omitBy } from 'lodash'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { PRODUCT_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
-import { ProductParams, ProductQuery, ProductReqBody } from '~/models/request/Products.requests'
+import { GetAllProductsOptions, ProductParams, ProductQuery, ProductReqBody } from '~/models/request/Products.requests'
 import productsService from '~/services/products.services'
+import serviceProductsService from '~/services/serviceProducts.services'
 
 export const getAllProductsController = async (
   req: Request<ParamsDictionary, any, any, ProductQuery>,
   res: Response,
   next: NextFunction
 ) => {
-  const { limit, page, search, sort, max_price, min_price, category_id, discount_price, quantity, order } = req.query
+  const {
+    limit,
+    page,
+    search,
+    sort,
+    max_price,
+    include_branch_products,
+    min_price,
+    category_id,
+    discount_price,
+    quantity,
+    order
+  } = req.query
   const role = req.role
   const isAdmin = role?.name === 'Admin'
-  const options = {
-    limit: Number(limit) || undefined,
-    page: Number(page) || undefined,
-    search: (search as string) || '',
-    sort: (sort as string) || undefined,
-    order: (order as string) || undefined,
+  const options: GetAllProductsOptions = {
+    limit: limit ? parseInt(limit) : undefined,
+    page: page ? parseInt(page) : undefined,
+    search,
+    sort,
+    order,
     max_price: max_price && max_price !== '' ? Number(max_price) : undefined,
     min_price: min_price && min_price !== '' ? Number(min_price) : undefined,
     category_id: category_id && category_id !== '' ? category_id : undefined,
     discount_price: discount_price && discount_price !== '' ? Number(discount_price) : undefined,
     quantity: quantity && quantity !== '' ? Number(quantity) : undefined,
-    isAdmin
+    isAdmin,
+    include_branch_products: include_branch_products ? include_branch_products === 'true' : false
   }
   const result = await productsService.getAllProducts(options)
   res.status(HTTP_STATUS.OK).json({
@@ -101,5 +115,13 @@ export const softDeleteProductController = async (
   res.status(HTTP_STATUS.OK).json({
     message: PRODUCT_MESSAGES.DELETE_PRODUCT_SUCCESS,
     result
+  })
+}
+
+export const getServicesByProductIdController = async (req: Request<{ product_id: string }>, res: Response) => {
+  const result = await serviceProductsService.getServicesByProductId(req.params.product_id)
+  res.json({
+    message: 'Lấy danh sách dịch vụ của sản phẩm thành công',
+    data: result
   })
 }
