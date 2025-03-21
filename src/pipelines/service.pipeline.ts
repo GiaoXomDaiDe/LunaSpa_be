@@ -91,7 +91,7 @@ export const buildServicePipeline = (service_id: string) => {
         booking_count: 1,
         view_count: 1,
         durations: 1,
-        device: 1,
+        devices: 1,
         service_category: 1,
         created_at: 1,
         updated_at: 1,
