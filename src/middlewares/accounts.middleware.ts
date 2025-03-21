@@ -45,6 +45,7 @@ export const accessTokenValidator = validate(
       Authorization: {
         custom: {
           options: async (value: string, { req }) => {
+            console.log(value)
             const access_token = (value || '').split(' ')[1]
             return await verifyAccessToken(access_token, req as Request)
           }
@@ -56,13 +57,18 @@ export const accessTokenValidator = validate(
 )
 export const accessTokenValidatorV2 = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Nếu không có authorization header, đánh dấu người dùng là guest
     if (!req.headers.authorization) {
-      req.role_name = 'guest'
+      req.role_name = 'Guest'
       return next()
     }
+
+    // Nếu có authorization header, xác thực token
     await accessTokenValidator(req, res, next)
   } catch (error) {
-    next(error)
+    // Nếu xác thực token thất bại, cũng đánh dấu người dùng là guest
+    req.role_name = 'Guest'
+    next()
   }
 }
 /* 

@@ -219,19 +219,22 @@ export const addResourceToRoleValidator = validate(
 export const checkPermission = (operation: 'create' | 'read' | 'update' | 'delete', resource: string) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { account_id } = req.decoded_authorization as TokenPayload
       // Xác định role theo role_name hoặc từ account
       let role_id: string
       let role
 
-      if (req.role_name === 'guest') {
+      if (req.role_name === 'Guest') {
+        // Nếu là guest thì lấy role theo role_name
         role = await rolesService.getRole({ role_name: req.role_name })
         role_id = role._id.toString()
       } else {
+        // Nếu là user đã login thì lấy role từ account
+        const { account_id } = req.decoded_authorization as TokenPayload
         const account = await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
         role_id = (account as Account).role_id.toString()
         role = await rolesService.getRole({ role_id })
       }
+
       // Kiểm tra quyền nếu role có resources
       if (role?.resources?.length) {
         const result = await databaseService.roles
