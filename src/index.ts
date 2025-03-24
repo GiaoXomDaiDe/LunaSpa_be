@@ -7,10 +7,11 @@ import swaggerUi from 'swagger-ui-express'
 import { envConfig } from '~/constants/config'
 import { defaultErrorHandler } from '~/middlewares/error.middleware'
 import accountsRouter from '~/routes/accounts.routes'
-import bookingsRouter from '~/routes/bookings.routes'
 import branchProductsRouter from '~/routes/branchProducts.routes'
 import branchServicesRouter from '~/routes/branchServices.routes'
 import branchesRouter from '~/routes/branches.routes'
+import conditionProductsRouter from '~/routes/conditionProducts.routes'
+import conditionServicesRouter from '~/routes/conditionServices.routes'
 import conditionsRouter from '~/routes/conditions.routes'
 import devicesRouter from '~/routes/devices.routes'
 import favoritesRouter from '~/routes/favorites.routes'
@@ -23,13 +24,16 @@ import rolesRouter from '~/routes/roles.routes'
 import serviceCategoriesRouter from '~/routes/serviceCategories.routes'
 import serviceProductsRouter from '~/routes/serviceProducts.routes'
 import servicesRouter from '~/routes/services.routes'
-import staffSlotsRouter from '~/routes/staff-slots.routes'
-import staffRouter from '~/routes/staff.routes'
+import staffProfilesRouter from '~/routes/staffProfiles.routes'
 import staticRouter from '~/routes/static.routes'
 import userProfilesRouter from '~/routes/userProfiles.routes'
 import databaseService from '~/services/database.services'
 import { initUploadFolder } from '~/utils/file'
-
+import ordersRouter from './routes/orders.routes'
+import rewardPointsRouter from './routes/rewardPoints.routes'
+import specialtiesRouter from './routes/specialties.routes'
+import staffSlotsRouter from './routes/staff-slots.routes'
+import webhookRouter from './routes/webhook.routes'
 const options: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
@@ -68,9 +72,8 @@ app.use('/products', productsRouter)
 app.use('/branches', branchesRouter)
 app.use('/branch-services', branchServicesRouter)
 app.use('/branch-products', branchProductsRouter)
-app.use('/staff', staffRouter)
 app.use('/staff-slots', staffSlotsRouter)
-app.use('/bookings', bookingsRouter)
+app.use('/staff-profiles', staffProfilesRouter)
 app.use('/devices', devicesRouter)
 app.use('/conditions', conditionsRouter)
 app.use('/user-profiles', userProfilesRouter)
@@ -79,6 +82,12 @@ app.use('/service-categories', serviceCategoriesRouter)
 app.use('/favorites', favoritesRouter)
 app.use('/reviews', reviewsRouter)
 app.use('/service-products', serviceProductsRouter)
+app.use('/reward-points', rewardPointsRouter)
+app.use('/specialties', specialtiesRouter)
+app.use('/condition-products', conditionProductsRouter)
+app.use('/condition-services', conditionServicesRouter)
+app.use('/orders', ordersRouter)
+app.use('/webhooks', webhookRouter)
 app.use(defaultErrorHandler as ErrorRequestHandler)
 // app.use('/static', express.static(UPLOAD_DIR))
 app.use('/static', staticRouter)

@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { GetAllServiceProductsOptions } from '~/models/request/ServiceProducts.requests'
 import { ProductStatus } from '~/models/schema/Product.schema'
 import { ServiceStatus } from '~/models/schema/Service.schema'
+import { ServiceProductStatus } from '~/models/schema/ServiceProducts.schema'
 
 export function buildServiceProductsPipeline(options: GetAllServiceProductsOptions) {
   const defaultOptions: Partial<Required<GetAllServiceProductsOptions>> = {
@@ -13,15 +14,19 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
     page: options.page ?? defaultOptions.page,
     service_id: options.service_id,
     product_id: options.product_id,
-    isAdmin: options.isAdmin
+    isAdmin: options.isAdmin,
+    status: options.status,
+    recommended: options.recommended
   }
 
   const pipeline: Record<string, any>[] = []
   const match: Record<string, any> = {}
 
-  // Chỉ áp dụng kiểm tra status nếu không phải admin
-  if (!_options.isAdmin) {
-    match.status = { $ne: 0 } // Inactive status
+  // Chỉ áp dụng kiểm tra status nếu không phải admin và status không được chỉ định
+  if (!_options.isAdmin && _options.status === undefined) {
+    match.status = { $ne: ServiceProductStatus.INACTIVE }
+  } else if (_options.status !== undefined) {
+    match.status = _options.status
   }
 
   // Thêm điều kiện tìm kiếm nếu có
@@ -31,6 +36,10 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
 
   if (_options.product_id) {
     match.product_id = new ObjectId(_options.product_id)
+  }
+
+  if (_options.recommended !== undefined) {
+    match.recommended = _options.recommended
   }
 
   // Thêm stage match vào pipeline nếu có điều kiện
@@ -126,6 +135,9 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
         service_id: 1,
         product_id: 1,
         status: 1,
+        recommended: 1,
+        discount_percent: 1,
+        usage_instruction: 1,
         created_at: 1,
         updated_at: 1,
         product: {
@@ -139,6 +151,7 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
           created_at: '$product.created_at',
           updated_at: '$product.updated_at',
           product_status: '$product.status',
+          product_category: '$product.product_category',
           branches: {
             $map: {
               input: '$product.branches',
@@ -272,27 +285,28 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
     // Unwind service array
     pipeline.push({ $unwind: '$service' })
 
-    // Project để tạo kết quả phù hợp
+    // Project để trả về đúng định dạng kết quả services
     pipeline.push({
       $project: {
         _id: 1,
         service_id: 1,
         product_id: 1,
         status: 1,
+        recommended: 1,
+        discount_percent: 1,
+        usage_instruction: 1,
         created_at: 1,
         updated_at: 1,
         service: {
           _id: '$service._id',
           name: '$service.name',
           description: '$service.description',
-          status: '$service.status',
+          images: '$service.images',
           booking_count: '$service.booking_count',
           view_count: '$service.view_count',
-          branch_id: '$service.branch_id',
-          service_category_id: '$service.service_category_id',
-          device_ids: '$service.device_ids',
+          created_at: '$service.created_at',
+          updated_at: '$service.updated_at',
           durations: '$service.durations',
-          images: '$service.images',
           service_category: '$service.service_category',
           devices: '$service.devices',
           branches: {
@@ -510,6 +524,9 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
       $project: {
         _id: 1,
         status: 1,
+        recommended: 1,
+        discount_percent: 1,
+        usage_instruction: 1,
         created_at: 1,
         updated_at: 1,
         service: {
@@ -557,12 +574,12 @@ export function buildServiceProductsPipeline(options: GetAllServiceProductsOptio
           description: '$product.description',
           price: '$product.price',
           discount_price: '$product.discount_price',
-          product_category: '$product.product_category',
           quantity: '$product.quantity',
           images: '$product.images',
           created_at: '$product.created_at',
           updated_at: '$product.updated_at',
           product_status: '$product.status',
+          product_category: '$product.product_category',
           branches: {
             $map: {
               input: '$product.branches',

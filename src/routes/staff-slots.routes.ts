@@ -1,210 +1,192 @@
-import { Router } from 'express'
-import { accessTokenValidator, verifiedAccountValidator } from '~/middlewares/accounts.middleware'
+import { RequestHandler, Router } from 'express'
+import {
+  createMultipleStaffSlotsController,
+  createStaffSlotController,
+  deleteStaffSlotController,
+  downloadTemplateController,
+  exportExcelController,
+  generateStaffSlotsController,
+  getStaffSlotController,
+  getStaffSlotsController,
+  importExcelController,
+  updateStaffSlotController,
+  updateStaffSlotStatusController
+} from '~/controllers/staffSlots.controllers'
+import {
+  accessTokenValidator,
+  accessTokenValidatorV2,
+  verifiedAccountValidator
+} from '~/middlewares/accounts.middleware'
+import { checkPermission } from '~/middlewares/roles.middleware'
+import {
+  createMultipleStaffSlotsValidator,
+  generateStaffSlotsValidator,
+  staffSlotIdValidator,
+  staffSlotQueryValidator,
+  staffSlotValidator,
+  updateStaffSlotStatusValidator,
+  updateStaffSlotValidator
+} from '~/middlewares/staffSlots.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const staffSlotsRouter = Router()
 
 /**
  * @route GET /staff-slots
- * @description Lấy danh sách tất cả slots của nhân viên
- * @access Private - Admin
+ * @description Lấy danh sách các slot làm việc của nhân viên
+ * @access Private
  * @requires access_token
- *
- * @query {string} [staff_profile_id] - ID của profile nhân viên
- * @query {string} [date] - Ngày (YYYY-MM-DD)
- * @query {string} [start_date] - Ngày bắt đầu (YYYY-MM-DD)
- * @query {string} [end_date] - Ngày kết thúc (YYYY-MM-DD)
- * @query {number} [status] - Trạng thái (1: available, 2: pending, 3: booked, 4: cancelled)
- *
- * @returns {Array<Object>} 200 - Danh sách slots
  */
 staffSlotsRouter.get(
   '/',
-  accessTokenValidator,
-  verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getStaffSlotsController
-    res.json({ message: 'Get staff slots successfully' })
-  })
+  accessTokenValidatorV2,
+  checkPermission('read', 'StaffSlot'),
+  staffSlotQueryValidator,
+  wrapRequestHandler(getStaffSlotsController)
 )
 
 /**
- * @route GET /staff-slots/:id
- * @description Lấy chi tiết một slot
- * @access Private - Admin hoặc Chính chủ
+ * @route GET /staff-slots/:slot_id
+ * @description Lấy thông tin chi tiết một slot làm việc
+ * @access Private
  * @requires access_token
- *
- * @param {string} id - ID slot
- *
- * @returns {Object} 200 - Chi tiết slot
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- * @throws {404} - Slot không tồn tại
  */
 staffSlotsRouter.get(
-  '/:id',
+  '/:staff_slot_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getStaffSlotDetailController
-    res.json({ message: 'Get staff slot detail successfully' })
-  })
+  checkPermission('read', 'StaffSlot'),
+  staffSlotIdValidator,
+  wrapRequestHandler(getStaffSlotController)
 )
 
 /**
  * @route POST /staff-slots
- * @description Tạo mới slot làm việc
- * @access Private - Admin hoặc nhân viên
+ * @description Tạo một slot làm việc mới
+ * @access Private
  * @requires access_token
- *
- * @body {Object} request
- * @body {string} request.staff_profile_id - ID profile nhân viên
- * @body {string} request.date - Ngày (YYYY-MM-DD)
- * @body {string} request.start_time - Thời gian bắt đầu (HH:mm)
- * @body {string} request.end_time - Thời gian kết thúc (HH:mm)
- * @body {number} [request.status=1] - Trạng thái (1: available)
- *
- * @returns {Object} 201 - Slot đã được tạo
- * @throws {400} - Dữ liệu không hợp lệ
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
  */
 staffSlotsRouter.post(
   '/',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement createStaffSlotController
-    res.status(201).json({ message: 'Create staff slot successfully' })
-  })
+  checkPermission('create', 'StaffSlot'),
+  staffSlotValidator,
+  wrapRequestHandler(createStaffSlotController)
 )
 
 /**
  * @route POST /staff-slots/batch
  * @description Tạo nhiều slot làm việc cùng lúc
- * @access Private - Admin hoặc nhân viên
+ * @access Private
  * @requires access_token
- *
- * @body {Object} request
- * @body {string} request.staff_profile_id - ID profile nhân viên
- * @body {Array<string>} request.dates - Danh sách ngày (YYYY-MM-DD)
- * @body {string} request.start_time - Thời gian bắt đầu (HH:mm)
- * @body {string} request.end_time - Thời gian kết thúc (HH:mm)
- * @body {number} [request.status=1] - Trạng thái (1: available)
- *
- * @returns {Object} 201 - Danh sách slots đã được tạo
- * @throws {400} - Dữ liệu không hợp lệ
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
  */
 staffSlotsRouter.post(
   '/batch',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement createBatchStaffSlotsController
-    res.status(201).json({ message: 'Create batch staff slots successfully' })
-  })
+  createMultipleStaffSlotsValidator,
+  wrapRequestHandler(createMultipleStaffSlotsController)
 )
 
 /**
- * @route PUT /staff-slots/:id
- * @description Cập nhật thông tin slot
- * @access Private - Admin hoặc Chính chủ
+ * @route POST /staff-slots/generate
+ * @description Tạo tự động các slot làm việc dựa trên thông tin lịch làm việc
+ * @access Private
  * @requires access_token
- *
- * @param {string} id - ID slot
- * @body {Object} request
- * @body {string} [request.date] - Ngày (YYYY-MM-DD)
- * @body {string} [request.start_time] - Thời gian bắt đầu (HH:mm)
- * @body {string} [request.end_time] - Thời gian kết thúc (HH:mm)
- * @body {number} [request.status] - Trạng thái (1: available, 4: cancelled)
- *
- * @returns {Object} 200 - Slot đã được cập nhật
- * @throws {400} - Dữ liệu không hợp lệ
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- * @throws {404} - Slot không tồn tại
  */
-staffSlotsRouter.put(
-  '/:id',
+staffSlotsRouter.post(
+  '/generate',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement updateStaffSlotController
-    res.json({ message: 'Update staff slot successfully' })
-  })
+  generateStaffSlotsValidator,
+  wrapRequestHandler(generateStaffSlotsController)
 )
 
 /**
- * @route DELETE /staff-slots/:id
- * @description Xóa slot
- * @access Private - Admin hoặc Chính chủ
+ * @route PUT /staff-slots/:slot_id
+ * @description Cập nhật thông tin một slot làm việc
+ * @access Private
  * @requires access_token
- *
- * @param {string} id - ID slot
- *
- * @returns {Object} 200 - Thông báo xóa thành công
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- * @throws {404} - Slot không tồn tại
+ */
+staffSlotsRouter.put(
+  '/:staff_slot_id',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  staffSlotIdValidator,
+  updateStaffSlotValidator,
+  wrapRequestHandler(updateStaffSlotController)
+)
+
+/**
+ * @route PATCH /staff-slots/:slot_id/status
+ * @description Cập nhật trạng thái của một slot làm việc
+ * @access Private
+ * @requires access_token
+ */
+staffSlotsRouter.patch(
+  '/:staff_slot_id/status',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  staffSlotIdValidator,
+  updateStaffSlotStatusValidator,
+  wrapRequestHandler(updateStaffSlotStatusController)
+)
+
+/**
+ * @route DELETE /staff-slots/:slot_id
+ * @description Xóa một slot làm việc
+ * @access Private
+ * @requires access_token
  */
 staffSlotsRouter.delete(
-  '/:id',
+  '/:staff_slot_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement deleteStaffSlotController
-    res.json({ message: 'Delete staff slot successfully' })
-  })
+  staffSlotIdValidator,
+  wrapRequestHandler(deleteStaffSlotController)
 )
 
 /**
- * @route GET /staff-slots/available
- * @description Lấy danh sách slots có sẵn của nhân viên
- * @access Public
- *
- * @query {string} staff_profile_id - ID của profile nhân viên
- * @query {string} [date] - Ngày (YYYY-MM-DD)
- * @query {string} [start_date] - Ngày bắt đầu (YYYY-MM-DD)
- * @query {string} [end_date] - Ngày kết thúc (YYYY-MM-DD)
- *
- * @returns {Array<Object>} 200 - Danh sách slots có sẵn
- * @throws {400} - Thiếu staff_profile_id
+ * @route GET /staff-slots/excel/template
+ * @description Tải xuống template Excel để import lịch làm việc
+ * @access Private
+ * @requires access_token
  */
 staffSlotsRouter.get(
-  '/available',
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement getAvailableStaffSlotsController
-    res.json({ message: 'Get available staff slots successfully' })
-  })
+  '/excel/template',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  checkPermission('read', 'StaffSlot'),
+  wrapRequestHandler(downloadTemplateController as RequestHandler)
 )
 
 /**
- * @route PUT /staff-slots/:id/status
- * @description Cập nhật trạng thái slot
- * @access Private - Admin, nhân viên hoặc hệ thống
+ * @route POST /staff-slots/excel/import
+ * @description Import lịch làm việc từ file Excel
+ * @access Private
  * @requires access_token
- *
- * @param {string} id - ID slot
- * @body {Object} request
- * @body {number} request.status - Trạng thái mới (1: available, 2: pending, 3: booked, 4: cancelled)
- * @body {string} [request.booking_id] - ID booking nếu trạng thái là booked
- *
- * @returns {Object} 200 - Slot đã được cập nhật trạng thái
- * @throws {400} - Dữ liệu không hợp lệ
- * @throws {401} - Unauthorized
- * @throws {403} - Không có quyền
- * @throws {404} - Slot không tồn tại
  */
-staffSlotsRouter.put(
-  '/:id/status',
+staffSlotsRouter.post(
+  '/excel/import',
   accessTokenValidator,
   verifiedAccountValidator,
-  wrapRequestHandler(async (req, res) => {
-    // TODO: Implement updateStaffSlotStatusController
-    res.json({ message: 'Update staff slot status successfully' })
-  })
+  checkPermission('create', 'StaffSlot'),
+  wrapRequestHandler(importExcelController as RequestHandler)
+)
+
+/**
+ * @route GET /staff-slots/excel/export
+ * @description Xuất lịch làm việc ra file Excel
+ * @access Private
+ * @requires access_token
+ */
+staffSlotsRouter.get(
+  '/excel/export/:staff_profile_id',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  checkPermission('read', 'StaffSlot'),
+  wrapRequestHandler(exportExcelController)
 )
 
 export default staffSlotsRouter

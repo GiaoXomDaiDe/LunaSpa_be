@@ -3,10 +3,12 @@ import {
   createServiceProductController,
   deleteServiceProductController,
   getAllServiceProductsController,
+  getRecommendedProductsController,
   getServiceProductController,
   getServiceProductsByProductIdController,
   getServiceProductsByServiceIdController,
-  updateServiceProductController
+  updateServiceProductController,
+  updateServiceProductStatusController
 } from '~/controllers/serviceProducts.controllers'
 import {
   accessTokenValidator,
@@ -44,11 +46,21 @@ serviceProductsRouter.get(
   wrapRequestHandler(getServiceProductController)
 )
 
+// Get recommended products for a service
+serviceProductsRouter.get(
+  '/recommended/:service_id',
+  accessTokenValidatorV2,
+  checkPermission('read', 'ServiceProducts'),
+  paginationValidator,
+  wrapRequestHandler(getRecommendedProductsController)
+)
+
 // Get all service products for a specific service
 serviceProductsRouter.get(
   '/service/:service_id',
   accessTokenValidatorV2,
   checkPermission('read', 'ServiceProducts'),
+  paginationValidator,
   wrapRequestHandler(getServiceProductsByServiceIdController)
 )
 
@@ -57,6 +69,7 @@ serviceProductsRouter.get(
   '/product/:product_id',
   accessTokenValidatorV2,
   checkPermission('read', 'ServiceProducts'),
+  paginationValidator,
   wrapRequestHandler(getServiceProductsByProductIdController)
 )
 
@@ -79,6 +92,16 @@ serviceProductsRouter.patch(
   serviceProductIdValidator,
   updateServiceProductValidator,
   wrapRequestHandler(updateServiceProductController)
+)
+
+// Update service product status
+serviceProductsRouter.patch(
+  '/:service_product_id/status',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  checkPermission('update', 'ServiceProducts'),
+  serviceProductIdValidator,
+  wrapRequestHandler(updateServiceProductStatusController)
 )
 
 // Delete a service product

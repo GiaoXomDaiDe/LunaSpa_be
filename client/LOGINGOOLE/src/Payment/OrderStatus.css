@@ -1,0 +1,315 @@
+.order-status-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.order-status-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.order-status-header h2 {
+  color: #32325d;
+  margin-bottom: 5px;
+}
+
+.order-id {
+  color: #6b7c93;
+  font-size: 0.9em;
+  margin: 0;
+}
+
+.order-status-content {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.payment-status {
+  display: flex;
+  align-items: center;
+  padding: 25px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.payment-status.success {
+  background-color: #f0fff4;
+}
+
+.payment-status.pending {
+  background-color: #fffde7;
+}
+
+.payment-status.processing {
+  background-color: #e3f2fd;
+}
+
+.payment-status.failed {
+  background-color: #fff5f5;
+}
+
+.payment-status.unknown {
+  background-color: #f8f9fa;
+}
+
+.status-icon {
+  font-size: 2.5em;
+  margin-right: 20px;
+}
+
+.status-text h3 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  color: #32325d;
+}
+
+.status-text p {
+  margin: 0;
+  color: #6b7c93;
+}
+
+.retry-payment {
+  display: inline-block;
+  margin-top: 10px;
+  color: #6772e5;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.retry-payment:hover {
+  text-decoration: underline;
+}
+
+.order-details {
+  padding: 25px;
+}
+
+.order-details h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #32325d;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 10px;
+}
+
+.order-info {
+  margin-bottom: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.info-label {
+  color: #6b7c93;
+}
+
+.info-value {
+  font-weight: 600;
+  color: #32325d;
+}
+
+.next-actions {
+  display: flex;
+  gap: 15px;
+  padding: 0 25px 25px;
+}
+
+.action-button {
+  flex: 1;
+  display: block;
+  text-align: center;
+  padding: 12px 0;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.action-button.primary {
+  background-color: #6772e5;
+  color: white;
+}
+
+.action-button.primary:hover {
+  background-color: #5469d4;
+}
+
+.action-button.secondary {
+  background-color: #f8f9fa;
+  color: #6772e5;
+  border: 1px solid #e6e6e6;
+}
+
+.action-button.secondary:hover {
+  background-color: #f1f1f1;
+}
+
+.loading,
+.error-message {
+  text-align: center;
+  padding: 30px;
+  color: #32325d;
+}
+
+.error-message {
+  color: #df1b41;
+}
+
+/* Thêm CSS cho nút Hủy đơn hàng và modal xác nhận */
+
+.cancel-order-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cancel-order-btn:hover {
+  background-color: #ff7875;
+}
+
+.action-button.cancel {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.action-button.cancel:hover {
+  background-color: #ff7875;
+}
+
+/* Modal hủy đơn hàng */
+.cancel-order-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.cancel-order-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+}
+
+.cancel-order-content h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.cancel-reason-form {
+  margin: 20px 0;
+}
+
+.cancel-reason-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+
+.cancel-reason-form textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.cancel-reason-form textarea:focus {
+  outline: none;
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.cancel-error {
+  color: #ff4d4f;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.cancel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.cancel-button,
+.confirm-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.confirm-button {
+  background-color: #ff4d4f;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #d9d9d9;
+}
+
+.confirm-button:hover {
+  background-color: #ff7875;
+}
+
+.cancel-button:disabled,
+.confirm-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Style cho trạng thái hủy */
+.payment-status.cancelled .status-icon {
+  background-color: #ff4d4f;
+}
+
+@media (max-width: 600px) {
+  .cancel-order-content {
+    padding: 20px;
+    width: 90%;
+  }
+
+  .cancel-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cancel-button,
+  .confirm-button {
+    width: 100%;
+    padding: 10px;
+  }
+}

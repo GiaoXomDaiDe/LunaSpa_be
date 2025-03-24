@@ -1,0 +1,121 @@
+.staff-calendar-week-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.week-header {
+  display: flex;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.week-day-header {
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  border-left: 1px solid #ddd;
+  font-weight: 500;
+  color: #495057;
+}
+
+.week-hour-label {
+  width: 60px;
+  min-width: 60px;
+  text-align: center;
+  padding: 12px 0;
+  color: #6c757d;
+}
+
+.week-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.week-hour-row {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  min-height: 60px;
+}
+
+.week-hour-row:last-child {
+  border-bottom: none;
+}
+
+.week-time-slot {
+  flex: 1;
+  border-left: 1px solid #ddd;
+  padding: 4px;
+  min-height: 60px;
+  position: relative;
+}
+
+.slot-item {
+  background-color: #e9ecef;
+  border-radius: 4px;
+  padding: 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.slot-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.slot-staff-name {
+  font-weight: 500;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-time {
+  color: #495057;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.slot-status {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Trạng thái slots */
+.slot-available {
+  background-color: #d1e7dd;
+  border-left: 3px solid #198754;
+}
+
+.slot-booked {
+  background-color: #f8d7da;
+  border-left: 3px solid #dc3545;
+}
+
+.slot-unavailable {
+  background-color: #e2e3e5;
+  border-left: 3px solid #6c757d;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .week-hour-label {
+    width: 40px;
+    min-width: 40px;
+    font-size: 12px;
+  }
+
+  .week-day-header {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+}

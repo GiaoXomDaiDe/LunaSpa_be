@@ -11,6 +11,7 @@ import {
   resendVerifyEmailController,
   resetPasswordController,
   updateMeController,
+  updateToStaffController,
   verifyEmailController,
   verifyForgotPasswordController
 } from '~/controllers/accounts.controllers'
@@ -27,6 +28,7 @@ import {
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/accounts.middleware'
 import { filterMiddleware } from '~/middlewares/common.middleware'
+import { checkPermission } from '~/middlewares/roles.middleware'
 import { UpdateMeReqBody } from '~/models/request/Account.requests'
 import { wrapRequestHandler } from '~/utils/handlers'
 
@@ -180,4 +182,20 @@ accountsRouter.patch(
   filterMiddleware<UpdateMeReqBody>(['name', 'phone_number', 'address', 'date_of_birth', 'avatar']),
   wrapRequestHandler(updateMeController)
 )
+
+/**
+ * Description. Update account to staff
+ * Path: /update-to-staff
+ * Method: PATCH
+ * Headers: { Authorization: Bearer <access_token> }
+ * Body: { account_id: string, staff_type: StaffType, specialty_ids?: string[], bio?: string }
+ */
+accountsRouter.patch(
+  '/update-to-staff',
+  accessTokenValidator,
+  verifiedAccountValidator,
+  checkPermission('update', 'Accounts'),
+  wrapRequestHandler(updateToStaffController)
+)
+
 export default accountsRouter

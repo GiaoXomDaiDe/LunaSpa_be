@@ -1,0 +1,156 @@
+.staff-calendar-header {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.calendar-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.calendar-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.calendar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-button {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-button:hover {
+  background-color: #f8f9fa;
+}
+
+.today-button {
+  font-weight: 500;
+}
+
+.nav-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.view-selector {
+  display: flex;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 12px;
+}
+
+.view-button {
+  background-color: #fff;
+  border: none;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.view-button.active {
+  background-color: #0d6efd;
+  color: #fff;
+  font-weight: 500;
+}
+
+.add-button,
+.import-button,
+.export-button {
+  background-color: #0d6efd;
+  color: #fff;
+  border: none;
+}
+
+.add-button:hover,
+.import-button:hover,
+.export-button:hover {
+  background-color: #0b5ed7;
+}
+
+/* Style riêng cho export button */
+.export-button {
+  background-color: #198754;
+}
+
+.export-button:hover {
+  background-color: #157347;
+}
+
+.filter-button {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+}
+
+.filter-button:hover {
+  background-color: #5c636a;
+}
+
+.calendar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-item label {
+  font-size: 14px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.filter-item input,
+.filter-item select {
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .calendar-header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .calendar-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .calendar-filters {
+    flex-direction: column;
+  }
+}

@@ -8,9 +8,11 @@ import { ErrorWithStatus } from '~/models/Error'
 import { RegisterReqBody, UpdateMeReqBody } from '~/models/request/Account.requests'
 import Account, { AccountVerify } from '~/models/schema/Account.schema'
 import RefreshToken from '~/models/schema/RefreshToken.schema'
+import { StaffType } from '~/models/schema/StaffProfile.schema'
 import { buildUserRolesPipeline } from '~/pipelines/accounts.pipeline'
 import databaseService from '~/services/database.services'
 import rolesService from '~/services/roles.services'
+import staffProfilesService from '~/services/staffProfiles.services'
 import userProfilesService from '~/services/userProfiles.services'
 import { hashPassword } from '~/utils/crypto'
 import { sendForgotPasswordEmail, sendVerifyRegisterEmail } from '~/utils/email'
@@ -472,6 +474,58 @@ class AccountsService {
     return {
       user_profile
     }
+  }
+  async updateToStaff(account_id: string, staff_type: StaffType, specialty_ids: string[] = [], bio: string = '') {
+    // Lấy role Staff
+    const staffRole = await rolesService.getDefaultRoles('Practitioner')
+
+    const session = databaseService.getClient().startSession()
+    try {
+      return await session.withTransaction(async () => {
+        // Update role của account
+        const updatedAccount = await databaseService.accounts.findOneAndUpdate(
+          { _id: new ObjectId(account_id) },
+          {
+            $set: {
+              role_id: staffRole._id
+            },
+            $currentDate: { updated_at: true }
+          },
+          {
+            session,
+            returnDocument: 'after'
+          }
+        )
+
+        if (!updatedAccount) {
+          throw new ErrorWithStatus({
+            message: ACCOUNT_MESSAGES.ACCOUNT_NOT_FOUND,
+            status: HTTP_STATUS.NOT_FOUND
+          })
+        }
+
+        // Tạo StaffProfile mới
+        const staffProfile = await staffProfilesService.createStaffProfile({
+          account_id,
+          staff_type,
+          specialty_ids,
+          bio
+        })
+
+        return {
+          staff_profile: staffProfile
+        }
+      })
+    } finally {
+      await session.endSession()
+    }
+  }
+  /**
+   * Lấy thông tin account theo ID
+   * @param account_id ID của tài khoản
+   */
+  async getAccount(account_id: string) {
+    return await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
   }
 }
 

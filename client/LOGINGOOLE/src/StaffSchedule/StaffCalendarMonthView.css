@@ -1,0 +1,156 @@
+.staff-calendar-month-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 600px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.month-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.weekday {
+  text-align: center;
+  padding: 12px 0;
+  font-weight: 500;
+  color: #495057;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  flex: 1;
+}
+
+.month-day {
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+  min-height: 100px;
+  padding: 8px;
+  transition: background-color 0.2s;
+}
+
+.month-day:nth-child(7n) {
+  border-right: none;
+}
+
+.month-day:nth-last-child(-n + 7) {
+  border-bottom: none;
+}
+
+.month-day:hover {
+  background-color: #f8f9fa;
+}
+
+.current-month {
+  background-color: #fff;
+}
+
+.other-month {
+  background-color: #f8f9fa;
+}
+
+.month-day-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.month-day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.current-month .month-day-number {
+  color: #212529;
+}
+
+.other-month .month-day-number {
+  color: #adb5bd;
+}
+
+.month-day-content {
+  font-size: 12px;
+}
+
+.month-day-slots-summary {
+  margin-bottom: 6px;
+}
+
+.month-slot-count {
+  margin-bottom: 4px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+}
+
+.month-slot-count.available {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.month-slot-count.booked {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.month-slot-count.unavailable {
+  background-color: #e2e3e5;
+  color: #41464b;
+}
+
+.slot-count {
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.month-day-staff-summary {
+  border-top: 1px dashed #dee2e6;
+  padding-top: 4px;
+  color: #6c757d;
+  text-align: center;
+}
+
+.staff-count {
+  font-weight: 700;
+}
+
+.month-day-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  color: #adb5bd;
+  font-style: italic;
+  font-size: 12px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .weekday,
+  .month-day-number {
+    font-size: 12px;
+  }
+
+  .month-day {
+    padding: 4px;
+    min-height: 80px;
+  }
+
+  .month-day-content {
+    font-size: 10px;
+  }
+}

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import './App.css'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
@@ -44,6 +44,8 @@ export default function Home() {
     localStorage.removeItem('refresh_token')
     window.location.reload()
   }
+  const navigate = useNavigate()
+
   return (
     <>
       <div>
@@ -54,20 +56,30 @@ export default function Home() {
           <img src={reactLogo} className='logo react' alt='React logo' />
         </span>
       </div>
-      <h1>Google OAuth 2.0</h1>
-      <p className='read-the-docs'>
+      <h1>Luna Spa - Quản lý lịch làm việc</h1>
+      <div className='read-the-docs'>
         {isAuthenticated ? (
           <>
-            <span>Hello my friend, you are logged in.</span>
-            <button onClick={logout}>Logout</button>
+            <span>Bạn đã đăng nhập thành công.</span>
+            <button onClick={logout}>Đăng xuất</button>
           </>
         ) : (
           <div>
-            <Link to={googleOAuthUrl}>Login with Google</Link>
-            <Link to={facebookOAuthUrl}>Login with Facebook</Link>
+            <Link to={googleOAuthUrl}>Đăng nhập bằng Google</Link>
+            <Link to={facebookOAuthUrl}>Đăng nhập bằng Facebook</Link>
           </div>
         )}
-      </p>
+      </div>
+
+      <div className='card'>
+        <button onClick={() => navigate('/login')}>Đi đến trang Đăng nhập</button>
+      </div>
+
+      <div className='card'>
+        <button onClick={() => navigate('/staff-schedule')}>Xem lịch làm việc nhân viên</button>
+      </div>
+
+      <p className='read-the-docs'>Copyright © 2023 Luna Spa</p>
     </>
   )
 }

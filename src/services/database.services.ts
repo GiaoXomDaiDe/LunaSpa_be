@@ -7,18 +7,27 @@ import BranchProducts from '~/models/schema/BranchProducts.schema'
 import BranchServices from '~/models/schema/BranchServices.schema'
 import Condition from '~/models/schema/Condition.schema'
 import ConditionProduct from '~/models/schema/ConditionProduct.schema'
+import ConditionService from '~/models/schema/ConditionService.schema'
 import Device from '~/models/schema/Device.schema'
 import Favorite from '~/models/schema/Favorite.schema'
+import Order from '~/models/schema/Order.schema'
+import OrderDetail from '~/models/schema/OrderDetail.schema'
 import Product from '~/models/schema/Product.schema'
 import ProductCategory from '~/models/schema/ProductCategory.schema'
 import RefreshToken from '~/models/schema/RefreshToken.schema'
 import Resource from '~/models/schema/Resource.schema'
 import Review from '~/models/schema/Review.schema'
+import RewardPoint from '~/models/schema/RewardPoint.schema'
 import Roles from '~/models/schema/Role.schema'
 import Service from '~/models/schema/Service.schema'
 import ServiceCategoy from '~/models/schema/ServiceCategory.schema'
 import ServiceProducts from '~/models/schema/ServiceProducts.schema'
+import Specialty from '~/models/schema/Specialties.schema'
+import StaffProfile from '~/models/schema/StaffProfile.schema'
+import StaffSlot from '~/models/schema/StaffSlot.schema'
+import Transaction from '~/models/schema/Transaction.schema'
 import UserProfile from '~/models/schema/UserProfile.schema'
+import Voucher from '~/models/schema/Voucher.schema'
 
 config()
 
@@ -102,6 +111,33 @@ class DatabaseService {
   }
   get serviceProducts(): Collection<ServiceProducts> {
     return this.db.collection(envConfig.dbServicesProductsCollection)
+  }
+  get rewardPoints(): Collection<RewardPoint> {
+    return this.db.collection(envConfig.dbRewardPointsCollection)
+  }
+  get vouchers(): Collection<Voucher> {
+    return this.db.collection(envConfig.dbVouchersCollection)
+  }
+  get specialties(): Collection<Specialty> {
+    return this.db.collection('specialties')
+  }
+  get conditionServices(): Collection<ConditionService> {
+    return this.db.collection(envConfig.dbConditionServicesCollection)
+  }
+  get staffProfiles(): Collection<StaffProfile> {
+    return this.db.collection(envConfig.dbStaffProfilesCollection)
+  }
+  get staffSlots(): Collection<StaffSlot> {
+    return this.db.collection(envConfig.dbStaffSlotsCollection)
+  }
+  get orders(): Collection<Order> {
+    return this.db.collection(envConfig.dbOrdersCollection)
+  }
+  get orderDetails(): Collection<OrderDetail> {
+    return this.db.collection(envConfig.dbOrderDetailsCollection)
+  }
+  get transactions(): Collection<Transaction> {
+    return this.db.collection(envConfig.dbTransactionsCollection)
   }
 }
 

@@ -1,0 +1,205 @@
+.excel-import-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.excel-import-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #212529;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  color: #212529;
+}
+
+.template-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed #dee2e6;
+}
+
+.template-section h4 {
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #212529;
+}
+
+.template-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-button:hover {
+  background-color: #218838;
+}
+
+.template-instructions {
+  margin-top: 16px;
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 4px solid #6c757d;
+}
+
+.template-instructions h5 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #212529;
+}
+
+.template-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #495057;
+  font-size: 13px;
+}
+
+.template-instructions li {
+  margin-bottom: 4px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.form-group input[type='file'] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #495057;
+}
+
+.file-name {
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.submit-button,
+.cancel-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+}
+
+.submit-button:hover {
+  background-color: #0b5ed7;
+}
+
+.submit-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  background-color: #f8f9fa;
+  color: #212529;
+  border: 1px solid #ced4da;
+}
+
+.cancel-button:hover {
+  background-color: #e9ecef;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .excel-import-modal {
+    width: 95%;
+    max-width: 100%;
+    height: 100%;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
