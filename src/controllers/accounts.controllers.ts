@@ -17,6 +17,7 @@ import {
   VerifyForgotPasswordReqBody
 } from '~/models/request/Account.requests'
 import Account, { AccountVerify } from '~/models/schema/Account.schema'
+import { StaffType } from '~/models/schema/StaffProfile.schema'
 import accountsService from '~/services/accounts.services'
 import databaseService from '~/services/database.services'
 
@@ -190,6 +191,31 @@ export const updateMeController = async (
   const result = await accountsService.updateMe(account_id, body)
   res.json({
     message: SUCCESS_RESPONSE_MESSAGE.UPDATE_ME_SUCCESS,
+    result
+  })
+}
+
+// Interface cho UpdateToStaffReqBody
+interface UpdateToStaffReqBody {
+  account_id: string
+  staff_type: StaffType
+  specialty_ids?: string[]
+  bio?: string
+}
+
+// Controller để update tài khoản thành Staff
+export const updateToStaffController = async (
+  req: Request<ParamsDictionary, any, UpdateToStaffReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { account_id, staff_type, specialty_ids = [], bio = '' } = req.body
+  console.log(account_id, staff_type, specialty_ids, bio)
+
+  const result = await accountsService.updateToStaff(account_id, staff_type, specialty_ids, bio)
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Cập nhật thành nhân viên thành công',
     result
   })
 }

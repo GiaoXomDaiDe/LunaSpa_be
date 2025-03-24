@@ -8,6 +8,12 @@ export default defineConfig({
     devSourcemap: true
   },
   server: {
-    port: 5173
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000', // Thay đổi port này theo port của backend
+        changeOrigin: true
+      }
+    }
   }
 })

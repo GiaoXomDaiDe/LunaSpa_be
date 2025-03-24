@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
 export enum ItemType {
-  SERVICE = 'service',
-  PRODUCT = 'product'
+  PRODUCT = 'product',
+  SERVICE = 'service'
 }
 
 export interface OrderDetailType {
@@ -34,7 +34,8 @@ export default class OrderDetail {
   staff_profile_id?: ObjectId
   start_time?: Date
   end_time?: Date
-  note?: string
+  note: string
+
   constructor(orderDetail: OrderDetailType) {
     this._id = orderDetail._id
     this.order_id = orderDetail.order_id
@@ -48,6 +49,6 @@ export default class OrderDetail {
     this.staff_profile_id = orderDetail.staff_profile_id
     this.start_time = orderDetail.start_time
     this.end_time = orderDetail.end_time
-    this.note = orderDetail.note
+    this.note = orderDetail.note || ''
   }
 }

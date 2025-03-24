@@ -22,7 +22,10 @@
     "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/lodash": "^4.17.15",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.13.4",
+    "@types/node-cron": "^3.0.11",
+    "@types/qrcode": "^1.5.5",
     "eslint": "^9.20.1",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
@@ -45,6 +48,7 @@
     "axios": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "formidable": "^3.5.2",
@@ -53,10 +57,15 @@
     "lodash": "^4.17.21",
     "mime": "^4.0.6",
     "mongodb": "^6.13.1",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
     "passport-facebook": "^3.0.0",
+    "qrcode": "^1.5.4",
     "qs": "^6.14.0",
     "sharp": "^0.33.5",
+    "stripe": "^17.7.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^3.24.2"
   }
 }

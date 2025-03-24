@@ -1,0 +1,125 @@
+.payment-methods-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.payment-methods-container h2 {
+  color: #32325d;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.payment-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.payment-option {
+  flex: 1;
+  min-width: 300px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.payment-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.payment-option h3 {
+  color: #32325d;
+  margin-bottom: 10px;
+}
+
+.payment-option p {
+  color: #525f7f;
+  margin-bottom: 20px;
+}
+
+.saved-cards-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card-preview {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  min-width: 120px;
+  border: 1px solid #e6e6e6;
+}
+
+.card-brand {
+  font-weight: 500;
+  color: #32325d;
+  text-transform: capitalize;
+  margin-bottom: 5px;
+}
+
+.card-number {
+  font-family: monospace;
+  color: #525f7f;
+}
+
+.more-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  min-width: 120px;
+  border: 1px solid #e6e6e6;
+  color: #6772e5;
+  font-weight: 500;
+}
+
+.payment-button {
+  display: inline-block;
+  background: #6772e5;
+  color: #ffffff;
+  border: 0;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 5.5px 0 rgba(0, 0, 0, 0.07);
+}
+
+.payment-button:hover {
+  filter: brightness(1.1);
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #32325d;
+}
+
+.error-message {
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 4px;
+  text-align: center;
+  background-color: #fff0f0;
+  color: #df1b41;
+}
