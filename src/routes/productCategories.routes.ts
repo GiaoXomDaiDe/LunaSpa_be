@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { PERMISSION, RESOURCE_NAME } from '~/constants/constants'
 import {
   createProductCategoryController,
   deleteProductCategoryController,
@@ -21,87 +22,44 @@ import { wrapRequestHandler } from '~/utils/handlers'
 
 const productCategoriesRouter = Router()
 
-/**
- * Description: Lấy danh sách danh mục sản phẩm
- * Path: /
- * Method: GET
- * Query: limit, page
- * Headers: access_token: Bearer token
- * Body: <none>
- */
 productCategoriesRouter.get(
   '/',
   accessTokenValidatorV2,
-  checkPermission('read', 'Product Categories'),
+  checkPermission(PERMISSION.READ, RESOURCE_NAME.PRODUCT_CATEGORY),
   wrapRequestHandler(getAllProductCategoriesController)
 )
 
-/**
- * Description: Lấy thông tin chi tiết danh mục sản phẩm
- * Path: /:id
- * Method: GET
- * Headers: access_token: Bearer token
- * Body: <none>
- */
 productCategoriesRouter.get(
   '/:product_category_id',
   accessTokenValidatorV2,
-  checkPermission('read', 'Product Categories'),
+  checkPermission(PERMISSION.READ, RESOURCE_NAME.PRODUCT_CATEGORY),
   productCategoryQueryValidator,
   wrapRequestHandler(getProductCategoryController)
 )
-
-/**
- * Description: Tạo danh mục sản phẩm mới
- * Path: /
- * Method: POST
- * Headers: access_token: Bearer token
- * Body: {
- *    name: string
- *    description: string
- * }
- */
 productCategoriesRouter.post(
   '/',
   accessTokenValidator,
   verifiedAccountValidator,
-  checkPermission('create', 'Product Categories'),
+  checkPermission(PERMISSION.CREATE, RESOURCE_NAME.PRODUCT_CATEGORY),
   productCategoryValidator,
   wrapRequestHandler(createProductCategoryController)
 )
 
-/**
- * Description: Cập nhật thông tin danh mục sản phẩm
- * Path: /:id
- * Method: PUT
- * Headers: access_token: Bearer token
- * Body: {
- *    name?: string
- *    description?: string
- * }
- */
-productCategoriesRouter.put(
+productCategoriesRouter.patch(
   '/:product_category_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  checkPermission('update', 'Product Categories'),
+  checkPermission(PERMISSION.UPDATE, RESOURCE_NAME.PRODUCT_CATEGORY),
   productCategoryQueryValidator,
   updateProductCategoryValidator,
   wrapRequestHandler(updateProductCategoryController)
 )
 
-/**
- * Description: Xóa danh mục sản phẩm
- * Path: /:id
- * Method: DELETE
- * Headers: access_token: Bearer token
- * Body: <none>
- */
 productCategoriesRouter.delete(
   '/:product_category_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  checkPermission('delete', 'Product Categories'),
+  checkPermission(PERMISSION.DELETE, RESOURCE_NAME.PRODUCT_CATEGORY),
   productCategoryQueryValidator,
   wrapRequestHandler(deleteProductCategoryController)
 )

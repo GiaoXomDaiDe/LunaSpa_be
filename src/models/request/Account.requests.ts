@@ -1,6 +1,7 @@
 import { JwtPayload } from 'jsonwebtoken'
 import { TokenType } from '~/constants/enums'
 import { AccountVerify } from '~/models/schema/Account.schema'
+import { StaffType } from '~/models/schema/StaffProfile.schema'
 
 export interface RegisterReqBody {
   email: string
@@ -48,4 +49,11 @@ export interface UpdateMeReqBody {
   address?: string
   date_of_birth?: Date
   avatar?: string
+}
+
+export interface UpdateToStaffReqBody {
+  account_id: string
+  staff_type: StaffType
+  specialty_ids?: string[]
+  bio?: string
 }

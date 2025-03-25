@@ -54,6 +54,7 @@ export const purchaseProductController = async (
 ) => {
   // @ts-expect-error - Thêm để sử dụng req.decoded_authorization từ middleware
   const { account_id } = req.decoded_authorization
+  console.log(account_id)
   const result = await ordersService.createProductOrder(account_id, req.body)
 
   res.status(HTTP_STATUS.CREATED).json({

@@ -129,7 +129,7 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
   pipeline.push({
     $lookup: {
       from: 'devices',
-      let: { devIds: '$device_ids' },
+      let: { devIds: { $ifNull: ['$device_ids', []] } },
       pipeline: [
         {
           $match: {

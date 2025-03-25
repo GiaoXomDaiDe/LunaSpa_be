@@ -23,6 +23,7 @@ const CheckoutPage = () => {
       try {
         // 1. Lấy thông tin sản phẩm từ API
         const productResponse = await axios.get(`http://localhost:4000/products/${productId}`)
+        console.log(productResponse.data, 'Product Response')
         if (!productResponse.data || !productResponse.data.result) {
           setError('Không tìm thấy sản phẩm')
           setLoading(false)

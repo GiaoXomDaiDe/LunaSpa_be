@@ -188,56 +188,94 @@ class AccountsService {
     return Boolean(account)
   }
   async register(payload: RegisterReqBody) {
-    const defaultRole = await rolesService.getDefaultRoles('User')
-    const account_id = new ObjectId()
-    const email_verify_token = await this.signEmailVerifyToken({
-      account_id: account_id.toString(),
-      verify: AccountVerify.UNVERIFIED
-    })
-    const account = await databaseService.accounts.insertOne(
-      new Account({
-        ...payload,
-        _id: account_id,
-        email: payload.email,
-        name: `user${account_id.toString()}`,
-        email_verify_token,
-        role_id: defaultRole._id,
-        password: hashPassword(payload.password)
+    const session = databaseService.getClient().startSession()
+
+    try {
+      return await session.withTransaction(async () => {
+        const account_id = new ObjectId()
+
+        const [defaultRole, email_verify_token] = await Promise.all([
+          rolesService.getDefaultRoles(),
+          this.signEmailVerifyToken({
+            account_id: account_id.toString(),
+            verify: AccountVerify.UNVERIFIED
+          })
+        ])
+
+        const newAccount = new Account({
+          ...payload,
+          _id: account_id,
+          email: payload.email,
+          name: `user${account_id.toString()}`,
+          email_verify_token,
+          role_id: defaultRole._id,
+          password: hashPassword(payload.password)
+        })
+
+        await databaseService.accounts.insertOne(newAccount, { session })
+
+        const [user_profile, [access_token, refresh_token]] = await Promise.all([
+          userProfilesService.createUserProfile(
+            {
+              account_id: account_id.toString(),
+              condition_ids: []
+            },
+            session
+          ),
+          this.signAccessAndRefreshToken({
+            account_id: account_id.toString(),
+            verify: AccountVerify.UNVERIFIED
+          })
+        ])
+
+        const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+        await databaseService.refreshTokens.insertOne(
+          new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat }),
+          { session }
+        )
+
+        const emailPromise = (async () => {
+          const [addedAccount] = await databaseService.accounts.aggregate(buildUserRolesPipeline(account_id)).toArray()
+
+          if (addedAccount.verify === AccountVerify.UNVERIFIED) {
+            await sendVerifyRegisterEmail(payload.email, email_verify_token)
+          }
+        })()
+
+        emailPromise.catch((error) => console.error('Failed to send verification email:', error))
+
+        return {
+          access_token,
+          refresh_token,
+          user_profile
+        }
       })
-    )
-    const user_profile = await userProfilesService.createUserProfile({
-      account_id: account_id.toString(),
-      condition_ids: []
-    })
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-      account_id: account_id.toString(),
-      verify: AccountVerify.UNVERIFIED
-    })
-    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
-    await databaseService.refreshTokens.insertOne(
-      new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
-    )
-    const addedAccount = await databaseService.accounts.aggregate(buildUserRolesPipeline(account.insertedId)).toArray()
-    if (addedAccount[0].verify === AccountVerify.UNVERIFIED) {
-      await sendVerifyRegisterEmail(payload.email, email_verify_token)
-    }
-    return {
-      access_token,
-      refresh_token,
-      user_profile
+    } finally {
+      await session.endSession()
     }
   }
   async login({ account_id, verify }: { account_id: string; verify: AccountVerify }) {
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ account_id, verify })
-    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
-    await databaseService.refreshTokens.insertOne(
-      new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat })
-    )
-    const user_profile = await userProfilesService.getUserProfileByAccountId(account_id)
-    return {
-      access_token,
-      refresh_token,
-      user_profile
+    const session = databaseService.getClient().startSession()
+
+    try {
+      return await session.withTransaction(async () => {
+        const [access_token, refresh_token] = await this.signAccessAndRefreshToken({ account_id, verify })
+        const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+
+        await databaseService.refreshTokens.insertOne(
+          new RefreshToken({ account_id: new ObjectId(account_id), token: refresh_token, exp, iat }),
+          { session }
+        )
+        const user_profile = await userProfilesService.getUserProfileByAccountId(account_id, session)
+
+        return {
+          access_token,
+          refresh_token,
+          user_profile
+        }
+      })
+    } finally {
+      await session.endSession()
     }
   }
   async logout(refresh_token: string) {
@@ -360,46 +398,68 @@ class AccountsService {
       })
     }
     const account = await databaseService.accounts.findOne({ email: userInfo.email })
+
+    // Nếu tài khoản chưa tồn tại, đăng ký mới
     if (!account) {
-      const password = hashPassword(Math.random().toString(36).substring(2, 15))
-      const data = await this.register({
-        email: userInfo.email,
-        password,
-        conform_password: password
-      })
-      //cap nhật lại thộng tin user sau
-      await databaseService.accounts.findOneAndUpdate(
-        { _id: data.user_profile.account._id },
-        {
-          $set: {
-            name: userInfo.name,
-            avatar: userInfo.picture
-          },
-          $currentDate: {
-            updated_at: true
-          }
-        },
-        {
-          returnDocument: 'after'
-        }
-      )
-      return { ...data, newAccount: 1, verify: AccountVerify.UNVERIFIED }
+      const session = databaseService.getClient().startSession()
+      try {
+        return await session.withTransaction(async () => {
+          const password = hashPassword(Math.random().toString(36).substring(2, 15))
+          const data = await this.register({
+            email: userInfo.email,
+            password,
+            conform_password: password
+          })
+
+          const updatedAccount = await databaseService.accounts.findOneAndUpdate(
+            { _id: data.user_profile.account._id },
+            {
+              $set: {
+                name: userInfo.name,
+                avatar: userInfo.picture
+              },
+              $currentDate: {
+                updated_at: true
+              }
+            },
+            {
+              returnDocument: 'after'
+            }
+          )
+
+          // Cập nhật thông tin trong data trả về
+          data.user_profile.account = updatedAccount
+
+          return { ...data, newAccount: 1, verify: AccountVerify.UNVERIFIED }
+        })
+      } finally {
+        await session.endSession()
+      }
     }
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-      account_id: account._id.toString(),
-      verify: account.verify
-    })
-    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
-    await databaseService.refreshTokens.insertOne(
-      new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat })
-    )
-    const user_profile = await userProfilesService.getUserProfileByAccountId(account._id.toString())
-    return {
-      access_token,
-      refresh_token,
-      user_profile,
-      newAccount: 0,
-      verify: account.verify
+
+    const session = databaseService.getClient().startSession()
+    try {
+      return await session.withTransaction(async () => {
+        const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+          account_id: account._id.toString(),
+          verify: account.verify
+        })
+        const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+        await databaseService.refreshTokens.insertOne(
+          new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat }),
+          { session }
+        )
+        const user_profile = await userProfilesService.getUserProfileByAccountId(account._id.toString())
+        return {
+          access_token,
+          refresh_token,
+          user_profile,
+          newAccount: 0,
+          verify: account.verify
+        }
+      })
+    } finally {
+      await session.endSession()
     }
   }
   async oauthFacebook(code: string) {
@@ -407,48 +467,71 @@ class AccountsService {
     const { access_token: app_access_token } = await this.getOauthFacebookAppAccessToken()
     const { data } = await this.getAccessTokenVerify(facebook_access_token, app_access_token)
     const userInfo = await this.getOauthFacebookUserInfo(data.user_id, facebook_access_token)
-    console.log('Day la user info', userInfo)
+
     const account = await databaseService.accounts.findOne({ email: userInfo.email })
+
     if (!account) {
-      const password = hashPassword(Math.random().toString(36).substring(2, 15))
-      const accountData = await this.register({
-        email: userInfo.email,
-        password,
-        conform_password: password
-      })
-      await databaseService.accounts.findOneAndUpdate(
-        { _id: accountData.user_profile.account._id },
-        {
-          $set: {
-            name: userInfo.name,
-            avatar: userInfo.picture.data.url,
-            verify: AccountVerify.UNVERIFIED
-          },
-          $currentDate: {
-            updated_at: true
-          }
-        },
-        {
-          returnDocument: 'after'
-        }
-      )
-      return { ...accountData, newAccount: 1, verify: AccountVerify.UNVERIFIED }
+      const session = databaseService.getClient().startSession()
+      try {
+        return await session.withTransaction(async () => {
+          const password = hashPassword(Math.random().toString(36).substring(2, 15))
+          const accountData = await this.register({
+            email: userInfo.email,
+            password,
+            conform_password: password
+          })
+
+          const updatedAccount = await databaseService.accounts.findOneAndUpdate(
+            { _id: accountData.user_profile.account._id },
+            {
+              $set: {
+                name: userInfo.name,
+                avatar: userInfo.picture.data.url,
+                verify: AccountVerify.UNVERIFIED
+              },
+              $currentDate: {
+                updated_at: true
+              }
+            },
+            {
+              returnDocument: 'after',
+              session
+            }
+          )
+
+          // Cập nhật thông tin trong data trả về
+          accountData.user_profile.account = updatedAccount
+
+          return { ...accountData, newAccount: 1, verify: AccountVerify.UNVERIFIED }
+        })
+      } finally {
+        await session.endSession()
+      }
     }
-    const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
-      account_id: account._id.toString(),
-      verify: account.verify
-    })
-    const { iat, exp } = await this.decodeRefreshToken(refresh_token)
-    await databaseService.refreshTokens.insertOne(
-      new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat })
-    )
-    const user_profile = await userProfilesService.getUserProfileByAccountId(account._id.toString())
-    return {
-      access_token,
-      refresh_token,
-      user_profile,
-      newAccount: 0,
-      verify: account.verify
+
+    const session = databaseService.getClient().startSession()
+    try {
+      return await session.withTransaction(async () => {
+        const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
+          account_id: account._id.toString(),
+          verify: account.verify
+        })
+        const { iat, exp } = await this.decodeRefreshToken(refresh_token)
+        await databaseService.refreshTokens.insertOne(
+          new RefreshToken({ account_id: new ObjectId(account._id), token: refresh_token, exp, iat }),
+          { session }
+        )
+        const user_profile = await userProfilesService.getUserProfileByAccountId(account._id.toString())
+        return {
+          access_token,
+          refresh_token,
+          user_profile,
+          newAccount: 0,
+          verify: account.verify
+        }
+      })
+    } finally {
+      await session.endSession()
     }
   }
   async getMe(account_id: string) {
@@ -476,13 +559,11 @@ class AccountsService {
     }
   }
   async updateToStaff(account_id: string, staff_type: StaffType, specialty_ids: string[] = [], bio: string = '') {
-    // Lấy role Staff
     const staffRole = await rolesService.getDefaultRoles('Practitioner')
 
     const session = databaseService.getClient().startSession()
     try {
       return await session.withTransaction(async () => {
-        // Update role của account
         const updatedAccount = await databaseService.accounts.findOneAndUpdate(
           { _id: new ObjectId(account_id) },
           {
@@ -504,7 +585,6 @@ class AccountsService {
           })
         }
 
-        // Tạo StaffProfile mới
         const staffProfile = await staffProfilesService.createStaffProfile({
           account_id,
           staff_type,
@@ -520,10 +600,6 @@ class AccountsService {
       await session.endSession()
     }
   }
-  /**
-   * Lấy thông tin account theo ID
-   * @param account_id ID của tài khoản
-   */
   async getAccount(account_id: string) {
     return await databaseService.accounts.findOne({ _id: new ObjectId(account_id) })
   }

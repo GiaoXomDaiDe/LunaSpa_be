@@ -556,6 +556,7 @@ class OrdersService {
     const session = databaseService.getClient().startSession()
     try {
       return await session.withTransaction(async () => {
+        // Find transaction by both order_id and payment_intent_id to ensure accuracy
         const transaction = await databaseService.transactions.findOne({
           order_id: new ObjectId(order_id),
           payment_intent_id: payment_intent_id
@@ -564,12 +565,12 @@ class OrdersService {
 
         if (!transaction) {
           throw new ErrorWithStatus({
-            message: 'Không tìm thấy giao dịch thanh toán',
+            message: 'Payment transaction not found',
             status: HTTP_STATUS.NOT_FOUND
           })
         }
 
-        // Cập nhật transaction bằng _id để đảm bảo chính xác
+        // Update transaction by _id to ensure accuracy
         await databaseService.transactions.updateOne(
           { _id: transaction._id },
           {

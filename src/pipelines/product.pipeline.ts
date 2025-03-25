@@ -8,6 +8,11 @@ export const buildProductPipeline = (product_id: string) => {
   const pipeline = [
     { $match: match },
     {
+      $addFields: {
+        images: { $ifNull: ['$images', []] }
+      }
+    },
+    {
       $lookup: {
         from: 'branch_products',
         let: { product_id: '$_id' },
@@ -64,7 +69,18 @@ export const buildProductPipeline = (product_id: string) => {
         from: 'product_categories',
         localField: 'category_id',
         foreignField: '_id',
-        as: 'category'
+        as: 'product_category'
+      }
+    },
+    {
+      $unwind: {
+        path: '$product_category',
+        preserveNullAndEmptyArrays: true
+      }
+    },
+    {
+      $addFields: {
+        has_category: { $cond: [{ $ifNull: ['$product_category', false] }, true, false] }
       }
     },
     {
@@ -73,11 +89,11 @@ export const buildProductPipeline = (product_id: string) => {
         name: 1,
         description: 1,
         images: 1,
-        product_status: 1,
+        product_status: { $ifNull: ['$product_status', '$status'] },
         price: 1,
         discount_price: 1,
         quantity: 1,
-        product_category: 1,
+        product_category: { $cond: [{ $eq: ['$has_category', true] }, '$product_category', null] },
         created_at: 1,
         updated_at: 1,
         branches: {

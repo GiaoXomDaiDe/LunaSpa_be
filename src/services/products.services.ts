@@ -68,10 +68,16 @@ class ProductsService {
     const session = databaseService.getClient().startSession()
     try {
       return await session.withTransaction(async () => {
+        const updateData: any = { ...body }
+
+        if (body.category_id) {
+          updateData.category_id = new ObjectId(body.category_id)
+        }
+
         const result = await databaseService.products.updateOne(
           { _id: new ObjectId(product_id) },
           {
-            $set: { ...body, category_id: new ObjectId(body.category_id as string) },
+            $set: updateData,
             $currentDate: { updated_at: true }
           },
           { session }
