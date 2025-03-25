@@ -19,10 +19,7 @@ export const productsQueryValidator = validate(
         trim: true,
         customSanitizer: {
           options: (value: string) => {
-            if (!value) {
-              return (value = SORT_BY[1]) //price
-            }
-            return value
+            return value || SORT_BY[1]
           }
         },
         isString: {
@@ -42,10 +39,7 @@ export const productsQueryValidator = validate(
         trim: true,
         customSanitizer: {
           options: (value: string) => {
-            if (!value) {
-              return (value = ORDER[0]) //asc
-            }
-            return value
+            return value || ORDER[0] // asc
           }
         },
         isString: {
@@ -63,14 +57,46 @@ export const productsQueryValidator = validate(
       search: {
         optional: true,
         trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value || ''
+          }
+        },
         isString: {
           errorMessage: PRODUCT_MESSAGES.SEARCH_MUST_BE_A_STRING
         }
       },
+      limit: {
+        optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : 10
+          }
+        },
+        isInt: {
+          errorMessage: PRODUCT_MESSAGES.PRICE_MUST_BE_A_NUMBER
+        }
+      },
+      page: {
+        optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : 1
+          }
+        },
+        isInt: {
+          errorMessage: PRODUCT_MESSAGES.PRICE_MUST_BE_A_NUMBER
+        }
+      },
       max_price: {
         optional: true,
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.MAX_PRICE_IS_REQUIRED
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : undefined
+          }
         },
         isInt: {
           errorMessage: PRODUCT_MESSAGES.MAX_PRICE_MUST_BE_A_NUMBER
@@ -86,11 +112,14 @@ export const productsQueryValidator = validate(
       },
       min_price: {
         optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: PRODUCT_MESSAGES.MIN_PRICE_MUST_BE_A_NUMBER
-        },
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.MIN_PRICE_IS_REQUIRED
         },
         custom: {
           options: async (value: number) => {
@@ -105,7 +134,7 @@ export const productsQueryValidator = validate(
         custom: {
           options: (value, { req }) => {
             const { max_price, min_price } = (req as Request).query
-            if (max_price && min_price && max_price <= min_price) {
+            if (max_price && min_price && Number(max_price) <= Number(min_price)) {
               throw new Error(PRODUCT_MESSAGES.MAX_PRICE_MUST_BE_GREATER_THAN_MIN_PRICE)
             }
             return true
@@ -114,14 +143,18 @@ export const productsQueryValidator = validate(
       },
       category_id: {
         optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value || undefined
+          }
+        },
         isMongoId: {
           errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_MUST_BE_A_MONGO_ID
         },
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_IS_REQUIRED
-        },
         custom: {
           options: async (value: string) => {
+            if (!value) return true
             const category = await databaseService.productCategories.findOne({
               _id: new ObjectId(value)
             })
@@ -134,11 +167,14 @@ export const productsQueryValidator = validate(
       },
       discount_price: {
         optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_MUST_BE_A_NUMBER
-        },
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_IS_REQUIRED
         },
         custom: {
           options: async (value: number) => {
@@ -151,11 +187,14 @@ export const productsQueryValidator = validate(
       },
       quantity: {
         optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: PRODUCT_MESSAGES.QUANTITY_MUST_BE_A_NUMBER
-        },
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.QUANTITY_IS_REQUIRED
         },
         custom: {
           options: async (value: number) => {
@@ -163,6 +202,15 @@ export const productsQueryValidator = validate(
               throw new Error(PRODUCT_MESSAGES.QUANTITY_CANNOT_BE_NEGATIVE)
             }
             return true
+          }
+        }
+      },
+      include_branch_products: {
+        optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value === 'true'
           }
         }
       }

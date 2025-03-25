@@ -144,9 +144,7 @@ export function buildBranchesPipeline(options: GetAllBranchesOptions) {
         {
           $lookup: {
             from: 'devices',
-            let: {
-              devIds: '$device_ids'
-            },
+            let: { devIds: { $ifNull: ['$device_ids', []] } },
             pipeline: [
               {
                 $match: {

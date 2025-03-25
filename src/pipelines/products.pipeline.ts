@@ -128,7 +128,20 @@ export function buildProductsPipeline(options: GetAllProductsOptions) {
       from: 'product_categories',
       localField: 'category_id',
       foreignField: '_id',
-      as: 'category'
+      as: 'product_category'
+    }
+  })
+
+  pipeline.push({
+    $unwind: {
+      path: '$product_category',
+      preserveNullAndEmptyArrays: true
+    }
+  })
+
+  pipeline.push({
+    $addFields: {
+      has_category: { $cond: [{ $ifNull: ['$product_category', false] }, true, false] }
     }
   })
 
@@ -138,11 +151,11 @@ export function buildProductsPipeline(options: GetAllProductsOptions) {
       name: 1,
       description: 1,
       images: 1,
-      product_status: 1,
+      product_status: { $ifNull: ['$product_status', '$status'] },
       price: 1,
       discount_price: 1,
       quantity: 1,
-      product_category: 1,
+      product_category: { $cond: [{ $eq: ['$has_category', true] }, '$product_category', null] },
       created_at: 1,
       updated_at: 1,
       branches: {

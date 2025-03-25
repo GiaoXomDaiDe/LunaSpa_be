@@ -77,6 +77,7 @@ class ProductCategoriesService {
   async deleteProductCategory(product_category_id: string) {
     const session = databaseService.getClient().startSession()
     try {
+      console.log(product_category_id, 'product_category_id')
       return await session.withTransaction(async () => {
         const result = await databaseService.productCategories.findOneAndDelete(
           {
@@ -90,13 +91,14 @@ class ProductCategoriesService {
             status: HTTP_STATUS.NOT_FOUND
           })
         }
+
+        // Cập nhật các sản phẩm thuộc danh mục này thành không hoạt động mà không thay đổi category_id
         await databaseService.products.updateMany(
           {
             category_id: new ObjectId(product_category_id)
           },
           {
             $set: {
-              category_id: new ObjectId(''),
               status: ProductStatus.INACTIVE
             },
             $currentDate: {
@@ -110,9 +112,6 @@ class ProductCategoriesService {
     } finally {
       await session.endSession()
     }
-
-    // Có thể thêm logic để xóa tham chiếu ở các bảng liên quan
-    // Ví dụ: Cập nhật sản phẩm có danh mục này thành null hoặc danh mục mặc định
   }
 }
 

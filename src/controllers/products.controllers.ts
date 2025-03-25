@@ -29,18 +29,18 @@ export const getAllProductsController = async (
   const role = req.role
   const isAdmin = role?.name === 'Admin'
   const options: GetAllProductsOptions = {
-    limit: limit ? parseInt(limit) : undefined,
-    page: page ? parseInt(page) : undefined,
+    limit,
+    page,
     search,
     sort,
     order,
-    max_price: max_price && max_price !== '' ? Number(max_price) : undefined,
-    min_price: min_price && min_price !== '' ? Number(min_price) : undefined,
-    category_id: category_id && category_id !== '' ? category_id : undefined,
-    discount_price: discount_price && discount_price !== '' ? Number(discount_price) : undefined,
-    quantity: quantity && quantity !== '' ? Number(quantity) : undefined,
+    max_price,
+    min_price,
+    category_id,
+    discount_price,
+    quantity,
     isAdmin,
-    include_branch_products: include_branch_products ? include_branch_products === 'true' : false
+    include_branch_products
   }
   const result = await productsService.getAllProducts(options)
   res.status(HTTP_STATUS.OK).json({

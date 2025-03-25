@@ -32,18 +32,15 @@ export const registerController = async (
     result
   })
 }
-/* 
-Lấy user thông qua req 
 
-*/
 export const loginController = async (
   req: Request<ParamsDictionary, any, LoginReqBody>,
   res: Response,
   next: NextFunction
 ) => {
-  const account = req.account as Account
-  const account_id = account._id as ObjectId
-  const result = await accountsService.login({ account_id: account_id.toString(), verify: account.verify })
+  const { _id, verify } = req.account as Account
+  const account_id = _id as ObjectId
+  const result = await accountsService.login({ account_id: account_id.toString(), verify })
   res.json({
     message: SUCCESS_RESPONSE_MESSAGE.LOGIN_SUCCESS,
     result

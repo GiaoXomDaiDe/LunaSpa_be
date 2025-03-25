@@ -33,15 +33,20 @@ class UserProfilesService {
     }
     return userProfile
   }
-  async createUserProfile(body: UserProfileReqBody) {
+  async createUserProfile(body: UserProfileReqBody, providedSession?: ClientSession) {
     const userProfileData = new UserProfile({
       ...body,
       account_id: new ObjectId(body.account_id),
       condition_ids: body.condition_ids.map((condition_id) => new ObjectId(condition_id))
     })
-    const session = databaseService.getClient().startSession()
+
+    // Sử dụng session được cung cấp hoặc tạo session mới
+    const session = providedSession || databaseService.getClient().startSession()
+    const shouldEndSession = !providedSession
+
     try {
-      return await session.withTransaction(async () => {
+      // Nếu session được cung cấp bên ngoài, không cần tạo transaction mới
+      if (providedSession) {
         const result = await databaseService.userProfiles.insertOne(userProfileData, { session })
         console.log(result)
         if (!result.insertedId) {
@@ -58,9 +63,32 @@ class UserProfilesService {
           })
         }
         return addedUserProfile
-      })
+      } else {
+        // Nếu không có session được cung cấp, tạo transaction mới
+        return await session.withTransaction(async () => {
+          const result = await databaseService.userProfiles.insertOne(userProfileData, { session })
+          console.log(result)
+          if (!result.insertedId) {
+            throw new ErrorWithStatus({
+              message: USER_PROFILES_MESSAGES.CREATE_USER_PROFILE_FAILED,
+              status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+            })
+          }
+          const addedUserProfile = await this.getUserProfile(result.insertedId.toString(), session)
+          if (!addedUserProfile) {
+            throw new ErrorWithStatus({
+              message: USER_PROFILES_MESSAGES.CREATE_USER_PROFILE_FAILED,
+              status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+            })
+          }
+          return addedUserProfile
+        })
+      }
     } finally {
-      await session.endSession()
+      // Chỉ kết thúc session nếu chúng ta tạo ra nó
+      if (shouldEndSession) {
+        await session.endSession()
+      }
     }
   }
   async updateUserProfile(body: Partial<UserProfileReqBody>, user_profile_id: string) {
@@ -221,9 +249,9 @@ class UserProfilesService {
     const userProfile = await databaseService.userProfiles.aggregate(pipeline).toArray()
     return userProfile[0].conditions
   }
-  async getUserProfileByAccountId(account_id: string) {
+  async getUserProfileByAccountId(account_id: string, session?: ClientSession) {
     const pipeline = buildUserProfileByAccountIdPipeline(account_id)
-    const userProfile = await databaseService.userProfiles.aggregate(pipeline).toArray()
+    const userProfile = await databaseService.userProfiles.aggregate(pipeline, { session }).toArray()
     if (!userProfile) {
       throw new Error(USER_PROFILES_MESSAGES.USER_PROFILE_NOT_FOUND)
     }

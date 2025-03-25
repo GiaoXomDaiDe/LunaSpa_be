@@ -19,7 +19,7 @@ export const handleUploadImage = async (req: Request) => {
   // Khởi tạo formidable với các cấu hình
   const form = formidable({
     uploadDir: UPLOAD_IMAGE_TEMP_DIR, // Thư mục lưu file upload
-    maxFiles: 5, // Chỉ cho phép upload 1 file
+    maxFiles: 5, // Chỉ cho phép upload tối đa 5 file
     keepExtensions: true, // Giữ lại đuôi file gốc
     maxFileSize: 500 * 1024, // Giới hạn kích thước file 500KB
     maxTotalFileSize: 500 * 1024 * 5,
@@ -50,8 +50,13 @@ export const handleUploadImage = async (req: Request) => {
         return reject(new Error('File is empty'))
       }
 
-      // Nếu mọi thứ ok, resolve với thông tin files
-      resolve(files.image as File[])
+      // Nếu chỉ có 1 file, chuyển thành mảng
+      const imageFiles = Array.isArray(files.image) ? files.image : [files.image]
+
+      // Đảm bảo file đang không bị chiếm dụng trước khi trả về
+      setTimeout(() => {
+        resolve(imageFiles)
+      }, 100) // Thêm delay 100ms để đảm bảo file handle đã được giải phóng
     })
   })
 }
