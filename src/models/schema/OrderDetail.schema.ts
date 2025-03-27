@@ -5,6 +5,14 @@ export enum ItemType {
   SERVICE = 'service'
 }
 
+export interface DurationInfo {
+  duration_name?: string
+  duration_in_minutes: number
+  price: number
+  discount_price?: number
+  sub_description?: string
+}
+
 export interface OrderDetailType {
   _id?: ObjectId
   order_id: ObjectId
@@ -19,6 +27,7 @@ export interface OrderDetailType {
   start_time?: Date
   end_time?: Date
   note?: string
+  duration_info?: DurationInfo
 }
 
 export default class OrderDetail {
@@ -35,6 +44,7 @@ export default class OrderDetail {
   start_time?: Date
   end_time?: Date
   note: string
+  duration_info?: DurationInfo
 
   constructor(orderDetail: OrderDetailType) {
     this._id = orderDetail._id
@@ -50,5 +60,6 @@ export default class OrderDetail {
     this.start_time = orderDetail.start_time
     this.end_time = orderDetail.end_time
     this.note = orderDetail.note || ''
+    this.duration_info = orderDetail.duration_info
   }
 }

@@ -6,6 +6,7 @@ import {
   deleteServiceController,
   getAllServicesController,
   getServiceController,
+  getServiceDurationsController,
   softDeleteServiceController,
   updateServiceController
 } from '~/controllers/services.controllers'
@@ -148,5 +149,13 @@ servicesRouter.get(
   serviceIdValidator,
   wrapRequestHandler(getServiceProductsByServiceIdController)
 )
+
+/**
+ * @route GET /services/:service_id/durations
+ * @description Lấy danh sách thời lượng của một dịch vụ
+ * @param {string} service_id - ID của dịch vụ cần lấy thông tin thời lượng
+ * @access Public
+ */
+servicesRouter.get('/:service_id/durations', serviceIdValidator, wrapRequestHandler(getServiceDurationsController))
 
 export default servicesRouter

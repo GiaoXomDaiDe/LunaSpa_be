@@ -50,7 +50,7 @@ export function buildReviewsPipeline(options: GetAllReviewsOptions) {
     pipeline.push({
       $lookup: {
         from: 'devices',
-        let: { devIds: '$item_info.device_ids' },
+        let: { devIds: { $ifNull: ['$item_info.device_ids', []] } },
         pipeline: [
           {
             $match: {
@@ -160,12 +160,21 @@ export function buildReviewsPipeline(options: GetAllReviewsOptions) {
     pipeline.push({
       $lookup: {
         from: 'devices',
-        let: { device_ids: '$item_info.device_ids', type: '$item_type' },
+        let: { device_ids: { $ifNull: ['$item_info.device_ids', []] }, type: '$item_type' },
         pipeline: [
           {
             $match: {
               $expr: {
-                $and: [{ $eq: ['$$type', ItemType.SERVICE] }, { $in: ['$_id', '$$device_ids'] }]
+                $and: [
+                  { $eq: ['$$type', ItemType.SERVICE] },
+                  {
+                    $cond: [
+                      { $eq: [{ $ifNull: ['$$device_ids', null] }, null] },
+                      false,
+                      { $in: ['$_id', '$$device_ids'] }
+                    ]
+                  }
+                ]
               }
             }
           }

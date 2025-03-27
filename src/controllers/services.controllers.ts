@@ -177,3 +177,32 @@ export const getProductsByServiceIdController = async (req: Request<{ service_id
     data: result
   })
 }
+
+/**
+ * Controller để lấy danh sách thời lượng (durations) của một dịch vụ
+ */
+export const getServiceDurationsController = async (
+  req: Request<ServiceParams, any, any>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { service_id } = req.params
+  const service = await servicesService.getService(service_id)
+
+  if (!service) {
+    throw new ErrorWithStatus({
+      message: SERVICE_MESSAGES.SERVICE_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+
+  const durations = service.durations || []
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Lấy danh sách thời lượng dịch vụ thành công',
+    result: {
+      durations,
+      count: durations.length
+    }
+  })
+}

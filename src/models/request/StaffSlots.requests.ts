@@ -32,6 +32,7 @@ export interface GetAvailableSlotsByServiceIdQuery extends Pagination, Query {
   service_id: string
   date?: string
   isHours?: string
+  duration_minutes?: string // Số phút của dịch vụ, để lọc các slot có đủ thời gian
 }
 
 export interface ServiceParams extends ParamsDictionary {

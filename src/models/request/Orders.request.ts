@@ -62,18 +62,19 @@ export interface ServiceItem {
   note?: string
   item_type: ItemType
   slot_id?: string
+  duration_index?: number // Thêm trường để chỉ định index của duration trong mảng durations của service
 }
 
 export interface BookServiceReqBody {
   branch_id: string
-  items: ServiceItem[]
+  service_item: ServiceItem // Thay đổi từ mảng items thành object service_item đơn lẻ
   booking_time: string // YYYY-MM-DD HH:mm
   payment_method?: PaymentMethod
   note?: string
   voucher_code?: string
   staff_profile_id?: string
-  start_time?: string // ISO string
-  end_time?: string // ISO string
+  slot_id?: string // ID của staff slot được chọn
+  duration_index: number // Index của duration được chọn trong mảng durations của service
 }
 
 export interface PaymentIntentResponse {

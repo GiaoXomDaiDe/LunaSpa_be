@@ -224,10 +224,11 @@ export const getAvailableSlotsByServiceIdController = async (
   next: NextFunction
 ) => {
   const { service_id } = req.params
-  const { date, isHours } = req.query
+  const { date, isHours, duration_minutes } = req.query
   const isHoursBoolean = Boolean(isHours)
+  const durationMinutes = duration_minutes ? parseInt(duration_minutes, 10) : undefined
 
-  const result = await staffSlotsService.getAvailableSlotsByServiceId(service_id, date, isHoursBoolean)
+  const result = await staffSlotsService.getAvailableSlotsByServiceId(service_id, date, durationMinutes, isHoursBoolean)
 
   res.status(HTTP_STATUS.OK).json({
     message: STAFF_SLOTS_MESSAGES.GET_STAFF_SLOTS_SUCCESS,

@@ -122,27 +122,27 @@ export const bookServiceValidator = validate(
           errorMessage: ORDER_MESSAGES.BRANCH_ID_INVALID
         }
       },
-      items: {
-        isArray: {
-          options: { min: 1 },
+      service_item: {
+        notEmpty: {
           errorMessage: ORDER_MESSAGES.ORDER_ITEMS_REQUIRED
+        },
+        isObject: {
+          errorMessage: 'service_item phải là một đối tượng'
         },
         custom: {
           options: (value) => {
-            if (!Array.isArray(value) || value.length === 0) {
-              return false
-            }
-            return value.every(
-              (item) =>
-                item.item_id &&
-                /^[0-9a-fA-F]{24}$/.test(item.item_id) &&
-                item.quantity &&
-                Number.isInteger(item.quantity) &&
-                item.quantity > 0 &&
-                (!item.slot_id || /^[0-9a-fA-F]{24}$/.test(item.slot_id))
+            if (!value) return false
+
+            return (
+              value.item_id &&
+              /^[0-9a-fA-F]{24}$/.test(value.item_id) &&
+              value.quantity &&
+              Number.isInteger(value.quantity) &&
+              value.quantity > 0 &&
+              value.item_type === ItemType.SERVICE
             )
           },
-          errorMessage: ORDER_MESSAGES.ORDER_ITEMS_INVALID
+          errorMessage: 'service_item không hợp lệ'
         }
       },
       booking_time: {
@@ -171,6 +171,23 @@ export const bookServiceValidator = validate(
             return true
           },
           errorMessage: ORDER_MESSAGES.BOOKING_TIME_INVALID
+        }
+      },
+      slot_id: {
+        notEmpty: {
+          errorMessage: 'Vui lòng chọn một slot'
+        },
+        isMongoId: {
+          errorMessage: 'Slot ID không hợp lệ'
+        }
+      },
+      duration_index: {
+        notEmpty: {
+          errorMessage: 'Vui lòng chọn thời lượng dịch vụ'
+        },
+        isInt: {
+          options: { min: 0 },
+          errorMessage: 'Thời lượng dịch vụ không hợp lệ'
         }
       },
       payment_method: {
