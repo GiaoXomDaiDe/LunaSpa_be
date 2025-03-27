@@ -11,7 +11,9 @@ export const RESOURCE_NAME = {
   SERVICE: 'Services',
   REVIEW: 'Reviews',
   ORDER: 'Orders',
-  TRANSACTION: 'Transactions'
+  TRANSACTION: 'Transactions',
+  CONDITION: 'Conditions',
+  DEVICE: 'Devices'
 } as const
 
 export const PERMISSION = {

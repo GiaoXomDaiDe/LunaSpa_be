@@ -1,142 +1,55 @@
 import { checkSchema } from 'express-validator'
-import { CONDITION_MESSAGES } from '~/constants/messages'
-import databaseService from '~/services/database.services'
+import schemaHelper from '~/utils/schemaHelper'
 import { validate } from '~/utils/validation'
 
+/**
+ * Validate các trường trong query khi tìm kiếm conditions
+ * Kiểm tra trường search
+ */
 export const conditionsQueryValidator = validate(
   checkSchema({
-    search: {
-      optional: true,
-      isString: {
-        errorMessage: CONDITION_MESSAGES.SEARCH_MUST_BE_STRING
-      },
-      isLength: {
-        options: {
-          max: 100
-        },
-        errorMessage: CONDITION_MESSAGES.SEARCH_MUST_BE_LESS_THAN_100_CHARACTERS
-      }
-    }
+    search: schemaHelper.conditionSearchSchema
   })
 )
+
+/**
+ * Validate condition_id trong params
+ * Kiểm tra tính hợp lệ của ID
+ */
 export const conditionIdValidator = validate(
   checkSchema(
     {
-      condition_id: {
-        trim: true,
-        notEmpty: {
-          errorMessage: CONDITION_MESSAGES.CONDITION_ID_IS_REQUIRED
-        },
-        isMongoId: {
-          errorMessage: CONDITION_MESSAGES.CONDITION_ID_MUST_BE_A_VALID_MONGO_ID
-        }
-      }
+      condition_id: schemaHelper.conditionIdSchema
     },
     ['params']
   )
 )
+
+/**
+ * Validate các trường khi cập nhật condition
+ * Tất cả các trường đều là optional
+ */
 export const updateConditionValidator = validate(
   checkSchema(
     {
-      name: {
-        optional: true,
-        trim: true,
-        isString: {
-          errorMessage: CONDITION_MESSAGES.NAME_MUST_BE_STRING
-        },
-        isLength: {
-          options: {
-            max: 100
-          },
-          errorMessage: CONDITION_MESSAGES.NAME_MUST_BE_LESS_THAN_100_CHARACTERS
-        },
-        custom: {
-          options: async (value: string, { req }) => {
-            const condition = await databaseService.conditions.findOne({ name: value })
-            if (condition) {
-              throw new Error(CONDITION_MESSAGES.NAME_IS_EXIST)
-            }
-          }
-        }
-      },
-      description: {
-        optional: true,
-        trim: true,
-        isString: {
-          errorMessage: CONDITION_MESSAGES.DESCRIPTION_MUST_BE_A_STRING
-        },
-        isLength: {
-          options: {
-            max: 255
-          },
-          errorMessage: CONDITION_MESSAGES.DESCRIPTION_CANNOT_LONGER_THAN_255
-        }
-      },
-      instructions: {
-        optional: true,
-        trim: true,
-        isString: {
-          errorMessage: CONDITION_MESSAGES.INSTRUCTIONS_MUST_BE_A_STRING
-        },
-        isLength: {
-          options: {
-            max: 255
-          },
-          errorMessage: CONDITION_MESSAGES.INSTRUCTIONS_CANNOT_LONGER_THAN_255
-        }
-      }
+      name: schemaHelper.updateConditionNameSchema,
+      description: schemaHelper.updateConditionDescriptionSchema,
+      instructions: schemaHelper.conditionInstructionsSchema
     },
     ['body']
   )
 )
+
+/**
+ * Validate các trường khi tạo mới condition
+ * Trường name là bắt buộc
+ */
 export const conditionValidator = validate(
   checkSchema(
     {
-      name: {
-        trim: true,
-        isString: {
-          errorMessage: CONDITION_MESSAGES.NAME_MUST_BE_STRING
-        },
-        isLength: {
-          options: {
-            max: 100
-          },
-          errorMessage: CONDITION_MESSAGES.NAME_MUST_BE_LESS_THAN_100_CHARACTERS
-        },
-        custom: {
-          options: async (value: string, { req }) => {
-            const condition = await databaseService.conditions.findOne({ name: value })
-            if (condition) {
-              throw new Error(CONDITION_MESSAGES.NAME_IS_EXIST)
-            }
-          }
-        }
-      },
-      description: {
-        trim: true,
-        isString: {
-          errorMessage: CONDITION_MESSAGES.DESCRIPTION_MUST_BE_A_STRING
-        },
-        isLength: {
-          options: {
-            max: 255
-          },
-          errorMessage: CONDITION_MESSAGES.DESCRIPTION_CANNOT_LONGER_THAN_255
-        }
-      },
-      instructions: {
-        optional: true,
-        trim: true,
-        isString: {
-          errorMessage: CONDITION_MESSAGES.INSTRUCTIONS_MUST_BE_A_STRING
-        },
-        isLength: {
-          options: {
-            max: 255
-          },
-          errorMessage: CONDITION_MESSAGES.INSTRUCTIONS_CANNOT_LONGER_THAN_255
-        }
-      }
+      name: schemaHelper.conditionNameSchema,
+      description: schemaHelper.conditionDescriptionSchema,
+      instructions: schemaHelper.conditionInstructionsSchema
     },
     ['body']
   )

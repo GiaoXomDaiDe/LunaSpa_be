@@ -5,15 +5,15 @@ import { ACCOUNT_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import { TokenPayload } from '~/models/request/Account.requests'
 import { AccountVerify } from '~/models/schema/Account.schema'
-import accountsParamsSchema from '~/utils/schemaHelper'
+import schemaHelper from '~/utils/schemaHelper'
 import { validate } from '~/utils/validation'
 
 export const registerValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.emailSchema,
-      password: accountsParamsSchema.registerPasswordSchema,
-      confirm_password: accountsParamsSchema.confirmPasswordSchema
+      email: schemaHelper.emailSchema,
+      password: schemaHelper.registerPasswordSchema,
+      confirm_password: schemaHelper.confirmPasswordSchema
     },
     ['body']
   )
@@ -21,8 +21,8 @@ export const registerValidator = validate(
 export const loginValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.emailSchema,
-      password: accountsParamsSchema.loginPasswordSchema
+      email: schemaHelper.emailSchema,
+      password: schemaHelper.loginPasswordSchema
     },
     ['body']
   )
@@ -30,7 +30,7 @@ export const loginValidator = validate(
 export const accessTokenValidator = validate(
   checkSchema(
     {
-      Authorization: accountsParamsSchema.accessTokenSchema
+      Authorization: schemaHelper.accessTokenSchema
     },
     ['headers']
   )
@@ -50,7 +50,7 @@ export const accessTokenValidatorV2 = async (req: Request, res: Response, next: 
 export const refreshTokenValidator = validate(
   checkSchema(
     {
-      refresh_token: accountsParamsSchema.refreshTokenSchema
+      refresh_token: schemaHelper.refreshTokenSchema
     },
     ['body']
   )
@@ -58,7 +58,7 @@ export const refreshTokenValidator = validate(
 export const emailVerifyTokenValidator = validate(
   checkSchema(
     {
-      email_verify_token: accountsParamsSchema.emailVerifyTokenSchema
+      email_verify_token: schemaHelper.emailVerifyTokenSchema
     },
     ['body']
   )
@@ -66,7 +66,7 @@ export const emailVerifyTokenValidator = validate(
 export const forgotPasswordValidator = validate(
   checkSchema(
     {
-      email: accountsParamsSchema.forgotPasswordEmailSchema
+      email: schemaHelper.forgotPasswordEmailSchema
     },
     ['body']
   )
@@ -74,7 +74,7 @@ export const forgotPasswordValidator = validate(
 export const verifyForgotPasswordTokenValidator = validate(
   checkSchema(
     {
-      forgot_password_token: accountsParamsSchema.forgotPasswordTokenSchema
+      forgot_password_token: schemaHelper.forgotPasswordTokenSchema
     },
     ['body']
   )
@@ -82,9 +82,9 @@ export const verifyForgotPasswordTokenValidator = validate(
 export const resetPasswordValidator = validate(
   checkSchema(
     {
-      password: accountsParamsSchema.registerPasswordSchema,
-      confirm_password: accountsParamsSchema.confirmPasswordSchema,
-      forgot_password_token: accountsParamsSchema.forgotPasswordTokenSchema
+      password: schemaHelper.registerPasswordSchema,
+      confirm_password: schemaHelper.confirmPasswordSchema,
+      forgot_password_token: schemaHelper.forgotPasswordTokenSchema
     },
     ['body']
   )
@@ -103,27 +103,27 @@ export const verifiedAccountValidator = async (req: Request, res: Response, next
 }
 export const updateMeValidator = validate(
   checkSchema({
-    name: accountsParamsSchema.updateMeNameSchema,
-    phone_number: accountsParamsSchema.updateMePhoneNumberSchema,
-    address: accountsParamsSchema.updateMeAddressSchema,
-    date_of_birth: accountsParamsSchema.updateMeDateOfBirthSchema,
-    avatar: accountsParamsSchema.updateMeAvatarSchema
+    name: schemaHelper.updateMeNameSchema,
+    phone_number: schemaHelper.updateMePhoneNumberSchema,
+    address: schemaHelper.updateMeAddressSchema,
+    date_of_birth: schemaHelper.updateMeDateOfBirthSchema,
+    avatar: schemaHelper.updateMeAvatarSchema
   })
 )
 export const updateToStaffValidator = validate(
   checkSchema({
-    account_id: accountsParamsSchema.accountIdSchema,
-    staff_type: accountsParamsSchema.staffTypeSchema,
-    specialty_ids: accountsParamsSchema.specialtyIdsSchema,
-    bio: accountsParamsSchema.bioSchema
+    account_id: schemaHelper.accountIdSchema,
+    staff_type: schemaHelper.staffTypeSchema,
+    specialty_ids: schemaHelper.specialtyIdsSchema,
+    bio: schemaHelper.bioSchema
   })
 )
 
 export const paginationValidator = validate(
   checkSchema(
     {
-      limit: accountsParamsSchema.limitSchema,
-      page: accountsParamsSchema.pageSchema,
+      limit: schemaHelper.limitSchema,
+      page: schemaHelper.pageSchema,
       _custom: {
         custom: {
           options: async (value: string, { req }) => {

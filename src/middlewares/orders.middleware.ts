@@ -88,22 +88,6 @@ export const purchaseProductValidator = validate(
         isArray: {
           options: { min: 1 },
           errorMessage: ORDER_MESSAGES.ORDER_ITEMS_REQUIRED
-        },
-        custom: {
-          options: (value) => {
-            if (!Array.isArray(value) || value.length === 0) {
-              return false
-            }
-            return value.every(
-              (item) =>
-                item.item_id &&
-                /^[0-9a-fA-F]{24}$/.test(item.item_id) &&
-                item.quantity &&
-                Number.isInteger(item.quantity) &&
-                item.quantity > 0
-            )
-          },
-          errorMessage: ORDER_MESSAGES.ORDER_ITEMS_INVALID
         }
       },
       payment_method: {

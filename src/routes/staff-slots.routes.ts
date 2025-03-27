@@ -6,6 +6,7 @@ import {
   downloadTemplateController,
   exportExcelController,
   generateStaffSlotsController,
+  getAvailableSlotsByServiceIdController,
   getStaffSlotController,
   getStaffSlotsController,
   importExcelController,
@@ -18,6 +19,7 @@ import {
   verifiedAccountValidator
 } from '~/middlewares/accounts.middleware'
 import { checkPermission } from '~/middlewares/roles.middleware'
+import { availableSlotsServiceIdValidator } from '~/middlewares/services.middleware'
 import {
   createMultipleStaffSlotsValidator,
   generateStaffSlotsValidator,
@@ -159,6 +161,17 @@ staffSlotsRouter.get(
   verifiedAccountValidator,
   checkPermission('read', 'StaffSlot'),
   wrapRequestHandler(downloadTemplateController as RequestHandler)
+)
+
+/**
+ * @route GET /staff-slots/available/service/:service_id
+ * @description Lấy danh sách các slot có sẵn theo service_id
+ * @access Public
+ */
+staffSlotsRouter.get(
+  '/available/service/:service_id',
+  availableSlotsServiceIdValidator,
+  wrapRequestHandler(getAvailableSlotsByServiceIdController as RequestHandler)
 )
 
 /**

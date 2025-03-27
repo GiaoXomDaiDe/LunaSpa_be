@@ -73,7 +73,6 @@ export const deleteProductCategoryController = async (
   next: NextFunction
 ) => {
   const productCategory_id = req.params.product_category_id
-  console.log(productCategory_id)
   await productCategoriesService.deleteProductCategory(productCategory_id)
   res.status(HTTP_STATUS.OK).json({
     message: SUCCESS_RESPONSE_MESSAGE.PRODUCT_CATEGORY_DELETED_SUCCESSFULLY

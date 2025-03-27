@@ -63,9 +63,7 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     pipeline.push({ $match: match })
   }
 
-  // Nếu include_branch_services true thì thêm các stage để nối bảng với branch_services và branches
   if (_options.include_branch_services) {
-    // Nối bảng branch_services dựa trên service_id và trạng thái = 1
     pipeline.push({
       $lookup: {
         from: 'branch_services',
@@ -82,9 +80,7 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
         as: 'temp_branch_services'
       }
     })
-    console.log('temp_branch_services', pipeline)
 
-    // Tạo mảng branch_ids từ kết quả của branch_services
     pipeline.push({
       $addFields: {
         branch_ids: {
@@ -97,7 +93,6 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
       }
     })
 
-    // Nối bảng branches dựa trên branch_ids
     pipeline.push({
       $lookup: {
         from: 'branches',
@@ -107,7 +102,6 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
       }
     })
 
-    // Thêm các trường phụ trợ: service_status và branch_services_details
     pipeline.push({
       $addFields: {
         service_status: '$status',
@@ -125,7 +119,6 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     })
   }
 
-  // Nối bảng devices theo điều kiện device_ids và status = 1
   pipeline.push({
     $lookup: {
       from: 'devices',
@@ -143,7 +136,6 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     }
   })
 
-  // Nối bảng service_categories theo service_category_id
   pipeline.push({
     $lookup: {
       from: 'service_categories',
@@ -153,7 +145,6 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     }
   })
 
-  // Stage project: chọn các trường cần trả về
   pipeline.push({
     $project: {
       _id: 1,
@@ -199,7 +190,6 @@ export function buildServicesPipeline(options: GetAllServicesOptions) {
     }
   })
 
-  // Unwind mảng service_category để dễ xử lý (nếu có nhiều category)
   pipeline.push({
     $unwind: {
       path: '$service_category',

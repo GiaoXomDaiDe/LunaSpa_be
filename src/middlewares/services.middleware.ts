@@ -3,7 +3,7 @@ import { checkSchema } from 'express-validator'
 import { ObjectId } from 'mongodb'
 import { ORDER, SERVICE_SORT_BY } from '~/constants/constants'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { SERVICE_MESSAGES } from '~/constants/messages'
+import { PRODUCT_MESSAGES, SERVICE_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import { ServiceParams } from '~/models/request/Services.request'
 import { ServiceStatus } from '~/models/schema/Service.schema'
@@ -19,14 +19,11 @@ export const servicesQueryValidator = validate(
         trim: true,
         customSanitizer: {
           options: (value: string) => {
-            if (!value) {
-              return (value = SERVICE_SORT_BY[1]) //price
-            }
-            return value
+            return value || SERVICE_SORT_BY[1] //booking_count
           }
         },
         isString: {
-          errorMessage: SERVICE_MESSAGES.SORT_MUST_BE_A_STRING
+          errorMessage: SERVICE_MESSAGES.SORT_VALUE_INVALID
         },
         custom: {
           options: async (value: string) => {
@@ -42,10 +39,7 @@ export const servicesQueryValidator = validate(
         trim: true,
         customSanitizer: {
           options: (value: string) => {
-            if (!value) {
-              return (value = ORDER[0]) //asc
-            }
-            return value
+            return value || ORDER[0] //asc
           }
         },
         isString: {
@@ -63,12 +57,46 @@ export const servicesQueryValidator = validate(
       search: {
         optional: true,
         trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value || ''
+          }
+        },
         isString: {
           errorMessage: SERVICE_MESSAGES.SEARCH_MUST_BE_A_STRING
         }
       },
+      limit: {
+        optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : 10
+          }
+        },
+        isInt: {
+          errorMessage: PRODUCT_MESSAGES.LIMIT_MUST_BE_A_NUMBER
+        }
+      },
+      page: {
+        optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value ? parseInt(value) : 1
+          }
+        },
+        isInt: {
+          errorMessage: PRODUCT_MESSAGES.PAGE_MUST_BE_A_NUMBER
+        }
+      },
       max_booking_count: {
         optional: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value && value !== '' ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: SERVICE_MESSAGES.MAX_BOOKING_COUNT_MUST_BE_A_NUMBER
         },
@@ -83,6 +111,11 @@ export const servicesQueryValidator = validate(
       },
       min_booking_count: {
         optional: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value && value !== '' ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: SERVICE_MESSAGES.MIN_BOOKING_COUNT_MUST_BE_A_NUMBER
         },
@@ -98,9 +131,8 @@ export const servicesQueryValidator = validate(
       _custom_booking_count: {
         custom: {
           options: (value, { req }) => {
-            console.log(value, 'value  booking count')
             const { max_booking_count, min_booking_count } = (req as Request).query
-            if (max_booking_count && min_booking_count && max_booking_count <= min_booking_count) {
+            if (max_booking_count && min_booking_count && Number(max_booking_count) <= Number(min_booking_count)) {
               throw new Error(SERVICE_MESSAGES.MAX_BOOKING_COUNT_MUST_BE_GREATER_THAN_MIN_BOOKING_COUNT)
             }
             return true
@@ -109,6 +141,11 @@ export const servicesQueryValidator = validate(
       },
       max_view_count: {
         optional: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value && value !== '' ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: SERVICE_MESSAGES.MAX_VIEW_COUNT_MUST_BE_A_NUMBER
         },
@@ -123,6 +160,11 @@ export const servicesQueryValidator = validate(
       },
       min_view_count: {
         optional: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value && value !== '' ? parseInt(value) : undefined
+          }
+        },
         isInt: {
           errorMessage: SERVICE_MESSAGES.MIN_VIEW_COUNT_MUST_BE_A_NUMBER
         },
@@ -138,9 +180,8 @@ export const servicesQueryValidator = validate(
       _custom_view_count: {
         custom: {
           options: (value, { req }) => {
-            console.log(value, 'value  view count')
             const { max_view_count, min_view_count } = (req as Request).query
-            if (max_view_count && min_view_count && max_view_count <= min_view_count) {
+            if (max_view_count && min_view_count && Number(max_view_count) <= Number(min_view_count)) {
               throw new Error(SERVICE_MESSAGES.MAX_VIEW_COUNT_MUST_BE_GREATER_THAN_MIN_VIEW_COUNT)
             }
             return true
@@ -149,6 +190,11 @@ export const servicesQueryValidator = validate(
       },
       service_category_id: {
         optional: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value && value !== '' ? value : undefined
+          }
+        },
         notEmpty: {
           errorMessage: SERVICE_MESSAGES.SERVICE_CATEGORY_ID_IS_REQUIRED
         },
@@ -157,6 +203,7 @@ export const servicesQueryValidator = validate(
         },
         custom: {
           options: async (value: string) => {
+            if (!value) return true
             const category = await databaseService.serviceCategories.findOne({
               _id: new ObjectId(value)
             })
@@ -169,11 +216,21 @@ export const servicesQueryValidator = validate(
       },
       device_ids: {
         optional: true,
+        customSanitizer: {
+          options: (value: string[] | string) => {
+            if (!value) return undefined
+            if (typeof value === 'string') {
+              return [value]
+            }
+            return value
+          }
+        },
         isArray: {
           errorMessage: SERVICE_MESSAGES.DEVICE_ID_MUST_BE_AN_ARRAY
         },
         custom: {
           options: async (value: string[]) => {
+            if (!value || value.length === 0) return true
             const devices = await databaseService.devices
               .find({ _id: { $in: value.map((item) => new ObjectId(item)) } })
               .toArray()
@@ -181,6 +238,15 @@ export const servicesQueryValidator = validate(
               throw new Error(SERVICE_MESSAGES.DEVICE_ID_NOT_FOUND)
             }
             return true
+          }
+        }
+      },
+      include_branch_services: {
+        optional: true,
+        trim: true,
+        customSanitizer: {
+          options: (value: string) => {
+            return value === 'true'
           }
         }
       }
@@ -198,10 +264,50 @@ export const serviceIdValidator = validate(
         },
         isMongoId: {
           errorMessage: SERVICE_MESSAGES.SERVICE_ID_MUST_BE_A_VALID_MONGO_ID
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            const service = await databaseService.services.findOne({ _id: new ObjectId(value) })
+            if (!service) {
+              throw new Error(SERVICE_MESSAGES.SERVICE_NOT_FOUND)
+            }
+            return true
+          }
         }
       }
     },
     ['params']
+  )
+)
+export const availableSlotsServiceIdValidator = validate(
+  checkSchema(
+    {
+      service_id: {
+        trim: true,
+        notEmpty: {
+          errorMessage: SERVICE_MESSAGES.SERVICE_ID_IS_REQUIRED
+        },
+        isMongoId: {
+          errorMessage: SERVICE_MESSAGES.SERVICE_ID_MUST_BE_A_VALID_MONGO_ID
+        },
+        custom: {
+          options: async (value: string, { req }) => {
+            const service = await databaseService.services.findOne({ _id: new ObjectId(value) })
+            if (!service) {
+              throw new Error(SERVICE_MESSAGES.SERVICE_NOT_FOUND)
+            }
+            return true
+          }
+        }
+      },
+      date: {
+        optional: true,
+        isISO8601: {
+          errorMessage: SERVICE_MESSAGES.DATE_MUST_BE_ISO8601
+        }
+      }
+    },
+    ['params', 'query']
   )
 )
 export const checkServiceNotInactive = wrapRequestHandler(

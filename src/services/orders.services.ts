@@ -74,7 +74,6 @@ class OrdersService {
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
-
     // Kiểm tra và tính toán thông tin đơn hàng
     let total_price = 0
     let discount_amount = 0
