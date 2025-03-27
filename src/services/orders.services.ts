@@ -11,19 +11,24 @@ import {
 import Order, { OrderStatus, PaymentMethod } from '~/models/schema/Order.schema'
 import OrderDetail, { ItemType } from '~/models/schema/OrderDetail.schema'
 import { StaffSlotStatus } from '~/models/schema/StaffSlot.schema'
-import { CurrencyUnit, TransactionMethod, TransactionStatus } from '~/models/schema/Transaction.schema'
+import {
+  CurrencyUnit,
+  ProductTransactionMetadata,
+  ServiceTransactionMetadata,
+  TransactionMethod,
+  TransactionStatus
+} from '~/models/schema/Transaction.schema'
 import { buildOrderPipeline, buildOrdersPipeline } from '~/pipelines/order.pipeline'
 import accountsService from '~/services/accounts.services'
 import branchesService from '~/services/branches.services'
 import databaseService from '~/services/database.services'
-import momoService from '~/services/momo.services'
+import emailService from '~/services/email.services'
 import productsService from '~/services/products.services'
 import qrCodeService from '~/services/qrcode.services'
 import servicesService from '~/services/services.services'
 import staffProfilesService from '~/services/staffProfiles.services'
 import staffSlotsService from '~/services/staffSlots.services'
 import stripeService from '~/services/stripe.services'
-import { sendBookingConfirmationEmail, sendPaymentConfirmationEmail } from '~/utils/email'
 
 class OrdersService {
   async getAllOrders(options: GetAllOrdersOptions) {
@@ -57,9 +62,10 @@ class OrdersService {
   }
 
   async createProductOrder(customer_id: string, body: CreateProductOrderReqBody) {
-    const { branch_id, items, payment_method, note } = body
+    const { branch_id, product_items, payment_method, note, voucher_code } = body
+    console.log(product_items)
 
-    if (!items || items.length === 0) {
+    if (!product_items || product_items.length === 0) {
       throw new ErrorWithStatus({
         message: ORDER_MESSAGES.ORDER_ITEMS_REQUIRED,
         status: HTTP_STATUS.BAD_REQUEST
@@ -79,9 +85,9 @@ class OrdersService {
     let discount_amount = 0
     const order_items: OrderDetail[] = []
 
-    for (const item of items) {
+    for (const product_item of product_items) {
       // Kiểm tra loại item
-      if (item.item_type !== ItemType.PRODUCT) {
+      if (product_item.item_type !== ItemType.PRODUCT) {
         throw new ErrorWithStatus({
           message: ORDER_MESSAGES.ITEM_TYPE_INVALID,
           status: HTTP_STATUS.BAD_REQUEST
@@ -89,7 +95,7 @@ class OrdersService {
       }
 
       // Kiểm tra sản phẩm có tồn tại không
-      const product = await productsService.getProduct(item.item_id)
+      const product = await productsService.getProduct(product_item.item_id)
       if (!product) {
         throw new ErrorWithStatus({
           message: ORDER_MESSAGES.ITEM_ID_INVALID,
@@ -102,18 +108,18 @@ class OrdersService {
       const final_price = product_discount > 0 ? product_discount : product_price
 
       // Tính toán giá
-      total_price += product_price * item.quantity
-      discount_amount += (product_price - final_price) * item.quantity
+      total_price += product_price * product_item.quantity
+      discount_amount += (product_price - final_price) * product_item.quantity
 
       order_items.push(
         new OrderDetail({
           order_id: new ObjectId(), // Tạm thời, sẽ cập nhật sau
           item_type: ItemType.PRODUCT,
-          item_id: new ObjectId(item.item_id),
+          item_id: new ObjectId(product_item.item_id),
           item_name: product.name,
           price: product_price,
           discount_price: product_discount,
-          quantity: item.quantity,
+          quantity: product_item.quantity,
           note: note
         })
       )
@@ -139,11 +145,10 @@ class OrdersService {
         const result = await databaseService.orders.insertOne(order, { session })
         if (!result.insertedId) {
           throw new ErrorWithStatus({
-            message: 'Không thể tạo đơn hàng',
+            message: 'Cannot create order',
             status: HTTP_STATUS.INTERNAL_SERVER_ERROR
           })
         }
-
         const order_id = result.insertedId
 
         // Cập nhật order_id cho các order items
@@ -153,6 +158,7 @@ class OrdersService {
 
         // Lưu chi tiết đơn hàng
         await databaseService.orderDetails.insertMany(order_items, { session })
+
         // Tạo payment intent nếu thanh toán bằng Stripe
         let payment_intent = null
         if (payment_method === PaymentMethod.STRIPE) {
@@ -191,7 +197,7 @@ class OrdersService {
                   order_type: 'product',
                   items: order_items.map((item) => item.item_name).join(', '),
                   client_secret: payment_intent.clientSecret
-                }
+                } as ProductTransactionMetadata
               },
               { session }
             )
@@ -221,7 +227,7 @@ class OrdersService {
   }
 
   async bookService(customer_id: string, body: BookServiceReqBody) {
-    const { branch_id, service_item, booking_time, payment_method, note, voucher_code, slot_id, duration_index } = body
+    const { branch_id, service_item, payment_method, note, voucher_code } = body
 
     if (!service_item || !service_item.item_id) {
       throw new ErrorWithStatus({
@@ -238,7 +244,13 @@ class OrdersService {
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
-
+    // Kiểm tra loại item
+    if (service_item.item_type !== ItemType.SERVICE) {
+      throw new ErrorWithStatus({
+        message: ORDER_MESSAGES.ITEM_TYPE_INVALID,
+        status: HTTP_STATUS.BAD_REQUEST
+      })
+    }
     // Kiểm tra dịch vụ có tồn tại không
     const service = await servicesService.getService(service_item.item_id)
     if (!service) {
@@ -249,25 +261,28 @@ class OrdersService {
     }
 
     // Kiểm tra duration_index hợp lệ
-    if (duration_index === undefined || !service.durations || duration_index >= service.durations.length) {
+    if (
+      service_item.duration_index === undefined ||
+      !service.durations ||
+      service_item.duration_index >= service.durations.length
+    ) {
       throw new ErrorWithStatus({
-        message: 'Duration không hợp lệ',
+        message: 'Duration index is invalid',
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
 
-    const selectedDuration = service.durations[duration_index]
+    const selectedDuration = service.durations[service_item.duration_index]
 
     // Xử lý thời gian
-    const bookingDate = new Date(booking_time)
+    const bookingDate = new Date(service_item.booking_time)
 
     // Kiểm tra slot nếu đã được chỉ định
     let staffSlot
-    let staffProfile
 
-    if (slot_id) {
+    if (service_item.slot_id) {
       // Lấy thông tin slot
-      staffSlot = await staffSlotsService.getStaffSlot(slot_id)
+      staffSlot = await staffSlotsService.getStaffSlot(service_item.slot_id)
 
       if (!staffSlot) {
         throw new ErrorWithStatus({
@@ -280,22 +295,29 @@ class OrdersService {
       const serviceDuration = selectedDuration.duration_in_minutes || 60
       if (staffSlot.available_minutes < serviceDuration) {
         throw new ErrorWithStatus({
-          message: 'Slot không đủ thời gian cho dịch vụ này',
+          message: 'Slot is not enough for this service',
           status: HTTP_STATUS.BAD_REQUEST
         })
       }
-
-      // Lấy thông tin staff profile từ slot
-      staffProfile = await staffProfilesService.getStaffProfile(staffSlot.staff_profile_id.toString())
     } else {
       throw new ErrorWithStatus({
-        message: 'Cần chỉ định slot_id để đặt lịch',
+        message: 'Need to specify slot_id to book service',
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
 
     // Tính toán thời gian bắt đầu và kết thúc dịch vụ
-    const startTime = new Date(staffSlot.start_time)
+    // Lấy thời gian từ slot nhưng ngày từ bookingDate
+    const slotStartTime = new Date(staffSlot.start_time)
+    const bookingDay = bookingDate.getDate()
+    const bookingMonth = bookingDate.getMonth()
+    const bookingYear = bookingDate.getFullYear()
+
+    // Tạo startTime với ngày từ bookingDate và giờ từ slot
+    const startTime = new Date(slotStartTime)
+    startTime.setFullYear(bookingYear, bookingMonth, bookingDay)
+
+    // Tính toán endTime dựa trên startTime và duration
     const serviceDuration = selectedDuration.duration_in_minutes || 60
     const endTime = new Date(startTime.getTime() + serviceDuration * 60000)
 
@@ -360,6 +382,12 @@ class OrdersService {
 
         // Lưu đơn hàng
         const result = await databaseService.orders.insertOne(order, { session })
+        if (!result.insertedId) {
+          throw new ErrorWithStatus({
+            message: 'Cannot create order',
+            status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+          })
+        }
         const orderId = result.insertedId
 
         // Cập nhật orders array trong staffSlot với orderId thật
@@ -377,14 +405,14 @@ class OrdersService {
           item_name: service.name,
           price: servicePrice,
           discount_price: serviceDiscount,
-          quantity: service_item.quantity || 1,
+          quantity: 1,
           slot_id: staffSlot._id,
           staff_profile_id: staffSlot.staff_profile_id,
           start_time: startTime,
           end_time: endTime,
-          note: service_item.note || note,
+          note: note,
           duration_info: {
-            duration_name: selectedDuration.duration_name || `${serviceDuration} phút`,
+            duration_name: selectedDuration.duration_name || `${serviceDuration} minutes`,
             duration_in_minutes: serviceDuration,
             price: servicePrice,
             discount_price: serviceDiscount,
@@ -413,12 +441,11 @@ class OrdersService {
               order_id: orderId.toString(),
               customer_id,
               order_type: 'service',
-              service_id: service_item.item_id,
               service_name: service.name,
-              duration_name: selectedDuration.duration_name,
-              booking_time: booking_time,
+              start_time: startTime.toISOString().split('T')[1].slice(0, 5),
+              end_time: endTime.toISOString().split('T')[1].slice(0, 5),
               slot_id: staffSlot._id.toString(),
-              staff_profile_id: staffSlot.staff_profile_id.toString()
+              booking_time: bookingDate.toISOString()
             })
 
             // Lưu transaction
@@ -438,12 +465,12 @@ class OrdersService {
                 metadata: {
                   order_type: 'service',
                   service_name: service.name,
-                  duration_name: selectedDuration.duration_name,
-                  booking_time: booking_time,
+                  start_time: startTime.toISOString().split('T')[1].slice(0, 5),
+                  end_time: endTime.toISOString().split('T')[1].slice(0, 5),
                   slot_id: staffSlot._id.toString(),
-                  staff_profile_id: staffSlot.staff_profile_id.toString(),
+                  booking_time: bookingDate.toISOString(),
                   client_secret: payment_intent.clientSecret
-                }
+                } as ServiceTransactionMetadata
               },
               { session }
             )
@@ -470,6 +497,17 @@ class OrdersService {
 
         // Lấy đơn hàng đã tạo với thông tin đầy đủ
         const order_data = await this.getOrderById(orderId.toString(), session)
+
+        // Lấy thông tin khách hàng để gửi email
+        const customer = await accountsService.getAccount(customer_id)
+
+        // Gửi email xác nhận đặt lịch sau khi tạo đơn hàng thành công
+        // Thực hiện ngoài transaction để không ảnh hưởng đến việc đặt lịch nếu gửi email lỗi
+        setTimeout(() => {
+          this.sendServiceConfirmationEmail(order_data, customer).catch((err) =>
+            console.error(`Failed to send confirmation email for order ${orderId}:`, err)
+          )
+        }, 100)
 
         return {
           order: order_data,
@@ -505,12 +543,11 @@ class OrdersService {
     const session = databaseService.getClient().startSession()
     try {
       return await session.withTransaction(async () => {
-        // Find transaction by both order_id and payment_intent_id to ensure accuracy
+        // Tìm transaction theo order_id và payment_intent_id
         const transaction = await databaseService.transactions.findOne({
           order_id: new ObjectId(order_id),
           payment_intent_id: payment_intent_id
         })
-        console.log(transaction, 'Transaction')
 
         if (!transaction) {
           throw new ErrorWithStatus({
@@ -519,7 +556,7 @@ class OrdersService {
           })
         }
 
-        // Update transaction by _id to ensure accuracy
+        // Cập nhật trạng thái transaction
         await databaseService.transactions.updateOne(
           { _id: transaction._id },
           {
@@ -532,7 +569,7 @@ class OrdersService {
           { session }
         )
 
-        // Cập nhật order
+        // Cập nhật trạng thái order
         await databaseService.orders.updateOne(
           { _id: transaction.order_id },
           {
@@ -545,17 +582,14 @@ class OrdersService {
           { session }
         )
 
-        // Nếu là đặt dịch vụ, cập nhật trạng thái slot từ PENDING thành RESERVED
+        // Nếu là đặt dịch vụ, cập nhật trạng thái slot
         if (transaction.metadata?.order_type === 'service' && transaction.metadata?.slot_id) {
           const slot_id = transaction.metadata.slot_id
-          if (slot_id) {
-            // Chuyển trạng thái slot từ PENDING sang RESERVED cho các đơn hàng đã thanh toán
-            await databaseService.staffSlots.updateOne(
-              { _id: new ObjectId(slot_id), orders: { $elemMatch: { $eq: new ObjectId(order_id) } } },
-              { $set: { status: StaffSlotStatus.RESERVED } },
-              { session }
-            )
-          }
+          await databaseService.staffSlots.updateOne(
+            { _id: new ObjectId(slot_id), orders: { $elemMatch: { $eq: new ObjectId(order_id) } } },
+            { $set: { status: StaffSlotStatus.RESERVED } },
+            { session }
+          )
         }
 
         // Lấy thông tin order và customer
@@ -569,54 +603,11 @@ class OrdersService {
           })
         }
 
-        // Nếu là đặt dịch vụ, gửi email xác nhận với QR code
+        // Gửi email xác nhận tương ứng với loại đơn hàng
         if (transaction.metadata?.order_type === 'service') {
-          // Tìm thông tin chi tiết đơn hàng
-          const orderDetail = order.items[0]
-
-          if (orderDetail && orderDetail.staff_profile_id) {
-            // Lấy thông tin chi nhánh và nhân viên
-            const staffProfile = await staffProfilesService.getStaffProfile(orderDetail.staff_profile_id.toString())
-            const staffName = staffProfile?.account?.name || 'Nhân viên Luna Spa'
-
-            // Tạo QR code
-            const qrCodeDataUrl = await qrCodeService.generateBookingQRCode(
-              order._id.toString(),
-              staffName,
-              orderDetail.item_name,
-              new Date(order.booking_time),
-              order.branch.name
-            )
-
-            // Gửi email xác nhận đặt lịch với QR code
-            await sendBookingConfirmationEmail(
-              customer.email,
-              customer.name || 'Quý khách',
-              orderDetail.item_name,
-              staffName,
-              order.branch.name,
-              new Date(order.booking_time),
-              qrCodeDataUrl
-            )
-          }
-        }
-        // Nếu là đặt mua sản phẩm, gửi email xác nhận thanh toán
-        else if (transaction.metadata?.order_type === 'product') {
-          const orderItems = order.items.map((item: any) => ({
-            name: item.item_name,
-            quantity: item.quantity,
-            price: item.price
-          }))
-
-          // Gửi email xác nhận thanh toán
-          await sendPaymentConfirmationEmail(
-            customer.email,
-            customer.name || 'Quý khách',
-            orderItems,
-            order.final_price,
-            order.payment_method,
-            new Date(order.created_at)
-          )
+          await this.sendServiceConfirmationEmail(order, customer)
+        } else if (transaction.metadata?.order_type === 'product') {
+          await this.sendProductConfirmationEmail(order, customer)
         }
 
         return {
@@ -627,6 +618,110 @@ class OrdersService {
     } finally {
       await session.endSession()
     }
+  }
+
+  // Hàm gửi email xác nhận đặt dịch vụ
+  private async sendServiceConfirmationEmail(order: any, customer: any) {
+    console.log('====== START sendServiceConfirmationEmail ======')
+    console.log('Order:', order._id?.toString())
+    console.log('Customer:', customer?.email)
+
+    const orderDetail = order.items[0]
+    if (!orderDetail || !orderDetail.staff_profile_id) {
+      console.log('Order detail missing or staff_profile_id missing')
+      return
+    }
+
+    console.log('Order detail item name:', orderDetail.item_name)
+    console.log('Staff profile ID:', orderDetail.staff_profile_id?.toString())
+
+    // Lấy thông tin nhân viên
+    try {
+      const staffProfile = await staffProfilesService.getStaffProfile(orderDetail.staff_profile_id.toString())
+      const staffName = staffProfile?.account?.name || 'Nhân viên Luna Spa'
+      console.log('Staff name:', staffName)
+      console.log('Branch name:', order.branch?.name)
+
+      try {
+        // Tạo QR code
+        console.log('Generating QR code...')
+        const qrCodeDataURL = await qrCodeService.generateBookingQRCode(
+          order._id.toString(),
+          staffName,
+          orderDetail.item_name,
+          new Date(order.booking_time),
+          order.branch.name
+        )
+        console.log('QR code data URL generated:', qrCodeDataURL ? 'Success' : 'Failed')
+
+        // Lưu QR code thành ảnh và upload lên S3
+        console.log('Saving QR code to S3...')
+        const qrCodeUrl = await qrCodeService.saveQRCodeAsImage(qrCodeDataURL, `booking-${order._id.toString()}`)
+        console.log('QR code S3 URL:', qrCodeUrl)
+
+        // Gửi email xác nhận với QR code URL
+        if (customer.email) {
+          console.log('Sending confirmation email...')
+
+          // Format thời gian bắt đầu và kết thúc
+          const formatTime = (dateStr: string) => {
+            if (!dateStr) return undefined
+            try {
+              return new Date(dateStr).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            } catch (error) {
+              console.error('Error formatting time:', error)
+              return undefined
+            }
+          }
+
+          // Lấy thời gian bắt đầu và kết thúc từ orderDetail
+          const startTime = formatTime(orderDetail.start_time)
+          const endTime = formatTime(orderDetail.end_time)
+          console.log('Start time:', startTime)
+          console.log('End time:', endTime)
+
+          await emailService.sendBookingConfirmation(customer.email, {
+            orderId: order._id.toString(),
+            customerName: customer.name || 'Quý khách',
+            serviceName: orderDetail.item_name,
+            staffName: staffName,
+            branchName: order.branch.name,
+            bookingTime: order.booking_time
+              ? new Date(order.booking_time).toLocaleString('vi-VN', { dateStyle: 'full' })
+              : undefined,
+            startTime: startTime,
+            endTime: endTime,
+            qrCodeUrl: qrCodeUrl
+          })
+          console.log('Email sent!')
+        } else {
+          console.log('Customer email missing, cannot send email')
+        }
+      } catch (error) {
+        console.error('Error generating and sending QR code:', error)
+        // Không ném lỗi vì việc gửi email không thành công không nên ảnh hưởng đến luồng đặt lịch
+      }
+    } catch (staffError) {
+      console.error('Error getting staff profile:', staffError)
+    }
+
+    console.log('====== END sendServiceConfirmationEmail ======')
+  }
+
+  // Hàm gửi email xác nhận mua sản phẩm
+  private async sendProductConfirmationEmail(order: any, customer: any) {
+    const orderItems = order.items.map((item: any) => ({
+      name: item.item_name,
+      quantity: item.quantity,
+      price: item.price
+    }))
+
+    await emailService.sendPaymentConfirmation(customer.email, {
+      orderId: order._id.toString(),
+      customerName: customer.name || 'Quý khách',
+      amount: order.final_price,
+      orderItems: orderItems
+    })
   }
 
   async cancelOrder(order_id: string, customer_id: string, body: CancelOrderReqBody) {
@@ -803,167 +898,143 @@ class OrdersService {
       })
     }
 
-    let result
-
-    if (payment_method === PaymentMethod.STRIPE) {
-      // Xử lý thanh toán qua Stripe
-      // Kiểm tra xem đã có payment intent chưa
-      const existingTransaction = await databaseService.transactions.findOne({
-        order_id: new ObjectId(order_id),
-        payment_method: PaymentMethod.STRIPE,
-        status: TransactionStatus.PENDING
-      })
-
-      if (existingTransaction) {
-        // Trả về client secret của payment intent đã tạo
-        result = {
-          client_secret: existingTransaction.metadata?.client_secret || '',
-          payment_intent_id: existingTransaction.payment_intent_id || '',
-          payment_method: PaymentMethod.STRIPE
-        }
-      } else {
-        // Tạo payment intent mới
-        try {
-          const orderType = order.booking_time ? 'service' : 'product'
-          const metadata: Record<string, any> = {
-            order_id: order_id,
-            customer_id,
-            order_type: orderType
-          }
-
-          // Thêm metadata dựa trên loại đơn hàng
-          const orderDetail = await databaseService.orderDetails.findOne({
-            order_id: new ObjectId(order_id)
-          })
-
-          if (orderType === 'service' && orderDetail) {
-            if (orderDetail.slot_id) {
-              metadata.slot_id = orderDetail.slot_id.toString()
-            }
-            if (orderDetail.staff_profile_id) {
-              metadata.staff_profile_id = orderDetail.staff_profile_id.toString()
-            }
-            metadata.service_name = orderDetail.item_name
-            metadata.booking_time = order.booking_time ? order.booking_time.toString() : ''
-          } else if (orderType === 'product') {
-            const orderDetails = await databaseService.orderDetails.find({ order_id: new ObjectId(order_id) }).toArray()
-
-            metadata.items = orderDetails.map((item) => item.item_name).join(', ')
-          }
-
-          const payment_intent = await stripeService.createPaymentIntent(order.final_price, account.email, metadata)
-
-          // Lưu client secret vào metadata
-          metadata.client_secret = payment_intent.clientSecret
-
-          // Lưu transaction
-          await databaseService.transactions.insertOne({
-            order_id: new ObjectId(order_id),
-            customer_account_id: new ObjectId(customer_id),
-            payment_method,
-            payment_provider: 'stripe',
-            amount: order.final_price,
-            currency: CurrencyUnit.VND,
-            status: TransactionStatus.PENDING,
-            type: TransactionMethod.PAYMENT,
-            payment_intent_id: payment_intent.paymentIntentId,
-            created_at: new Date(),
-            updated_at: new Date(),
-            metadata
-          })
-
-          result = {
-            client_secret: payment_intent.clientSecret,
-            payment_intent_id: payment_intent.paymentIntentId,
-            payment_method: PaymentMethod.STRIPE
-          }
-        } catch (error) {
-          throw new ErrorWithStatus({
-            message: PAYMENT_MESSAGES.STRIPE_PAYMENT_INTENT_CREATE_FAILED,
-            status: HTTP_STATUS.INTERNAL_SERVER_ERROR
-          })
-        }
-      }
-    } else if (payment_method === PaymentMethod.MOMO) {
-      // Xử lý thanh toán qua MoMo
-      // Kiểm tra xem đã có yêu cầu thanh toán MoMo chưa
-      const existingTransaction = await databaseService.transactions.findOne({
-        order_id: new ObjectId(order_id),
-        payment_method: PaymentMethod.MOMO,
-        status: TransactionStatus.PENDING
-      })
-
-      if (existingTransaction && existingTransaction.metadata?.momo_pay_url) {
-        // Trả về payUrl của yêu cầu thanh toán đã tạo
-        result = {
-          pay_url: existingTransaction.metadata.momo_pay_url,
-          request_id: existingTransaction.payment_intent_id,
-          momo_order_id: existingTransaction.momo_order_id,
-          payment_method: PaymentMethod.MOMO
-        }
-      } else {
-        try {
-          // Tạo thông tin đơn hàng
-          const orderType = order.booking_time ? 'service' : 'product'
-          let orderInfo = ''
-
-          if (orderType === 'service') {
-            const orderDetail = await databaseService.orderDetails.findOne({
-              order_id: new ObjectId(order_id)
-            })
-            orderInfo = `Thanh toán dịch vụ: ${orderDetail?.item_name}`
-          } else {
-            orderInfo = `Thanh toán đơn hàng: #${order_id}`
-          }
-
-          // Chuẩn bị metadata
-          const metadata: Record<string, any> = {
-            order_id: order_id,
-            customer_id,
-            order_type: orderType
-          }
-
-          // Tạo yêu cầu thanh toán MoMo
-          const paymentRequest = await momoService.createPaymentRequest(
-            order.final_price,
-            order_id,
-            orderInfo,
-            account.email,
-            metadata
-          )
-
-          if (paymentRequest.success) {
-            result = {
-              pay_url: paymentRequest.payUrl,
-              request_id: paymentRequest.requestId,
-              momo_order_id: paymentRequest.orderId,
-              payment_method: PaymentMethod.MOMO
-            }
-          } else {
-            throw new ErrorWithStatus({
-              message: `Khởi tạo thanh toán MoMo thất bại: ${paymentRequest.message}`,
-              status: HTTP_STATUS.INTERNAL_SERVER_ERROR
-            })
-          }
-        } catch (error) {
-          throw new ErrorWithStatus({
-            message: 'Không thể khởi tạo thanh toán qua MoMo',
-            status: HTTP_STATUS.INTERNAL_SERVER_ERROR
-          })
-        }
-      }
-    } else {
+    if (payment_method !== PaymentMethod.STRIPE) {
       throw new ErrorWithStatus({
-        message: 'Phương thức thanh toán không được hỗ trợ',
+        message: 'Hiện tại chỉ hỗ trợ thanh toán qua Stripe',
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
 
-    return result
+    // Xử lý thanh toán qua Stripe
+    // Kiểm tra xem đã có payment intent chưa
+    const existingTransaction = await databaseService.transactions.findOne({
+      order_id: new ObjectId(order_id),
+      payment_method: PaymentMethod.STRIPE,
+      status: TransactionStatus.PENDING
+    })
+
+    if (existingTransaction) {
+      // Trả về client secret của payment intent đã tạo
+      return {
+        client_secret: existingTransaction.metadata?.client_secret || '',
+        payment_intent_id: existingTransaction.payment_intent_id || '',
+        payment_method: PaymentMethod.STRIPE
+      }
+    }
+
+    // Tạo payment intent mới
+    try {
+      const orderType = order.booking_time ? 'service' : 'product'
+      let metadata: ProductTransactionMetadata | ServiceTransactionMetadata
+
+      // Lấy thông tin orderDetail
+      const orderDetail = await databaseService.orderDetails.findOne({
+        order_id: new ObjectId(order_id)
+      })
+
+      if (orderType === 'service' && orderDetail) {
+        const serviceMetadata: ServiceTransactionMetadata = {
+          order_type: 'service',
+          service_name: orderDetail.item_name,
+          slot_id: orderDetail.slot_id ? orderDetail.slot_id.toString() : '',
+          client_secret: '' // Sẽ được cập nhật sau
+        }
+
+        if (orderDetail.start_time) {
+          serviceMetadata.start_time = orderDetail.start_time.toISOString().split('T')[1].slice(0, 5)
+        }
+        if (orderDetail.end_time) {
+          serviceMetadata.end_time = orderDetail.end_time.toISOString().split('T')[1].slice(0, 5)
+        }
+        if (order.booking_time) {
+          serviceMetadata.booking_time = order.booking_time.toISOString()
+        }
+
+        metadata = serviceMetadata
+      } else {
+        // Lấy tất cả các mặt hàng trong đơn hàng sản phẩm
+        const orderDetails = await databaseService.orderDetails.find({ order_id: new ObjectId(order_id) }).toArray()
+
+        metadata = {
+          order_type: 'product',
+          items: orderDetails.map((item) => item.item_name).join(', '),
+          client_secret: '' // Sẽ được cập nhật sau
+        }
+      }
+
+      const payment_intent = await stripeService.createPaymentIntent(order.final_price, account.email, {
+        order_id,
+        customer_id,
+        ...metadata
+      })
+
+      // Lưu client secret vào metadata nếu có
+      if (payment_intent.clientSecret) {
+        metadata.client_secret = payment_intent.clientSecret
+      } else {
+        // Nếu không có clientSecret, gán giá trị mặc định
+        metadata.client_secret = ''
+      }
+
+      // Lưu transaction
+      await databaseService.transactions.insertOne({
+        order_id: new ObjectId(order_id),
+        customer_account_id: new ObjectId(customer_id),
+        payment_method,
+        payment_provider: 'stripe',
+        amount: order.final_price,
+        currency: CurrencyUnit.VND,
+        status: TransactionStatus.PENDING,
+        type: TransactionMethod.PAYMENT,
+        payment_intent_id: payment_intent.paymentIntentId,
+        created_at: new Date(),
+        updated_at: new Date(),
+        metadata
+      })
+
+      return {
+        client_secret: payment_intent.clientSecret,
+        payment_intent_id: payment_intent.paymentIntentId,
+        payment_method: PaymentMethod.STRIPE
+      }
+    } catch (error) {
+      throw new ErrorWithStatus({
+        message: PAYMENT_MESSAGES.STRIPE_PAYMENT_INTENT_CREATE_FAILED,
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
+    }
   }
 
   async confirmPayment(order_id: string, payment_intent_id: string, payment_method_id: string, customer_id: string) {
     return this.handlePaymentSuccess(order_id, payment_intent_id, payment_method_id, customer_id)
+  }
+
+  /**
+   * Cập nhật trạng thái đơn hàng
+   * @param order_id ID đơn hàng
+   * @param status Trạng thái mới
+   */
+  async updateOrderStatus(order_id: string, status: OrderStatus) {
+    const result = await databaseService.orders.updateOne(
+      { _id: new ObjectId(order_id) },
+      {
+        $set: {
+          status,
+          updated_at: new Date()
+        }
+      }
+    )
+
+    if (result.matchedCount === 0) {
+      throw new ErrorWithStatus({
+        message: ORDER_MESSAGES.ORDER_NOT_FOUND,
+        status: HTTP_STATUS.NOT_FOUND
+      })
+    }
+
+    return {
+      message: ORDER_MESSAGES.UPDATE_ORDER_SUCCESS
+    }
   }
 }
 

@@ -10,63 +10,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 })
 
 class StripeService {
-  // Tạo checkout session thay vì payment intent
-  async createCheckoutSession(amount: number, email: string, metadata: any, success_url: string, cancel_url: string) {
-    try {
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: 'vnd',
-              product_data: {
-                name: metadata.order_type === 'service' ? 'Dịch vụ Luna Spa' : 'Sản phẩm Luna Spa',
-                description:
-                  metadata.order_type === 'service'
-                    ? `Đặt lịch: ${metadata.service_name || ''}`
-                    : `Đơn hàng: ${metadata.items || ''}`
-              },
-              unit_amount: amount
-            },
-            quantity: 1
-          }
-        ],
-        customer_email: email,
-        mode: 'payment',
-        success_url: success_url,
-        cancel_url: cancel_url,
-        metadata: metadata
-      })
-
-      return {
-        sessionId: session.id,
-        url: session.url
-      }
-    } catch (error) {
-      console.error('Lỗi tạo Stripe Checkout Session:', error)
-      throw error
-    }
-  }
-
   // Xác minh webhook signature
   constructWebhookEvent(payload: any, signature: string) {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET as string
     return stripe.webhooks.constructEvent(payload, signature, webhookSecret)
   }
 
-  // Lấy thông tin checkout session
-  async getSession(sessionId: string) {
-    return await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['payment_intent']
-    })
-  }
-
-  /**
-   * Tạo một payment intent mới
-   * @param amount Số tiền (VND hoặc USD)
-   * @param customer_email Email của khách hàng
-   * @param metadata Metadata bổ sung
-   */
   async createPaymentIntent(amount: number, customer_email: string, metadata: Record<string, string> = {}) {
     // Xử lý số tiền cho Stripe
     // Nếu là VND, cần chuyển thành số nguyên (Stripe không hỗ trợ tiểu số với VND)

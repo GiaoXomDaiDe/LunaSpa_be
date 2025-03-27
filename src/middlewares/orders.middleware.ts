@@ -84,10 +84,16 @@ export const purchaseProductValidator = validate(
           errorMessage: ORDER_MESSAGES.BRANCH_ID_INVALID
         }
       },
-      items: {
+      product_items: {
         isArray: {
           options: { min: 1 },
           errorMessage: ORDER_MESSAGES.ORDER_ITEMS_REQUIRED
+        },
+        custom: {
+          options: (value) => {
+            console.log(value)
+            return true
+          }
         }
       },
       payment_method: {
@@ -127,67 +133,40 @@ export const bookServiceValidator = validate(
           errorMessage: ORDER_MESSAGES.ORDER_ITEMS_REQUIRED
         },
         isObject: {
-          errorMessage: 'service_item phải là một đối tượng'
+          errorMessage: 'service_item must be an object'
         },
         custom: {
           options: (value) => {
             if (!value) return false
 
-            return (
+            // Check required fields
+            const hasRequiredFields =
               value.item_id &&
               /^[0-9a-fA-F]{24}$/.test(value.item_id) &&
-              value.quantity &&
-              Number.isInteger(value.quantity) &&
-              value.quantity > 0 &&
-              value.item_type === ItemType.SERVICE
-            )
-          },
-          errorMessage: 'service_item không hợp lệ'
-        }
-      },
-      booking_time: {
-        trim: true,
-        notEmpty: {
-          errorMessage: ORDER_MESSAGES.BOOKING_TIME_REQUIRED
-        },
-        custom: {
-          options: (value) => {
-            // Chấp nhận cả định dạng ISO8601 và YYYY-MM-DD HH:MM
-            const isISO8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z?$/.test(value)
-            const isCustomFormat = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value)
+              value.item_type === ItemType.SERVICE &&
+              value.booking_time &&
+              typeof value.duration_index === 'number' &&
+              value.duration_index >= 0
 
-            // Kiểm tra ngày phải là trong tương lai
-            const bookingDate = new Date(value)
-            const currentDate = new Date()
+            if (!hasRequiredFields) return false
 
-            if (!isISO8601 && !isCustomFormat) {
+            // Check slot_id if provided
+            if (value.slot_id && !/^[0-9a-fA-F]{24}$/.test(value.slot_id)) {
               return false
-            }
-
-            if (bookingDate <= currentDate) {
-              throw new Error('Thời gian đặt lịch phải là thời gian trong tương lai')
             }
 
             return true
           },
-          errorMessage: ORDER_MESSAGES.BOOKING_TIME_INVALID
+          errorMessage: 'Invalid service_item, must have item_id, item_type, booking_time and duration_index'
         }
       },
-      slot_id: {
+      'service_item.slot_id': {
+        optional: false,
         notEmpty: {
-          errorMessage: 'Vui lòng chọn một slot'
+          errorMessage: 'Please select a slot'
         },
         isMongoId: {
-          errorMessage: 'Slot ID không hợp lệ'
-        }
-      },
-      duration_index: {
-        notEmpty: {
-          errorMessage: 'Vui lòng chọn thời lượng dịch vụ'
-        },
-        isInt: {
-          options: { min: 0 },
-          errorMessage: 'Thời lượng dịch vụ không hợp lệ'
+          errorMessage: 'Invalid Slot ID'
         }
       },
       payment_method: {
@@ -237,7 +216,7 @@ export const cancelOrderValidator = validate(
       cancel_reason: {
         trim: true,
         notEmpty: {
-          errorMessage: 'Lý do hủy đơn hàng không được để trống'
+          errorMessage: 'Cancel reason cannot be empty'
         }
       }
     },
@@ -251,7 +230,7 @@ export const ratingValidator = validate(
       rating: {
         isInt: {
           options: { min: 1, max: 5 },
-          errorMessage: 'Đánh giá phải là số nguyên từ 1 đến 5'
+          errorMessage: 'Rating must be an integer between 1 and 5'
         }
       },
       comment: {
@@ -267,7 +246,7 @@ export const ratingValidator = validate(
       item_ids: {
         isArray: {
           options: { min: 1 },
-          errorMessage: 'Phải có ít nhất một ID'
+          errorMessage: 'Must have at least one ID'
         },
         custom: {
           options: (value) => {

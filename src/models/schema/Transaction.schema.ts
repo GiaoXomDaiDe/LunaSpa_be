@@ -17,6 +17,27 @@ export enum CurrencyUnit {
   USD = 'usd'
 }
 
+// Metadata cho giao dịch sản phẩm
+export interface ProductTransactionMetadata {
+  order_type: 'product'
+  items: string // Danh sách tên sản phẩm, ngăn cách bằng dấu phẩy
+  client_secret: string // Client secret từ Stripe
+}
+
+// Metadata cho giao dịch dịch vụ
+export interface ServiceTransactionMetadata {
+  order_type: 'service'
+  service_name: string // Tên dịch vụ
+  slot_id: string // ID của slot được đặt
+  start_time?: string // Giờ bắt đầu (format HH:MM)
+  end_time?: string // Giờ kết thúc (format HH:MM)
+  booking_time?: string // Thời gian đặt lịch (ISO string)
+  client_secret: string // Client secret từ Stripe
+}
+
+// Union type cho metadata
+export type TransactionMetadata = ProductTransactionMetadata | ServiceTransactionMetadata
+
 export interface TransactionData {
   _id?: ObjectId
   order_id: ObjectId
@@ -27,16 +48,14 @@ export interface TransactionData {
   currency: CurrencyUnit
   status: TransactionStatus
   type: TransactionMethod
-  payment_intent_id?: string // Stripe Payment Intent ID
-  payment_method_id?: string // Stripe Payment Method ID
-  charge_id?: string // Stripe Charge ID
-  refund_id?: string // Stripe Refund ID
+  payment_intent_id?: string
+  payment_method_id?: string
+  charge_id?: string
+  refund_id?: string
   session_id?: string
   created_at?: Date
   updated_at?: Date
   metadata?: Record<string, any>
-  momo_order_id?: string
-  momo_trans_id?: string
   transaction_note?: string
 }
 
@@ -58,8 +77,6 @@ export default class Transaction {
   created_at: Date
   updated_at: Date
   metadata: Record<string, any>
-  momo_order_id?: string
-  momo_trans_id?: string
   transaction_note?: string
 
   constructor(transaction: TransactionData) {
@@ -81,8 +98,6 @@ export default class Transaction {
     this.created_at = transaction.created_at || date
     this.updated_at = transaction.updated_at || date
     this.metadata = transaction.metadata || {}
-    this.momo_order_id = transaction.momo_order_id
-    this.momo_trans_id = transaction.momo_trans_id
     this.transaction_note = transaction.transaction_note
   }
 }
