@@ -78,6 +78,7 @@ export const deleteServiceCategoryController = async (
   next: NextFunction
 ) => {
   const serviceCategory_id = req.params.service_category_id
+  console.log(serviceCategory_id)
   await serviceCategoriesService.deleteServiceCategory(serviceCategory_id)
   res.status(HTTP_STATUS.OK).json({
     message: SUCCESS_RESPONSE_MESSAGE.SERVICE_CATEGORY_DELETED_SUCCESSFULLY
