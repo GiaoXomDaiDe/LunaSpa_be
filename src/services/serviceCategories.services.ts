@@ -118,8 +118,7 @@ class ServiceCategoriesService {
           },
           {
             $set: {
-              status: ServiceStatus.INACTIVE,
-              service_category_id: new ObjectId('')
+              status: ServiceStatus.INACTIVE
             },
             $currentDate: {
               updated_at: true

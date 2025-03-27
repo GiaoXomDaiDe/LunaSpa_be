@@ -1,7 +1,5 @@
-import { Request } from 'express'
 import { checkSchema } from 'express-validator'
 import { SERVICE_CATEGORY_MESSAGES } from '~/constants/messages'
-import ServiceCategoy from '~/models/schema/ServiceCategory.schema'
 import databaseService from '~/services/database.services'
 import { validate } from '~/utils/validation'
 
@@ -60,22 +58,6 @@ export const updateServiceCategoryValidator = validate(
         matches: {
           options: [/^[A-Za-z0-9_ ]+$/],
           errorMessage: SERVICE_CATEGORY_MESSAGES.SERVICE_CATEGORY_CANNOT_CONTAIN_SPECIAL_CHARACTERS
-        },
-        custom: {
-          options: async (value: string, { req }) => {
-            const currentServiceCategory = (req as Request).serviceCategory as ServiceCategoy
-            if (currentServiceCategory && currentServiceCategory.name === value) {
-              return true
-            }
-            const existingServiceCategory = await databaseService.serviceCategories.findOne({
-              name: value,
-              _id: { $ne: currentServiceCategory._id }
-            })
-            if (existingServiceCategory) {
-              throw new Error(SERVICE_CATEGORY_MESSAGES.SERVICE_CATEGORY_ALREADY_EXISTS)
-            }
-            return true
-          }
         }
       },
       description: {

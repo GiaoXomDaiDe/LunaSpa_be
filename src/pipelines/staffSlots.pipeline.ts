@@ -18,7 +18,10 @@ export function buildStaffSlotsPipeline(options: GetStaffSlotsOptions) {
     ...options
   }
 
-  const { limit, page, staff_profile_id, date, start_date, end_date, status } = _options
+  // Đảm bảo page và limit luôn là số
+  const page = Number(_options.page) || 1
+  const limit = Number(_options.limit) || 10
+  const { staff_profile_id, date, start_date, end_date, status } = _options
   const skip = (page - 1) * limit
 
   const pipeline: Record<string, any>[] = []
@@ -146,7 +149,7 @@ export function buildStaffSlotsPipeline(options: GetStaffSlotsOptions) {
     }
   })
 
-  return { pipeline, _options }
+  return { pipeline, _options: { ..._options, page, limit } }
 }
 
 export function buildStaffSlotPipeline(staff_slot_id: string) {
