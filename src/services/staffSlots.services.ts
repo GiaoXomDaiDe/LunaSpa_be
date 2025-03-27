@@ -64,12 +64,20 @@ class StaffSlotsService {
       })
     }
 
+    // Tính toán số phút của slot
+    const startTime = new Date(start_time)
+    const endTime = new Date(end_time)
+    const slot_duration_minutes = Math.floor((endTime.getTime() - startTime.getTime()) / (60 * 1000))
+
     const staffSlotData = new StaffSlot({
       staff_profile_id: new ObjectId(staff_profile_id),
       date: new Date(date),
-      start_time: new Date(start_time),
-      end_time: new Date(end_time),
+      start_time: startTime,
+      end_time: endTime,
       status,
+      available_minutes: slot_duration_minutes,
+      used_minutes: 0,
+      orders: [],
       order_id: order_id ? new ObjectId(order_id) : undefined
     })
 
@@ -97,16 +105,22 @@ class StaffSlotsService {
   async createMultipleStaffSlots(body: CreateMultipleStaffSlotsReqBody) {
     const { staff_profile_id, slots } = body
 
-    const staffSlotsData = slots.map(
-      (slot) =>
-        new StaffSlot({
-          staff_profile_id: new ObjectId(staff_profile_id),
-          date: new Date(slot.date),
-          start_time: new Date(slot.start_time),
-          end_time: new Date(slot.end_time),
-          status: StaffSlotStatus.AVAILABLE
-        })
-    )
+    const staffSlotsData = slots.map((slot) => {
+      const startTime = new Date(slot.start_time)
+      const endTime = new Date(slot.end_time)
+      const slot_duration_minutes = Math.floor((endTime.getTime() - startTime.getTime()) / (60 * 1000))
+
+      return new StaffSlot({
+        staff_profile_id: new ObjectId(staff_profile_id),
+        date: new Date(slot.date),
+        start_time: startTime,
+        end_time: endTime,
+        status: StaffSlotStatus.AVAILABLE,
+        available_minutes: slot_duration_minutes,
+        used_minutes: 0,
+        orders: []
+      })
+    })
 
     const session = databaseService.getClient().startSession()
     try {
@@ -202,7 +216,10 @@ class StaffSlotsService {
           date: new Date(currentDate),
           start_time: slotStartTime,
           end_time: slotEndTime,
-          status: StaffSlotStatus.AVAILABLE
+          status: StaffSlotStatus.AVAILABLE,
+          available_minutes: slot_duration,
+          used_minutes: 0,
+          orders: []
         })
 
         slots.push(staffSlot)
@@ -423,16 +440,22 @@ class StaffSlotsService {
   async importExcel(buffer: Buffer, staff_profile_id: string) {
     const slots = await parseStaffSlotExcel(buffer)
 
-    const staffSlotsData = slots.map(
-      (slot) =>
-        new StaffSlot({
-          staff_profile_id: new ObjectId(staff_profile_id),
-          date: new Date(slot.date),
-          start_time: new Date(slot.start_time),
-          end_time: new Date(slot.end_time),
-          status: slot.status || StaffSlotStatus.AVAILABLE
-        })
-    )
+    const staffSlotsData = slots.map((slot) => {
+      const startTime = new Date(slot.start_time)
+      const endTime = new Date(slot.end_time)
+      const slot_duration_minutes = Math.floor((endTime.getTime() - startTime.getTime()) / (60 * 1000))
+
+      return new StaffSlot({
+        staff_profile_id: new ObjectId(staff_profile_id),
+        date: new Date(slot.date),
+        start_time: startTime,
+        end_time: endTime,
+        status: slot.status || StaffSlotStatus.AVAILABLE,
+        available_minutes: slot_duration_minutes,
+        used_minutes: 0,
+        orders: []
+      })
+    })
 
     const session = databaseService.getClient().startSession()
     try {
@@ -565,7 +588,12 @@ class StaffSlotsService {
   }
 
   // Lấy slots có sẵn theo service_id
-  async getAvailableSlotsByServiceId(service_id: string, date?: string, isHours: boolean = false) {
+  async getAvailableSlotsByServiceId(
+    service_id: string,
+    date?: string,
+    duration_minutes?: number,
+    isHours: boolean = false
+  ) {
     // Lấy danh sách specialties có chứa service_id
     const specialties = await databaseService.specialties
       .find({
@@ -597,6 +625,11 @@ class StaffSlotsService {
     const query: any = {
       staff_profile_id: { $in: staffProfileIds },
       status: StaffSlotStatus.AVAILABLE
+    }
+
+    // Thêm điều kiện có đủ available_minutes cho dịch vụ nếu cần
+    if (duration_minutes && duration_minutes > 0) {
+      query.available_minutes = { $gte: duration_minutes }
     }
 
     // Thêm điều kiện ngày nếu có
@@ -641,6 +674,8 @@ class StaffSlotsService {
           start_time: 1,
           end_time: 1,
           status: 1,
+          available_minutes: 1,
+          used_minutes: 1,
           staff_name: { $arrayElemAt: ['$account.name', 0] },
           staff_avatar: { $arrayElemAt: ['$account.avatar', 0] }
         }
