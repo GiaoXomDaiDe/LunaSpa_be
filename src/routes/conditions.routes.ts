@@ -1,4 +1,5 @@
 import { RequestHandler, Router } from 'express'
+import { PERMISSION, RESOURCE_NAME } from '~/constants/constants'
 import {
   createConditionController,
   deleteConditionController,
@@ -26,7 +27,7 @@ const conditionsRouter = Router()
 conditionsRouter.get(
   '/',
   accessTokenValidatorV2,
-  checkPermission('read', 'Conditions'),
+  checkPermission(PERMISSION.READ, RESOURCE_NAME.CONDITION),
   paginationValidator,
   conditionsQueryValidator,
   wrapRequestHandler(getAllConditionsController as RequestHandler)
@@ -34,7 +35,7 @@ conditionsRouter.get(
 conditionsRouter.get(
   '/:condition_id',
   accessTokenValidatorV2,
-  checkPermission('read', 'Conditions'),
+  checkPermission(PERMISSION.READ, RESOURCE_NAME.CONDITION),
   conditionIdValidator,
   wrapRequestHandler(getConditionController as RequestHandler)
 )
@@ -42,7 +43,7 @@ conditionsRouter.post(
   '/',
   accessTokenValidator,
   verifiedAccountValidator,
-  checkPermission('create', 'Conditions'),
+  checkPermission(PERMISSION.CREATE, RESOURCE_NAME.CONDITION),
   conditionValidator,
   wrapRequestHandler(createConditionController as RequestHandler)
 )
@@ -50,7 +51,7 @@ conditionsRouter.patch(
   '/:condition_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  checkPermission('update', 'Conditions'),
+  checkPermission(PERMISSION.UPDATE, RESOURCE_NAME.CONDITION),
   conditionIdValidator,
   updateConditionValidator,
   wrapRequestHandler(updateConditionController as RequestHandler)
@@ -59,7 +60,7 @@ conditionsRouter.delete(
   '/:condition_id',
   accessTokenValidator,
   verifiedAccountValidator,
-  checkPermission('delete', 'Conditions'),
+  checkPermission(PERMISSION.DELETE, RESOURCE_NAME.CONDITION),
   conditionIdValidator,
   wrapRequestHandler(deleteConditionController as RequestHandler)
 )

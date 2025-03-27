@@ -98,7 +98,7 @@ export function buildBranchPipeline(branch_id: string) {
           $lookup: {
             from: 'devices',
             let: {
-              devIds: '$device_ids'
+              devIds: { $ifNull: ['$device_ids', []] }
             },
             pipeline: [
               {

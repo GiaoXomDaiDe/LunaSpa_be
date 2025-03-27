@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import { ObjectId } from 'mongodb'
-import { ORDER, SORT_BY } from '~/constants/constants'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { PRODUCT_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
@@ -9,127 +8,17 @@ import { ProductParams } from '~/models/request/Products.requests'
 import { ProductStatus } from '~/models/schema/Product.schema'
 import databaseService from '~/services/database.services'
 import { wrapRequestHandler } from '~/utils/handlers'
+import schemaHelper from '~/utils/schemaHelper'
 import { validate } from '~/utils/validation'
 
 export const productsQueryValidator = validate(
   checkSchema(
     {
-      sort: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value || SORT_BY[1]
-          }
-        },
-        isString: {
-          errorMessage: PRODUCT_MESSAGES.SORT_MUST_BE_A_STRING
-        },
-        custom: {
-          options: async (value: string) => {
-            if (!SORT_BY.includes(value)) {
-              throw new Error(PRODUCT_MESSAGES.SORT_MUST_BE_A_STRING)
-            }
-            return true
-          }
-        }
-      },
-      order: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value || ORDER[0] // asc
-          }
-        },
-        isString: {
-          errorMessage: PRODUCT_MESSAGES.ORDER_MUST_BE_A_STRING
-        },
-        custom: {
-          options: async (value: string) => {
-            if (!ORDER.includes(value)) {
-              throw new Error(PRODUCT_MESSAGES.ORDER_MUST_BE_A_STRING)
-            }
-            return true
-          }
-        }
-      },
-      search: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value || ''
-          }
-        },
-        isString: {
-          errorMessage: PRODUCT_MESSAGES.SEARCH_MUST_BE_A_STRING
-        }
-      },
-      limit: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value ? parseInt(value) : 10
-          }
-        },
-        isInt: {
-          errorMessage: PRODUCT_MESSAGES.PRICE_MUST_BE_A_NUMBER
-        }
-      },
-      page: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value ? parseInt(value) : 1
-          }
-        },
-        isInt: {
-          errorMessage: PRODUCT_MESSAGES.PRICE_MUST_BE_A_NUMBER
-        }
-      },
-      max_price: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value ? parseInt(value) : undefined
-          }
-        },
-        isInt: {
-          errorMessage: PRODUCT_MESSAGES.MAX_PRICE_MUST_BE_A_NUMBER
-        },
-        custom: {
-          options: async (value: number) => {
-            if (value < 0) {
-              throw new Error(PRODUCT_MESSAGES.MAX_PRICE_CANNOT_BE_NEGATIVE)
-            }
-            return true
-          }
-        }
-      },
-      min_price: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value ? parseInt(value) : undefined
-          }
-        },
-        isInt: {
-          errorMessage: PRODUCT_MESSAGES.MIN_PRICE_MUST_BE_A_NUMBER
-        },
-        custom: {
-          options: async (value: number) => {
-            if (value < 0) {
-              throw new Error(PRODUCT_MESSAGES.MIN_PRICE_CANNOT_BE_NEGATIVE)
-            }
-            return true
-          }
-        }
-      },
+      sort: schemaHelper.sortSchema,
+      order: schemaHelper.orderSchema,
+      search: schemaHelper.searchSchema,
+      max_price: schemaHelper.maxPriceSchema,
+      min_price: schemaHelper.minPriceSchema,
       _custom: {
         custom: {
           options: (value, { req }) => {
@@ -141,95 +30,18 @@ export const productsQueryValidator = validate(
           }
         }
       },
-      category_id: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value || undefined
-          }
-        },
-        isMongoId: {
-          errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_MUST_BE_A_MONGO_ID
-        },
-        custom: {
-          options: async (value: string) => {
-            if (!value) return true
-            const category = await databaseService.productCategories.findOne({
-              _id: new ObjectId(value)
-            })
-            if (!category) {
-              throw new Error(PRODUCT_MESSAGES.CATEGORY_ID_NOT_FOUND)
-            }
-            return true
-          }
-        }
-      },
-      discount_price: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value ? parseInt(value) : undefined
-          }
-        },
-        isInt: {
-          errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_MUST_BE_A_NUMBER
-        },
-        custom: {
-          options: async (value: number) => {
-            if (value < 0) {
-              throw new Error(PRODUCT_MESSAGES.DISCOUNT_PRICE_CANNOT_BE_NEGATIVE)
-            }
-            return true
-          }
-        }
-      },
-      quantity: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value ? parseInt(value) : undefined
-          }
-        },
-        isInt: {
-          errorMessage: PRODUCT_MESSAGES.QUANTITY_MUST_BE_A_NUMBER
-        },
-        custom: {
-          options: async (value: number) => {
-            if (value < 0) {
-              throw new Error(PRODUCT_MESSAGES.QUANTITY_CANNOT_BE_NEGATIVE)
-            }
-            return true
-          }
-        }
-      },
-      include_branch_products: {
-        optional: true,
-        trim: true,
-        customSanitizer: {
-          options: (value: string) => {
-            return value === 'true'
-          }
-        }
-      }
+      category_id: schemaHelper.categoryQueryIdSchema,
+      discount_price: schemaHelper.discountPriceSchema,
+      quantity: schemaHelper.quantitySchema,
+      include_branch_products: schemaHelper.includeBranchProductsSchema
     },
     ['query']
   )
 )
-export const productIdValidator = validate(
+export const productIdParamValidator = validate(
   checkSchema(
     {
-      product_id: {
-        trim: true,
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.PRODUCT_ID_IS_REQUIRED
-        },
-        isMongoId: {
-          errorMessage: PRODUCT_MESSAGES.PRODUCT_ID_MUST_BE_A_VALID_MONGO_ID
-        }
-      }
+      product_id: schemaHelper.productIdSchema
     },
     ['params']
   )
@@ -238,24 +50,7 @@ export const productIdValidator = validate(
 export const ProductIdBodyValidator = validate(
   checkSchema(
     {
-      product_id: {
-        optional: true,
-        trim: true,
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.PRODUCT_ID_IS_REQUIRED
-        },
-        isMongoId: {
-          errorMessage: PRODUCT_MESSAGES.PRODUCT_ID_MUST_BE_A_VALID_MONGO_ID
-        },
-        custom: {
-          options: async (value: string) => {
-            const product = await databaseService.products.findOne({ _id: new ObjectId(value) })
-            if (!product) {
-              throw new Error(PRODUCT_MESSAGES.PRODUCT_NOT_FOUND)
-            }
-          }
-        }
-      }
+      product_id: schemaHelper.productIdBodySchema
     },
     ['body']
   )
@@ -283,261 +78,37 @@ export const checkProductNotInactive = wrapRequestHandler(
     next()
   }
 )
-export const productValidator = validate(
+
+export const createProductValidator = validate(
   checkSchema({
-    name: {
-      trim: true,
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_NAME_IS_REQUIRED
-      },
-      isString: {
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_NAME_MUST_BE_A_STRING
-      }
-    },
-    description: {
-      optional: true,
-      trim: true,
-      isString: {
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_DESCRIPTION_MUST_BE_A_STRING
-      },
-      isLength: {
-        options: {
-          max: 255
-        },
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_DESCRIPTION_CANNOT_LONGER_THAN_255
-      }
-    },
-    category_id: {
-      trim: true,
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_IS_REQUIRED
-      },
-      isMongoId: {
-        errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_MUST_BE_A_MONGO_ID
-      },
-      custom: {
-        options: async (value: string, { req }) => {
-          const category = await databaseService.productCategories.findOne({
-            _id: new ObjectId(value)
-          })
-          console.log(category)
-          if (!category) {
-            throw new Error(PRODUCT_MESSAGES.CATEGORY_ID_NOT_FOUND)
-          }
-          return true
-        }
-      }
-    },
-    price: {
-      isInt: {
-        errorMessage: PRODUCT_MESSAGES.PRICE_MUST_BE_A_NUMBER
-      },
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.PRICE_IS_REQUIRED
-      },
-      custom: {
-        options: async (value: number) => {
-          if (value < 0) {
-            throw new Error(PRODUCT_MESSAGES.PRICE_CANNOT_BE_NEGATIVE)
-          }
-          return true
-        }
-      }
-    },
-    discount_price: {
-      optional: true,
-      isInt: {
-        errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_MUST_BE_A_NUMBER
-      },
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_IS_REQUIRED
-      },
-      custom: {
-        options: async (value: number, { req }) => {
-          if (value < 0) {
-            throw new Error(PRODUCT_MESSAGES.DISCOUNT_PRICE_CANNOT_BE_NEGATIVE)
-          }
-          if (value > req.body.price) {
-            throw new Error(PRODUCT_MESSAGES.DISCOUNT_PRICE_MUST_BE_LESS_THAN_OR_EQUAL_TO_PRICE)
-          }
-          return true
-        }
-      }
-    },
-    quantity: {
-      isInt: {
-        errorMessage: PRODUCT_MESSAGES.QUANTITY_MUST_BE_A_NUMBER
-      },
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.QUANTITY_IS_REQUIRED
-      },
-      custom: {
-        options: async (value: number) => {
-          if (value < 0) {
-            throw new Error(PRODUCT_MESSAGES.QUANTITY_CANNOT_BE_NEGATIVE)
-          }
-          return true
-        }
-      }
-    },
-    images: {
-      optional: true,
-      isArray: {
-        errorMessage: PRODUCT_MESSAGES.IMAGES_MUST_BE_AN_ARRAY
-      },
-      custom: {
-        options: async (value: string[]) => {
-          const images = value.find((item) => typeof item !== 'string')
-          if (images) {
-            throw new Error(PRODUCT_MESSAGES.IMAGE_MUST_BE_A_STRING)
-          }
-          return true
-        }
-      }
-    },
-    status: {
-      optional: true,
-      isIn: {
-        options: [Object.values(ProductStatus)],
-        errorMessage: PRODUCT_MESSAGES.STATUS_MUST_BE_A_VALID_STATUS
-      }
-    }
+    name: schemaHelper.productNameSchema,
+    description: schemaHelper.productDescriptionSchema,
+    category_id: schemaHelper.categoryIdSchema,
+    price: schemaHelper.priceSchema,
+    discount_price: schemaHelper.discountProductPriceSchema,
+    quantity: schemaHelper.productQuantitySchema,
+    images: schemaHelper.imagesSchema,
+    status: schemaHelper.statusSchema
   })
 )
+
 export const updateProductValidator = validate(
   checkSchema({
-    name: {
-      optional: true,
-      trim: true,
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_NAME_IS_REQUIRED
-      },
-      isString: {
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_NAME_MUST_BE_A_STRING
-      }
-    },
-    description: {
-      optional: true,
-      trim: true,
-      isString: {
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_DESCRIPTION_MUST_BE_A_STRING
-      },
-      isLength: {
-        options: {
-          max: 255
-        },
-        errorMessage: PRODUCT_MESSAGES.PRODUCT_DESCRIPTION_CANNOT_LONGER_THAN_255
-      }
-    },
-    category_id: {
-      optional: true,
-      trim: true,
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_IS_REQUIRED
-      },
-      isMongoId: {
-        errorMessage: PRODUCT_MESSAGES.CATEGORY_ID_MUST_BE_A_MONGO_ID
-      },
-      custom: {
-        options: async (value: string, { req }) => {
-          const category = await databaseService.productCategories.findOne({
-            _id: new ObjectId(value)
-          })
-          if (!category) {
-            throw new Error(PRODUCT_MESSAGES.CATEGORY_ID_NOT_FOUND)
-          }
-          return true
-        }
-      }
-    },
-    price: {
-      optional: true,
-      isInt: {
-        errorMessage: PRODUCT_MESSAGES.PRICE_MUST_BE_A_NUMBER
-      },
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.PRICE_IS_REQUIRED
-      },
-      custom: {
-        options: async (value: number) => {
-          if (value < 0) {
-            throw new Error(PRODUCT_MESSAGES.PRICE_CANNOT_BE_NEGATIVE)
-          }
-          return true
-        }
-      }
-    },
-    discount_price: {
-      optional: true,
-      isInt: {
-        errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_MUST_BE_A_NUMBER
-      },
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.DISCOUNT_PRICE_IS_REQUIRED
-      },
-      custom: {
-        options: async (value: number, { req }) => {
-          if (value < 0) {
-            throw new Error(PRODUCT_MESSAGES.DISCOUNT_PRICE_CANNOT_BE_NEGATIVE)
-          }
-          if (value > req.body.price) {
-            throw new Error(PRODUCT_MESSAGES.DISCOUNT_PRICE_MUST_BE_LESS_THAN_OR_EQUAL_TO_PRICE)
-          }
-          return true
-        }
-      }
-    },
-    quantity: {
-      optional: true,
-      isInt: {
-        errorMessage: PRODUCT_MESSAGES.QUANTITY_MUST_BE_A_NUMBER
-      },
-      notEmpty: {
-        errorMessage: PRODUCT_MESSAGES.QUANTITY_IS_REQUIRED
-      },
-      custom: {
-        options: async (value: number) => {
-          if (value < 0) {
-            throw new Error(PRODUCT_MESSAGES.QUANTITY_CANNOT_BE_NEGATIVE)
-          }
-          return true
-        }
-      }
-    },
-    images: {
-      optional: true,
-      isArray: {
-        errorMessage: PRODUCT_MESSAGES.IMAGES_MUST_BE_AN_ARRAY
-      }
-    },
-    status: {
-      optional: true,
-      isIn: {
-        options: [Object.values(ProductStatus)],
-        errorMessage: PRODUCT_MESSAGES.STATUS_MUST_BE_A_VALID_STATUS
-      },
-      custom: {
-        options: (value: number) => {
-          console.log([Object.values(ProductStatus)])
-          return true
-        }
-      }
-    }
+    name: schemaHelper.updateNameSchema,
+    description: schemaHelper.updateDescriptionSchema,
+    category_id: schemaHelper.updateCategoryIdSchema,
+    price: schemaHelper.updatePriceSchema,
+    discount_price: schemaHelper.updateDiscountPriceSchema,
+    quantity: schemaHelper.updateQuantitySchema,
+    images: schemaHelper.updateImagesSchema,
+    status: schemaHelper.updateStatusSchema
   })
 )
 
 export const ProductSearchValidator = validate(
   checkSchema(
     {
-      search: {
-        trim: true,
-        notEmpty: {
-          errorMessage: PRODUCT_MESSAGES.SEARCH_MUST_BE_A_STRING
-        },
-        isString: {
-          errorMessage: PRODUCT_MESSAGES.SEARCH_MUST_BE_A_STRING
-        }
-      }
+      search: schemaHelper.productSearchSchema
     },
     ['body']
   )

@@ -11,6 +11,7 @@ import {
   UpdateStaffSlotReqBody,
   UpdateStaffSlotStatusReqBody
 } from '~/models/request/StaffSlots.requests'
+import { StaffType } from '~/models/schema/StaffProfile.schema'
 import StaffSlot, { StaffSlotStatus } from '~/models/schema/StaffSlot.schema'
 import { buildStaffSlotPipeline, buildStaffSlotsPipeline } from '~/pipelines/staffSlots.pipeline'
 import databaseService from '~/services/database.services'
@@ -523,8 +524,8 @@ class StaffSlotsService {
       worksheet.addRow({
         _id: slot._id.toString(),
         date: new Date(slot.date).toISOString().split('T')[0],
-        start_time: new Date(slot.start_time).toISOString(),
-        end_time: new Date(slot.end_time).toISOString(),
+        start_time: new Date(slot.start_time).toISOString().split('T')[1].slice(0, 5),
+        end_time: new Date(slot.end_time).toISOString().split('T')[1].slice(0, 5),
         status: slot.status,
         staff_name: slot.staff_profile?.account?.name || 'Không có tên'
       })
@@ -561,6 +562,102 @@ class StaffSlotsService {
 
     const overlap = await databaseService.staffSlots.findOne(query, { session })
     return overlap
+  }
+
+  // Lấy slots có sẵn theo service_id
+  async getAvailableSlotsByServiceId(service_id: string, date?: string, isHours: boolean = false) {
+    // Lấy danh sách specialties có chứa service_id
+    const specialties = await databaseService.specialties
+      .find({
+        service_ids: new ObjectId(service_id)
+      })
+      .toArray()
+
+    if (!specialties || specialties.length === 0) {
+      return { data: [], total_count: 0 }
+    }
+
+    const specialtyIds = specialties.map((specialty) => specialty._id)
+
+    // Lấy danh sách staff_profiles có ít nhất một specialty phù hợp
+    const staffProfiles = await databaseService.staffProfiles
+      .find({
+        specialty_ids: { $in: specialtyIds },
+        staff_type: StaffType.PRACTITIONER
+      })
+      .toArray()
+
+    if (!staffProfiles || staffProfiles.length === 0) {
+      return { data: [], total_count: 0 }
+    }
+
+    const staffProfileIds = staffProfiles.map((profile) => profile._id)
+
+    // Tạo query để lấy slots
+    const query: any = {
+      staff_profile_id: { $in: staffProfileIds },
+      status: StaffSlotStatus.AVAILABLE
+    }
+
+    // Thêm điều kiện ngày nếu có
+    if (date) {
+      const selectedDate = new Date(date)
+      // Đặt giờ, phút, giây và mili giây về 0 để so sánh ngày
+      selectedDate.setHours(0, 0, 0, 0)
+
+      const nextDay = new Date(selectedDate)
+      nextDay.setDate(selectedDate.getDate() + 1)
+
+      query.date = {
+        $gte: selectedDate,
+        $lt: nextDay
+      }
+    }
+
+    // Lấy slots phù hợp và join với thông tin staff_profile
+    const pipeline = [
+      { $match: query },
+      {
+        $lookup: {
+          from: 'staffProfiles',
+          localField: 'staff_profile_id',
+          foreignField: '_id',
+          as: 'staff_profile'
+        }
+      },
+      {
+        $lookup: {
+          from: 'accounts',
+          localField: 'staff_profile.account_id',
+          foreignField: '_id',
+          as: 'account'
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          staff_profile_id: 1,
+          date: 1,
+          start_time: 1,
+          end_time: 1,
+          status: 1,
+          staff_name: { $arrayElemAt: ['$account.name', 0] },
+          staff_avatar: { $arrayElemAt: ['$account.avatar', 0] }
+        }
+      },
+      { $sort: { date: 1, start_time: 1 } }
+    ]
+
+    const slots = await databaseService.staffSlots.aggregate(pipeline).toArray()
+
+    return {
+      data: slots.map((slot) => ({
+        ...slot,
+        start_time: isHours ? slot.start_time.toISOString().split('T')[1].slice(0, 5) : slot.start_time,
+        end_time: isHours ? slot.end_time.toISOString().split('T')[1].slice(0, 5) : slot.end_time
+      })),
+      total_count: slots.length
+    }
   }
 }
 

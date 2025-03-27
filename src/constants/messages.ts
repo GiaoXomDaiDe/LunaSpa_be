@@ -168,14 +168,21 @@ export const DEVICE_MESSAGES = {
   CREATE_DEVICE_FAILED: 'Create device failed',
   DEVICE_NOT_UPDATED: 'Device not updated',
   UPDATE_DEVICE_SUCCESS: 'Update device successfully',
+  UPDATE_DEVICE_FAILED: 'Update device failed',
   DELETE_DEVICE_SUCCESS: 'Delete device successfully',
+  DELETE_DEVICE_FAILED: 'Delete device failed',
   DEVICE_IS_INACTIVE: 'Device is inactive',
   GET_ALL_DEVICES_FAILED: 'Get all devices failed'
 } as const
 export const PRODUCT_MESSAGES = {
+  PRODUCT_NAME_IS_REQUIRED: 'Product name is required',
+  PRODUCT_NAME_MUST_BE_A_STRING: 'Product name must be a string',
+  PRODUCT_NAME_LENGTH_MUST_BE_FROM_1_TO_255: 'Product name length must be from 1 to 255',
+  LIMIT_MUST_BE_A_NUMBER: 'Limit must be a number',
+  PAGE_MUST_BE_A_NUMBER: 'Page must be a number',
   GET_ALL_PRODUCTS_SUCCESS: 'Get all products successfully',
   GET_ALL_PRODUCTS_FAILED: 'Get all products failed',
-  SORT_MUST_BE_A_STRING: 'Sort must be a string',
+  SORT_VALUE_INVALID: 'Sort value invalid',
   SORT_MUST_BE_IN_ARRAY: 'Sort must be one of the following values: created_at, price, discount_price, quantity',
   ORDER_MUST_BE_A_STRING: 'Order must be a string',
   ORDER_MUST_BE_IN_ARRAY: 'Order must be one of the following values: asc, desc',
@@ -204,8 +211,6 @@ export const PRODUCT_MESSAGES = {
   MIN_PRICE_IS_REQUIRED: 'Minimum price is required',
   MAX_PRICE_IS_REQUIRED: 'Maximum price is required',
   GET_PRODUCT_SUCCESS: 'Get product successfully',
-  PRODUCT_NAME_IS_REQUIRED: 'Product name is required',
-  PRODUCT_NAME_MUST_BE_A_STRING: 'Product name must be a string',
   PRODUCT_DESCRIPTION_MUST_BE_A_STRING: 'Product description must be a string',
   PRODUCT_DESCRIPTION_CANNOT_LONGER_THAN_255: 'Product description cannot be longer than 255 characters',
   PRICE_MUST_BE_A_NUMBER: 'Price must be a number',
@@ -234,10 +239,11 @@ export const PRODUCT_MESSAGES = {
   GET_ONE_SERVICE_OF_PRODUCT_SUCCESS: 'Get service of product successfully',
   PRODUCT_ALREADY_EXISTS_IN_SERVICE: 'Product already exists in service',
   SERVICE_PRODUCT_NOT_FOUND: 'Product in service not found',
-  NO_DATA_TO_UPDATE: 'No data to update'
+  NO_DATA_TO_UPDATE: 'No data to update',
+  ORDER_VALUE_INVALID: 'Order value invalid'
 } as const
 export const SERVICE_MESSAGES = {
-  SORT_MUST_BE_A_STRING: 'Sort must be a string',
+  SORT_VALUE_INVALID: 'Sort value invalid',
   SORT_MUST_INCLUDE_IN_LIST:
     'Sort must be one of the following values: created_at, price, discount_price, booking_count, view_count',
   ORDER_MUST_BE_A_STRING: 'Order must be a string',
@@ -314,7 +320,8 @@ export const SERVICE_MESSAGES = {
   DELETE_SERVICE_FAILED: 'Delete service failed',
   SERVICE_PRODUCT_ID_IS_REQUIRED: 'Service product ID is required',
   SERVICE_PRODUCT_ID_MUST_BE_A_VALID_MONGO_ID: 'Service product ID must be a valid MongoDB ID',
-  SERVICE_PRODUCT_NOT_FOUND: 'Service product not found'
+  SERVICE_PRODUCT_NOT_FOUND: 'Service product not found',
+  DATE_MUST_BE_ISO8601: 'Date must be in ISO8601 format'
 } as const
 export const CONDITION_MESSAGES = {
   CONDITION_ID_IS_REQUIRED: 'Condition ID is required',

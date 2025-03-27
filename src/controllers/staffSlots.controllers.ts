@@ -6,6 +6,8 @@ import { STAFF_SLOTS_MESSAGES } from '~/constants/messages'
 import {
   CreateMultipleStaffSlotsReqBody,
   GenerateStaffSlotsReqBody,
+  GetAvailableSlotsByServiceIdQuery,
+  ServiceParams,
   StaffProfileParams,
   StaffSlotParams,
   StaffSlotQuery,
@@ -213,4 +215,22 @@ export const exportExcelController = async (
   res.setHeader('Content-Length', Buffer.byteLength(buffer))
 
   res.send(buffer)
+}
+
+// Lấy danh sách slots có sẵn theo service_id
+export const getAvailableSlotsByServiceIdController = async (
+  req: Request<ServiceParams, any, any, GetAvailableSlotsByServiceIdQuery>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { service_id } = req.params
+  const { date, isHours } = req.query
+  const isHoursBoolean = Boolean(isHours)
+
+  const result = await staffSlotsService.getAvailableSlotsByServiceId(service_id, date, isHoursBoolean)
+
+  res.status(HTTP_STATUS.OK).json({
+    message: STAFF_SLOTS_MESSAGES.GET_STAFF_SLOTS_SUCCESS,
+    result
+  })
 }

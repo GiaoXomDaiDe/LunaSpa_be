@@ -7,6 +7,10 @@ export interface OrderParams extends ParamsDictionary {
   order_id: string
 }
 
+export interface CustomerParams extends ParamsDictionary {
+  customer_id: string
+}
+
 export interface OrdersQuery extends Pagination, Query {
   customer_id?: string
   branch_id?: string

@@ -13,8 +13,8 @@ import {
   verifiedAccountValidator
 } from '~/middlewares/accounts.middleware'
 import {
-  productCategoryQueryValidator,
-  productCategoryValidator,
+  createProductCategoryValidator,
+  productCategoryIdParamValidator,
   updateProductCategoryValidator
 } from '~/middlewares/productCategories.middleware'
 import { checkPermission } from '~/middlewares/roles.middleware'
@@ -33,7 +33,7 @@ productCategoriesRouter.get(
   '/:product_category_id',
   accessTokenValidatorV2,
   checkPermission(PERMISSION.READ, RESOURCE_NAME.PRODUCT_CATEGORY),
-  productCategoryQueryValidator,
+  productCategoryIdParamValidator,
   wrapRequestHandler(getProductCategoryController)
 )
 productCategoriesRouter.post(
@@ -41,7 +41,7 @@ productCategoriesRouter.post(
   accessTokenValidator,
   verifiedAccountValidator,
   checkPermission(PERMISSION.CREATE, RESOURCE_NAME.PRODUCT_CATEGORY),
-  productCategoryValidator,
+  createProductCategoryValidator,
   wrapRequestHandler(createProductCategoryController)
 )
 
@@ -50,7 +50,7 @@ productCategoriesRouter.patch(
   accessTokenValidator,
   verifiedAccountValidator,
   checkPermission(PERMISSION.UPDATE, RESOURCE_NAME.PRODUCT_CATEGORY),
-  productCategoryQueryValidator,
+  productCategoryIdParamValidator,
   updateProductCategoryValidator,
   wrapRequestHandler(updateProductCategoryController)
 )
@@ -60,7 +60,7 @@ productCategoriesRouter.delete(
   accessTokenValidator,
   verifiedAccountValidator,
   checkPermission(PERMISSION.DELETE, RESOURCE_NAME.PRODUCT_CATEGORY),
-  productCategoryQueryValidator,
+  productCategoryIdParamValidator,
   wrapRequestHandler(deleteProductCategoryController)
 )
 

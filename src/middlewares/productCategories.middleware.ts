@@ -1,21 +1,21 @@
 import { checkSchema } from 'express-validator'
-import accountsParamsSchema from '~/utils/schemaHelper'
+import schemaHelper from '~/utils/schemaHelper'
 import { validate } from '~/utils/validation'
 
-export const productCategoryQueryValidator = validate(
+export const productCategoryIdParamValidator = validate(
   checkSchema(
     {
-      product_category_id: accountsParamsSchema.categoryIdSchema
+      product_category_id: schemaHelper.categoryIdSchema
     },
     ['params']
   )
 )
 
-export const productCategoryValidator = validate(
+export const createProductCategoryValidator = validate(
   checkSchema(
     {
-      name: accountsParamsSchema.productCategoryNameSchema,
-      description: accountsParamsSchema.productCategoryDescriptionSchema
+      name: schemaHelper.productCategoryNameSchema,
+      description: schemaHelper.productCategoryDescriptionSchema
     },
     ['body']
   )
@@ -24,8 +24,8 @@ export const productCategoryValidator = validate(
 export const updateProductCategoryValidator = validate(
   checkSchema(
     {
-      name: accountsParamsSchema.updateProductCategoryNameSchema,
-      description: accountsParamsSchema.productCategoryDescriptionSchema
+      name: schemaHelper.updateProductCategoryNameSchema,
+      description: schemaHelper.productCategoryDescriptionSchema
     },
     ['body']
   )

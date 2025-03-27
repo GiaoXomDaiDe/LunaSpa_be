@@ -28,6 +28,16 @@ export interface GetStaffSlotsOptions {
   status?: StaffSlotStatus
 }
 
+export interface GetAvailableSlotsByServiceIdQuery extends Pagination, Query {
+  service_id: string
+  date?: string
+  isHours?: string
+}
+
+export interface ServiceParams extends ParamsDictionary {
+  service_id: string
+}
+
 export interface StaffSlotReqBody {
   staff_profile_id: string
   date: string // ISO string

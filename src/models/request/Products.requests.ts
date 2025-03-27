@@ -1,5 +1,4 @@
 import { ParamsDictionary, Query } from 'express-serve-static-core'
-import { ORDER, SORT_BY } from '~/constants/constants'
 import { Pagination } from '~/models/request/Pagination'
 import { ProductStatus } from '~/models/schema/Product.schema'
 
@@ -29,13 +28,13 @@ export interface GetAllProductsOptions {
   limit?: number
   page?: number
   search?: string
-  sort?: (typeof SORT_BY)[number]
+  sort?: string
   max_price?: number
   min_price?: number
   category_id?: string
   discount_price?: number
   quantity?: number
-  order?: (typeof ORDER)[number]
+  order?: string
   isAdmin?: boolean
   include_branch_products?: boolean
 }
