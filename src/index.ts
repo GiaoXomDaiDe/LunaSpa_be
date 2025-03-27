@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express'
 import { envConfig } from '~/constants/config'
 import { defaultErrorHandler } from '~/middlewares/error.middleware'
 import accountsRouter from '~/routes/accounts.routes'
+import bookingRouter from '~/routes/booking.routes'
 import branchProductsRouter from '~/routes/branchProducts.routes'
 import branchServicesRouter from '~/routes/branchServices.routes'
 import branchesRouter from '~/routes/branches.routes'
@@ -88,6 +89,7 @@ app.use('/condition-products', conditionProductsRouter)
 app.use('/condition-services', conditionServicesRouter)
 app.use('/orders', ordersRouter)
 app.use('/webhooks', webhookRouter)
+app.use('/bookings', bookingRouter)
 app.use(defaultErrorHandler as ErrorRequestHandler)
 // app.use('/static', express.static(UPLOAD_DIR))
 app.use('/static', staticRouter)

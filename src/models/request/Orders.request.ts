@@ -51,30 +51,27 @@ export interface ProductItem {
 
 export interface CreateProductOrderReqBody {
   branch_id: string
-  items: ProductItem[]
+  product_items: ProductItem[]
   payment_method?: PaymentMethod
   note?: string
+  voucher_code?: string
 }
 
 export interface ServiceItem {
-  item_id: string // service_id
-  quantity: number
-  note?: string
+  item_id: string
   item_type: ItemType
+  duration_index: number
   slot_id?: string
-  duration_index?: number // Thêm trường để chỉ định index của duration trong mảng durations của service
+  staff_profile_id?: string
+  booking_time: string
 }
 
 export interface BookServiceReqBody {
   branch_id: string
   service_item: ServiceItem // Thay đổi từ mảng items thành object service_item đơn lẻ
-  booking_time: string // YYYY-MM-DD HH:mm
   payment_method?: PaymentMethod
   note?: string
   voucher_code?: string
-  staff_profile_id?: string
-  slot_id?: string // ID của staff slot được chọn
-  duration_index: number // Index của duration được chọn trong mảng durations của service
 }
 
 export interface PaymentIntentResponse {

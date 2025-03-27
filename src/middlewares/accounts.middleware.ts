@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { checkSchema } from 'express-validator'
 import HTTP_STATUS from '~/constants/httpStatus'
-import { ACCOUNT_MESSAGES } from '~/constants/messages'
+import { ACCOUNTS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Error'
 import { TokenPayload } from '~/models/request/Account.requests'
 import { AccountVerify } from '~/models/schema/Account.schema'
@@ -94,7 +94,7 @@ export const verifiedAccountValidator = async (req: Request, res: Response, next
   if (verify !== AccountVerify.VERIFIED) {
     return next(
       new ErrorWithStatus({
-        message: ACCOUNT_MESSAGES.ACCOUNT_NOT_VERIFIED,
+        message: ACCOUNTS_MESSAGES.ACCOUNT_NOT_VERIFIED,
         status: HTTP_STATUS.FORBIDDEN
       })
     )
@@ -129,7 +129,7 @@ export const paginationValidator = validate(
           options: async (value: string, { req }) => {
             const { limit, page } = (req as Request).query
             if ((limit && !page) || (!limit && page)) {
-              throw new Error(ACCOUNT_MESSAGES.LIMIT_AND_PAGE_MUST_BE_PROVIDED_TOGETHER)
+              throw new Error(ACCOUNTS_MESSAGES.LIMIT_AND_PAGE_MUST_BE_PROVIDED_TOGETHER)
             }
             return true
           }
@@ -145,10 +145,43 @@ export const isAdminValidator = async (req: Request, res: Response, next: NextFu
   if (role?.name !== 'Admin') {
     return next(
       new ErrorWithStatus({
-        message: ACCOUNT_MESSAGES.ACCOUNT_NOT_ADMIN,
+        message: ACCOUNTS_MESSAGES.ACCOUNT_NOT_ADMIN,
         status: HTTP_STATUS.FORBIDDEN
       })
     )
   }
   next()
+}
+
+/**
+ * Middleware kiểm tra xem người dùng có phải là nhân viên không
+ * @param req Request
+ * @param res Response
+ * @param next NextFunction
+ */
+export const staffAccessValidator = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Kiểm tra xem đã có decoded_authorization chưa (do accessTokenValidator đã gán)
+    const user = req.decoded_authorization as TokenPayload
+
+    if (!user) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({
+        message: ACCOUNTS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED
+      })
+    }
+
+    // Kiểm tra vai trò người dùng, nếu là staff hoặc admin thì cho phép
+    // Giả định là staff có role = "staff" và admin có role = "admin"
+    if (user.role === 'staff' || user.role === 'admin') {
+      return next()
+    }
+
+    return res.status(HTTP_STATUS.FORBIDDEN).json({
+      message: ACCOUNTS_MESSAGES.NOT_STAFF_ROLE
+    })
+  } catch (error) {
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: (error as Error).message
+    })
+  }
 }

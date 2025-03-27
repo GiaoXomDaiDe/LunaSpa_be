@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Xác nhận đặt lịch - Luna Spa</title>
+  </head>
+  <body>
+    <div
+      style="
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+      "
+    >
+      <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0">
+        <h1 style="color: #8a2be2">Luna Spa</h1>
+        <p style="font-size: 18px; color: #333">Xác nhận đặt lịch</p>
+      </div>
+
+      <div style="padding: 20px 0">
+        <p>Xin chào <strong>{{customerName}}</strong>,</p>
+        <p>Cảm ơn bạn đã đặt lịch dịch vụ tại Luna Spa. Đây là thông tin chi tiết về lịch hẹn của bạn:</p>
+
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0">
+          <p><strong>Dịch vụ:</strong> {{serviceName}}</p>
+          <p><strong>Chuyên viên:</strong> {{staffName}}</p>
+          <p><strong>Chi nhánh:</strong> {{branchName}}</p>
+          <p><strong>Ngày đặt lịch:</strong> {{bookingTime}}</p>
+          {{#startTime}}
+          <p><strong>Giờ bắt đầu:</strong> {{startTime}}</p>
+          {{/startTime}} {{#endTime}}
+          <p><strong>Giờ kết thúc:</strong> {{endTime}}</p>
+          {{/endTime}}
+          <p><strong>Mã đơn hàng:</strong> #{{orderId}}</p>
+        </div>
+
+        <p>Vui lòng lưu lại mã QR bên dưới và xuất trình khi đến spa:</p>
+
+        <div style="text-align: center; margin: 20px 0">
+          <img src="{{qrCodeUrl}}" alt="QR Code" style="max-width: 200px; height: auto" />
+        </div>
+
+        <p>Lưu ý:</p>
+        <ul>
+          <li>Vui lòng đến trước 15 phút so với thời gian đặt lịch để hoàn tất thủ tục.</li>
+          <li>Nếu bạn muốn thay đổi hoặc hủy lịch, vui lòng thông báo cho chúng tôi ít nhất 2 giờ trước giờ hẹn.</li>
+          <li>Mọi thắc mắc xin liên hệ qua số điện thoại: <strong>0123 456 789</strong>.</li>
+        </ul>
+      </div>
+
+      <div style="padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; color: #666; font-size: 14px">
+        <p>Nếu bạn cần hỗ trợ, vui lòng liên hệ với chúng tôi qua email hoặc hotline.</p>
+        <p>© {{currentYear}} Luna Spa. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>
