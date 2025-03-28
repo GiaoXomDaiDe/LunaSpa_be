@@ -46,8 +46,8 @@ export const createStaffSlotTemplate = async (): Promise<Buffer> => {
     formulae: [`"${statusValues.join(',')}"`],
     showErrorMessage: true,
     errorStyle: 'error' as const,
-    error: 'Giá trị không hợp lệ',
-    errorTitle: 'Lỗi'
+    error: 'Invalid value',
+    errorTitle: 'Error'
   }
   worksheet.getColumn('status').eachCell({ includeEmpty: false }, (cell: ExcelJS.Cell, rowNumber: number) => {
     if (rowNumber > 1) {
@@ -56,11 +56,11 @@ export const createStaffSlotTemplate = async (): Promise<Buffer> => {
   })
 
   // Thêm sheet hướng dẫn
-  const instructionSheet = workbook.addWorksheet('Hướng dẫn')
+  const instructionSheet = workbook.addWorksheet('Instructions')
   instructionSheet.columns = [
-    { header: 'Cột', key: 'column', width: 15 },
-    { header: 'Định dạng', key: 'format', width: 40 },
-    { header: 'Mô tả', key: 'description', width: 50 }
+    { header: 'Column', key: 'column', width: 15 },
+    { header: 'Format', key: 'format', width: 40 },
+    { header: 'Description', key: 'description', width: 50 }
   ]
 
   // Style cho header
@@ -82,24 +82,71 @@ export const createStaffSlotTemplate = async (): Promise<Buffer> => {
   // Thêm hướng dẫn
   instructionSheet.addRows([
     {
-      column: 'Ngày',
-      format: 'YYYY-MM-DD (vd: 2023-03-25)',
-      description: 'Ngày làm việc của nhân viên'
+      column: 'Date',
+      format: 'YYYY-MM-DD (e.g.: 2023-03-25)',
+      description: 'Working date for the staff'
     },
     {
-      column: 'Thời gian bắt đầu',
-      format: 'YYYY-MM-DDTHH:mm:ss.sssZ (vd: 2023-03-25T09:00:00.000Z)',
-      description: 'Thời gian bắt đầu ca làm việc, định dạng ISO'
+      column: 'Start Time',
+      format: 'YYYY-MM-DDTHH:mm:ss.sssZ (e.g.: 2023-03-25T09:00:00.000Z)',
+      description: 'Start time of the working slot, in ISO format'
     },
     {
-      column: 'Thời gian kết thúc',
-      format: 'YYYY-MM-DDTHH:mm:ss.sssZ (vd: 2023-03-25T10:00:00.000Z)',
-      description: 'Thời gian kết thúc ca làm việc, định dạng ISO, phải lớn hơn thời gian bắt đầu'
+      column: 'End Time',
+      format: 'YYYY-MM-DDTHH:mm:ss.sssZ (e.g.: 2023-03-25T10:00:00.000Z)',
+      description: 'End time of the working slot, in ISO format, must be greater than start time'
     },
     {
-      column: 'Trạng thái',
-      format: `Chọn một trong các giá trị: ${statusValues.join(', ')}`,
-      description: 'Trạng thái của slot làm việc, mặc định là available'
+      column: 'Status',
+      format: `Choose one of these values: ${statusValues.join(', ')}`,
+      description: 'Status of the working slot, default is available'
+    }
+  ])
+
+  // Thêm sheet hướng dẫn chi tiết
+  const guideSheet = workbook.addWorksheet('Usage Guide')
+  guideSheet.columns = [
+    { header: 'Topic', key: 'topic', width: 25 },
+    { header: 'Description', key: 'description', width: 75 }
+  ]
+
+  // Style cho header
+  guideSheet.getRow(1).eachCell((cell: ExcelJS.Cell) => {
+    cell.font = { bold: true }
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD3D3D3' }
+    }
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    }
+  })
+
+  // Thêm hướng dẫn chi tiết
+  guideSheet.addRows([
+    {
+      topic: 'Import/Export Flow',
+      description:
+        'This template can be used for both importing and exporting staff slots. For importing, fill in the data and upload through the staff portal. For exporting, current slots will be downloaded in a similar format.'
+    },
+    {
+      topic: 'Status Management',
+      description:
+        'The system supports automatic status transitions (AVAILABLE → PENDING → RESERVED → CONFIRMED/CANCELLED). When a slot is in PENDING state, a timestamp is set to track slot reservation timeout.'
+    },
+    {
+      topic: 'Pending Slots Cleanup',
+      description:
+        'Slots in PENDING state for more than 15 minutes are automatically released by the system. Related orders are cancelled with an automatic timeout message.'
+    },
+    {
+      topic: 'Slot Duration Calculation',
+      description:
+        'The available_minutes and used_minutes are automatically calculated based on slot start and end times. These values determine if a slot can accommodate additional bookings.'
     }
   ])
 
@@ -124,7 +171,7 @@ export const parseStaffSlotExcel = async (
   const worksheet = workbook.getWorksheet('Staff Slots')
 
   if (!worksheet) {
-    throw new Error('Không tìm thấy sheet "Staff Slots" trong file Excel')
+    throw new Error('Staff Slots sheet not found in the Excel file')
   }
 
   const slots: Array<{
@@ -135,7 +182,7 @@ export const parseStaffSlotExcel = async (
   }> = []
 
   worksheet.eachRow((row: ExcelJS.Row, rowNumber: number) => {
-    if (rowNumber === 1) return // Bỏ qua header
+    if (rowNumber === 1) return // Skip header
 
     const date = row.getCell(1).value?.toString() || ''
     const start_time = row.getCell(2).value?.toString() || ''

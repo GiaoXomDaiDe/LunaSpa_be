@@ -18,7 +18,7 @@ export const getOrdersController = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { limit, page, customer_id, branch_id, status, start_date, end_date } = req.query
+  const { limit, page, customer_id, branch_id, status, start_date, end_date, order_id } = req.query
   const options = {
     limit: Number(limit) || undefined,
     page: Number(page) || undefined,
@@ -26,7 +26,8 @@ export const getOrdersController = async (
     branch_id: branch_id || undefined,
     status: status || undefined,
     start_date: start_date ? new Date(start_date) : undefined,
-    end_date: end_date ? new Date(end_date) : undefined
+    end_date: end_date ? new Date(end_date) : undefined,
+    order_id: order_id || undefined
   }
 
   const result = await ordersService.getAllOrders(options)
@@ -54,7 +55,6 @@ export const purchaseProductController = async (
 ) => {
   // @ts-expect-error - Thêm để sử dụng req.decoded_authorization từ middleware
   const { account_id } = req.decoded_authorization
-  console.log(req.body, 'req.body')
   const result = await ordersService.createProductOrder(account_id, req.body)
 
   res.status(HTTP_STATUS.CREATED).json({

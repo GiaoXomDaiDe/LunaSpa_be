@@ -11,6 +11,7 @@ import {
   UpdateStaffSlotReqBody,
   UpdateStaffSlotStatusReqBody
 } from '~/models/request/StaffSlots.requests'
+import { OrderStatus } from '~/models/schema/Order.schema'
 import { StaffType } from '~/models/schema/StaffProfile.schema'
 import StaffSlot, { StaffSlotStatus } from '~/models/schema/StaffSlot.schema'
 import { buildStaffSlotPipeline, buildStaffSlotsPipeline } from '~/pipelines/staffSlots.pipeline'
@@ -362,6 +363,27 @@ class StaffSlotsService {
       updateData.order_id = new ObjectId(order_id)
     }
 
+    // Cập nhật trạng thái và các thông tin khác nếu cần
+    if (status === StaffSlotStatus.RESERVED || status === StaffSlotStatus.PENDING) {
+      updateData.pending_at = new Date()
+    }
+
+    const updateOperation: any = {
+      $set: updateData,
+      $currentDate: {
+        updated_at: true
+      }
+    }
+
+    // Xóa pending_at nếu trạng thái là AVAILABLE, CONFIRMED hoặc CANCELLED
+    if (
+      status === StaffSlotStatus.AVAILABLE ||
+      status === StaffSlotStatus.CONFIRMED ||
+      status === StaffSlotStatus.CANCELLED
+    ) {
+      updateOperation.$unset = { pending_at: '' }
+    }
+
     const session = databaseService.getClient().startSession()
     try {
       return await session.withTransaction(async () => {
@@ -378,13 +400,7 @@ class StaffSlotsService {
 
         const result = await databaseService.staffSlots.findOneAndUpdate(
           { _id: new ObjectId(staff_slot_id) },
-          {
-            $set: updateData,
-            $currentDate: {
-              updated_at: true,
-              ...(status === StaffSlotStatus.RESERVED ? { pending_at: true } : {})
-            }
-          },
+          updateOperation,
           { session, returnDocument: 'after' }
         )
 
@@ -519,11 +535,14 @@ class StaffSlotsService {
     // Thiết lập header
     worksheet.columns = [
       { header: 'ID', key: '_id', width: 25 },
-      { header: 'Ngày', key: 'date', width: 15 },
-      { header: 'Thời gian bắt đầu', key: 'start_time', width: 20 },
-      { header: 'Thời gian kết thúc', key: 'end_time', width: 20 },
-      { header: 'Trạng thái', key: 'status', width: 15 },
-      { header: 'Nhân viên', key: 'staff_name', width: 25 }
+      { header: 'Date', key: 'date', width: 15 },
+      { header: 'Start Time', key: 'start_time', width: 20 },
+      { header: 'End Time', key: 'end_time', width: 20 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Staff Name', key: 'staff_name', width: 25 },
+      { header: 'Available Minutes', key: 'available_minutes', width: 15 },
+      { header: 'Used Minutes', key: 'used_minutes', width: 15 },
+      { header: 'Pending Since', key: 'pending_at', width: 20 }
     ]
 
     // Style cho header
@@ -544,13 +563,17 @@ class StaffSlotsService {
 
     // Thêm dữ liệu
     data.forEach((slot: any) => {
+      const pendingTime = slot.pending_at ? new Date(slot.pending_at).toISOString() : ''
       worksheet.addRow({
         _id: slot._id.toString(),
         date: new Date(slot.date).toISOString().split('T')[0],
-        start_time: new Date(slot.start_time).toISOString().split('T')[1].slice(0, 5),
-        end_time: new Date(slot.end_time).toISOString().split('T')[1].slice(0, 5),
+        start_time: new Date(slot.start_time).toISOString(),
+        end_time: new Date(slot.end_time).toISOString(),
         status: slot.status,
-        staff_name: slot.staff_profile?.account?.name || 'Không có tên'
+        staff_name: slot.staff_profile?.account?.name || 'No Name',
+        available_minutes: slot.available_minutes || 0,
+        used_minutes: slot.used_minutes || 0,
+        pending_at: pendingTime
       })
     })
 
@@ -624,7 +647,7 @@ class StaffSlotsService {
     // Tạo query để lấy slots
     const query: any = {
       staff_profile_id: { $in: staffProfileIds },
-      status: StaffSlotStatus.AVAILABLE
+      status: StaffSlotStatus.AVAILABLE // Chỉ lấy các slot có trạng thái AVAILABLE
     }
 
     // Thêm điều kiện có đủ available_minutes cho dịch vụ nếu cần
@@ -692,6 +715,60 @@ class StaffSlotsService {
         end_time: isHours ? slot.end_time.toISOString().split('T')[1].slice(0, 5) : slot.end_time
       })),
       total_count: slots.length
+    }
+  }
+
+  // Kiểm tra xem slot đã bị đặt chưa theo ngày và thời gian
+  async checkSlotAvailability(slot_id: string, booking_date: Date, duration_minutes: number) {
+    // Lấy thông tin slot
+    const slot = await this.getStaffSlot(slot_id)
+    if (!slot) {
+      return {
+        available: false,
+        message: 'Slot is not found'
+      }
+    }
+
+    // Kiểm tra trạng thái slot
+    if (slot.status !== StaffSlotStatus.AVAILABLE) {
+      return {
+        available: false,
+        message: 'Slot này đã được đặt',
+        status: slot.status
+      }
+    }
+
+    // Kiểm tra thời gian có đủ cho dịch vụ không
+    if (slot.available_minutes < duration_minutes) {
+      return {
+        available: false,
+        message: 'Slot không đủ thời gian cho dịch vụ này',
+        available_minutes: slot.available_minutes,
+        required_minutes: duration_minutes
+      }
+    }
+
+    // Kiểm tra xem có đơn hàng nào đang đặt slot này không
+    const pendingOrders = await databaseService.orders
+      .find({
+        'items.slot_id': new ObjectId(slot_id),
+        status: { $in: [OrderStatus.PENDING, OrderStatus.CONFIRMED] }
+      })
+      .toArray()
+
+    if (pendingOrders.length > 0) {
+      return {
+        available: false,
+        message: 'Slot này đang được đặt bởi đơn hàng khác',
+        pending_order_count: pendingOrders.length
+      }
+    }
+
+    // Nếu vượt qua tất cả kiểm tra, slot có thể đặt được
+    return {
+      available: true,
+      message: 'Slot có thể đặt được',
+      slot
     }
   }
 }

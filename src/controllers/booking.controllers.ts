@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { OrderStatus } from '~/models/schema/Order.schema'
+import { StaffSlotStatus } from '~/models/schema/StaffSlot.schema'
 import ordersService from '~/services/orders.services'
 import qrCodeService from '~/services/qrcode.services'
+import staffSlotsService from '~/services/staffSlots.services'
 
 /**
  * Controller xác thực đơn đặt lịch thông qua mã QR
@@ -68,6 +70,26 @@ export const verifyBookingController = async (req: Request, res: Response, next:
     if (order.status !== OrderStatus.COMPLETED) {
       await ordersService.updateOrderStatus(order_id, OrderStatus.COMPLETED)
       bookingInfo.status = OrderStatus.COMPLETED
+
+      // Cập nhật trạng thái slot sang COMPLETED
+      if (order.items[0]?.slot_id) {
+        const slot_id = order.items[0].slot_id.toString()
+        const staffSlot = await staffSlotsService.getStaffSlot(slot_id)
+
+        if (staffSlot) {
+          // Chuyển slot sang trạng thái COMPLETED
+          await staffSlotsService.updateStaffSlotStatus(slot_id, {
+            status: StaffSlotStatus.COMPLETED
+          })
+
+          // Kiểm tra nếu slot vẫn còn thời gian trống (>= 60 phút), chuyển sang AVAILABLE
+          if (staffSlot.available_minutes >= 60) {
+            await staffSlotsService.updateStaffSlotStatus(slot_id, {
+              status: StaffSlotStatus.AVAILABLE
+            })
+          }
+        }
+      }
     }
 
     res.status(HTTP_STATUS.OK).json({

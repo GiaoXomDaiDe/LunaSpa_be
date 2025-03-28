@@ -66,6 +66,12 @@ export const OrdersQueryValidator = validate(
         optional: true,
         isDate: true,
         errorMessage: ORDER_MESSAGES.END_DATE_INVALID
+      },
+      order_id: {
+        optional: true,
+        isMongoId: {
+          errorMessage: ORDER_MESSAGES.ORDER_ID_INVALID
+        }
       }
     },
     ['query']
