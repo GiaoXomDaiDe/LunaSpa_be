@@ -46,7 +46,7 @@ export const conditionProductQueryValidator = validate(
       search: {
         optional: true,
         isString: {
-          errorMessage: 'Từ khóa tìm kiếm phải là chuỗi'
+          errorMessage: CONDITION_PRODUCTS_MESSAGES.SEARCH_MUST_BE_STRING
         }
       }
     },

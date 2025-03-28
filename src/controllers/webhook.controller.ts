@@ -5,7 +5,6 @@ import { StaffSlotStatus } from '~/models/schema/StaffSlot.schema'
 import { TransactionStatus } from '~/models/schema/Transaction.schema'
 import accountsService from '~/services/accounts.services'
 import databaseService from '~/services/database.services'
-import momoService from '~/services/momo.services'
 import ordersService from '~/services/orders.services'
 import staffSlotsService from '~/services/staffSlots.services'
 import stripeService from '~/services/stripe.services'
@@ -123,130 +122,6 @@ class WebhookController {
     } catch (error) {
       console.error('Lỗi xử lý webhook:', error)
       res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).send()
-    }
-  }
-
-  /**
-   * Xử lý webhook từ MoMo
-   * @param req Request
-   * @param res Response
-   */
-  async handleMomoWebhook(req: Request, res: Response) {
-    try {
-      console.log('MoMo webhook received:', req.body)
-
-      // Xác thực callback từ MoMo
-      const validationResult = momoService.validateIpnCallback(req.body)
-
-      if (!validationResult.isValid) {
-        console.error('MoMo webhook validation failed')
-        res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Invalid signature' })
-        return
-      }
-
-      // Nếu kết quả thanh toán thành công (resultCode = 0)
-      if (validationResult.resultCode === 0) {
-        // Lấy orderId thực từ MoMo orderId
-        const realOrderId = momoService.extractRealOrderId(validationResult.orderId)
-
-        if (!realOrderId) {
-          console.error('Cannot extract real order ID from MoMo orderId:', validationResult.orderId)
-          res.status(HTTP_STATUS.OK).json({ message: 'OK' }) // Vẫn trả về OK để MoMo không gửi lại webhook
-          return
-        }
-
-        // Tìm giao dịch trong database
-        const transaction = await databaseService.transactions.findOne({
-          momo_order_id: validationResult.orderId
-        })
-
-        if (!transaction) {
-          console.error('Transaction not found for MoMo orderId:', validationResult.orderId)
-          res.status(HTTP_STATUS.OK).json({ message: 'OK' })
-          return
-        }
-
-        // Cập nhật trạng thái giao dịch
-        await databaseService.transactions.updateOne(
-          { _id: transaction._id },
-          {
-            $set: {
-              status: TransactionStatus.COMPLETED,
-              momo_trans_id: validationResult.transId,
-              updated_at: new Date()
-            }
-          }
-        )
-
-        // Cập nhật trạng thái đơn hàng
-        await databaseService.orders.updateOne(
-          { _id: transaction.order_id },
-          {
-            $set: {
-              status: OrderStatus.CONFIRMED,
-              transaction_id: transaction._id,
-              updated_at: new Date()
-            }
-          }
-        )
-
-        // Nếu là đơn hàng dịch vụ, cập nhật slot
-        if (validationResult.extraData && validationResult.extraData.order_type === 'service') {
-          const slotId = validationResult.extraData.slot_id
-          if (slotId) {
-            await staffSlotsService.updateStaffSlotStatus(slotId, { status: StaffSlotStatus.RESERVED })
-          }
-
-          // Gửi email xác nhận đặt lịch
-          try {
-            const order = await ordersService.getOrderById(transaction.order_id.toString())
-            const customerId = validationResult.extraData.customer_id
-            if (customerId) {
-              const customer = await accountsService.getAccount(customerId)
-              if (customer && order && order.items && order.items[0]) {
-                // Xử lý gửi email xác nhận đặt lịch...
-              }
-            }
-          } catch (error) {
-            console.error('Error sending confirmation email:', error)
-          }
-        }
-      } else {
-        // Xử lý thanh toán thất bại
-        console.log('MoMo payment failed with code:', validationResult.resultCode)
-
-        // Tìm giao dịch trong database
-        const transaction = await databaseService.transactions.findOne({
-          momo_order_id: validationResult.orderId
-        })
-
-        if (transaction) {
-          // Cập nhật trạng thái giao dịch
-          await databaseService.transactions.updateOne(
-            { _id: transaction._id },
-            {
-              $set: {
-                status: TransactionStatus.FAILED,
-                updated_at: new Date(),
-                transaction_note: `Failed with code: ${validationResult.resultCode}`
-              }
-            }
-          )
-
-          // Nếu là đơn hàng dịch vụ, cập nhật lại trạng thái slot
-          if (transaction.metadata?.order_type === 'service' && transaction.metadata?.slot_id) {
-            await staffSlotsService.updateStaffSlotStatus(transaction.metadata.slot_id, {
-              status: StaffSlotStatus.AVAILABLE
-            })
-          }
-        }
-      }
-
-      // Trả về thành công cho MoMo
-      res.status(HTTP_STATUS.OK).json({ message: 'OK' })
-    } catch (error) {
-      console.error('Error processing MoMo webhook:', error)
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' })
     }
   }
 }

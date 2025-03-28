@@ -103,9 +103,10 @@ class OrdersService {
           status: HTTP_STATUS.BAD_REQUEST
         })
       }
+      console.log(product)
 
       // Kiểm tra trạng thái sản phẩm có phải ACTIVE không
-      if (product.status !== ProductStatus.ACTIVE) {
+      if (product.product_status !== ProductStatus.ACTIVE) {
         throw new ErrorWithStatus({
           message: `Product ${product.name} is currently unavailable`,
           status: HTTP_STATUS.BAD_REQUEST

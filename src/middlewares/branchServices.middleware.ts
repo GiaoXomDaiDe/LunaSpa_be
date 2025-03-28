@@ -60,7 +60,7 @@ export const branchServiceQueryValidator = validate(
             min: 1,
             max: 100
           },
-          errorMessage: 'Limit phải là số nguyên từ 1 đến 100'
+          errorMessage: BRANCH_SERVICES_MESSAGES.LIMIT_INVALID || 'Limit must be an integer between 1 and 100'
         }
       },
       page: {
@@ -69,7 +69,7 @@ export const branchServiceQueryValidator = validate(
           options: {
             min: 1
           },
-          errorMessage: 'Page phải là số nguyên lớn hơn hoặc bằng 1'
+          errorMessage: BRANCH_SERVICES_MESSAGES.PAGE_INVALID || 'Page must be an integer greater than or equal to 1'
         }
       }
     },

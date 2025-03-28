@@ -1,6 +1,8 @@
 import { checkSchema } from 'express-validator'
 import { ObjectId } from 'mongodb'
-import { SPECIALTY_MESSAGES, STAFF_PROFILES_MESSAGES } from '~/constants/messages'
+import { SPECIALTY_MESSAGES } from '~/constants/specialty-messages'
+import { STAFF_PROFILES_MESSAGES } from '~/constants/staff-profiles-messages'
+
 import { validate } from '~/utils/validation'
 
 export const specialtyValidator = validate(

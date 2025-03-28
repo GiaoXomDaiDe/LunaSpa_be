@@ -1,6 +1,6 @@
 import { checkSchema } from 'express-validator'
 import { ObjectId } from 'mongodb'
-import { STAFF_PROFILES_MESSAGES } from '~/constants/messages'
+import { STAFF_PROFILES_MESSAGES } from '~/constants/staff-profiles-messages'
 import { StaffType } from '~/models/schema/StaffProfile.schema'
 import { validate } from '~/utils/validation'
 

@@ -8,14 +8,13 @@ import {
   getServicesByConditionIdController,
   updateConditionServiceController
 } from '~/controllers/conditionService.controllers'
-import { accessTokenValidator, accessTokenValidatorV2 } from '~/middlewares/accounts.middleware'
+import { accessTokenValidator, accessTokenValidatorV2, paginationValidator } from '~/middlewares/accounts.middleware'
 import {
   conditionServiceQueryValidator,
   createConditionServiceValidator,
   updateConditionServiceValidator
 } from '~/middlewares/conditionServices.middleware'
 import { checkPermission } from '~/middlewares/roles.middleware'
-import { paginationValidator } from '~/middlewares/specialties.middleware'
 import { wrapRequestHandler } from '~/utils/handlers'
 
 const conditionServicesRouter = Router()
