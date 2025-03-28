@@ -26,6 +26,7 @@ import databaseService from '~/services/database.services'
 import emailService from '~/services/email.services'
 import productsService from '~/services/products.services'
 import qrCodeService from '~/services/qrcode.services'
+import rewardPointsService from '~/services/rewardPoints.services'
 import servicesService from '~/services/services.services'
 import staffProfilesService from '~/services/staffProfiles.services'
 import staffSlotsService from '~/services/staffSlots.services'
@@ -128,10 +129,18 @@ class OrdersService {
           status: HTTP_STATUS.BAD_REQUEST
         })
       }
-
+      let voucher = null
+      if (voucher_code) {
+        voucher = await rewardPointsService.applyVoucher(voucher_code, customer_id)
+      }
+      const { discount_percent } = voucher || {}
+      let final_price = 0
       const product_price = product.price
       const product_discount = product.discount_price || 0
-      const final_price = product_discount > 0 ? product_discount : product_price
+      final_price =
+        product_discount > 0
+          ? product_discount + product_price * (discount_percent || 0)
+          : product_price + product_price * (discount_percent || 0)
 
       // Tính toán giá
       total_price += product_price * product_item.quantity
@@ -399,11 +408,19 @@ class OrdersService {
             { session }
           )
         }
+        let voucher = null
+        if (voucher_code) {
+          voucher = await rewardPointsService.applyVoucher(voucher_code, customer_id)
+        }
+        const { discount_percent } = voucher || {}
 
         // Tính toán giá
         const servicePrice = selectedDuration.price || service.price || 0
         const serviceDiscount = selectedDuration.discount_price || service.discount_price || 0
-        const finalPrice = serviceDiscount > 0 ? serviceDiscount : servicePrice
+        const finalPrice =
+          serviceDiscount > 0
+            ? serviceDiscount + servicePrice * (discount_percent || 0)
+            : servicePrice + servicePrice * (discount_percent || 0)
         const totalPrice = servicePrice
         const discountAmount = servicePrice - finalPrice
 
