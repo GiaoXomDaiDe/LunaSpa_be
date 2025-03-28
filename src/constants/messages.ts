@@ -434,6 +434,7 @@ export const BRANCHES_MESSAGES = {
   PRODUCT_IDS_MUST_BE_AN_ARRAY: 'Product IDs must be an array',
   SERVICE_ID_NOT_FOUND: 'Service ID not found',
   PRODUCT_ID_NOT_FOUND: 'Product ID not found'
+
 } as const
 export const REVIEW_MESSAGES = {
   ITEM_TYPE_MUST_BE_SERVICE_OR_PRODUCT: 'Item type must be service or product',
@@ -479,6 +480,23 @@ export const BRANCH_SERVICES_MESSAGES = {
   UPDATE_BRANCH_SERVICE_SUCCESS: 'Update branch service successfully',
   UPDATE_BRANCH_SERVICE_STATUS_SUCCESS: 'Update branch service status successfully',
   DELETE_BRANCH_SERVICE_SUCCESS: 'Delete branch service successfully',
+  CREATED_REVIEW_SUCCESS: 'Successfully created review',
+  CREATED_REVIEW_FAILED: 'Failed to create review',
+  REVIEW_NOT_UPDATED: 'Review was not updated',
+  UPDATE_REVIEW_SUCCESS: 'Successfully updated review',
+  UPDATE_REVIEW_FAILED: 'Failed to update review',
+  DELETE_REVIEW_SUCCESS: 'Successfully deleted review',
+  DELETE_REVIEW_FAILED: 'Failed to delete review'
+} as const
+export const BRANCH_SERVICES_MESSAGES = {
+  GET_ALL_BRANCH_SERVICES_SUCCESS: 'Successfully retrieved branch services list',
+  GET_BRANCH_SERVICE_SUCCESS: 'Successfully retrieved branch service information',
+  GET_BRANCH_SERVICES_BY_BRANCH_SUCCESS: 'Successfully retrieved services by branch',
+  GET_BRANCH_SERVICES_BY_SERVICE_SUCCESS: 'Successfully retrieved branches by service',
+  CREATE_BRANCH_SERVICE_SUCCESS: 'Successfully added service to branch',
+  UPDATE_BRANCH_SERVICE_SUCCESS: 'Successfully updated branch service',
+  UPDATE_BRANCH_SERVICE_STATUS_SUCCESS: 'Successfully updated branch service status',
+  DELETE_BRANCH_SERVICE_SUCCESS: 'Successfully deleted branch service',
   BRANCH_SERVICE_NOT_FOUND: 'Branch service not found',
   BRANCH_SERVICE_ALREADY_EXISTS: 'Service already exists in branch',
   INVALID_STATUS: 'Invalid status',
@@ -546,6 +564,48 @@ export const REWARD_POINT_MESSAGES = {
   GET_HISTORY_SUCCESS: 'Get reward points history successfully',
   ADD_POINTS_SUCCESS: 'Add points successfully',
   REDEEM_POINTS_SUCCESS: 'Redeem points successfully',
+  BRANCH_PRODUCT_NOT_FOUND: 'Branch product not found',
+  BRANCH_PRODUCT_ALREADY_EXISTS: 'Product already exists in branch',
+  GET_ALL_BRANCH_PRODUCTS_SUCCESS: 'Successfully retrieved branch products list',
+  GET_BRANCH_PRODUCT_SUCCESS: 'Successfully retrieved branch product information',
+  CREATE_BRANCH_PRODUCT_SUCCESS: 'Successfully added product to branch',
+  UPDATE_BRANCH_PRODUCT_SUCCESS: 'Successfully updated branch product',
+  DELETE_BRANCH_PRODUCT_SUCCESS: 'Successfully removed product from branch',
+  NO_DATA_TO_UPDATE: 'No data to update'
+} as const
+export const SERVICE_PRODUCTS_MESSAGES = {
+  GET_ALL_SERVICE_PRODUCTS_SUCCESS: 'Successfully retrieved service products list',
+  GET_SERVICE_PRODUCTS_BY_SERVICE_ID_SUCCESS: 'Successfully retrieved products by service',
+  GET_SERVICE_PRODUCTS_BY_PRODUCT_ID_SUCCESS: 'Successfully retrieved services by product',
+  GET_SERVICE_PRODUCT_SUCCESS: 'Successfully retrieved service product details',
+  CREATE_SERVICE_PRODUCT_SUCCESS: 'Successfully created service product',
+  DELETE_SERVICE_PRODUCT_SUCCESS: 'Successfully deleted service product',
+  SERVICE_PRODUCT_NOT_FOUND: 'Service product not found',
+  SERVICE_PRODUCT_ALREADY_EXISTS: 'Service product already exists',
+  UPDATE_SERVICE_PRODUCT_SUCCESS: 'Successfully updated service product',
+  DELETE_PRODUCT_OF_SERVICE_FAILED: 'Failed to delete product from service',
+  GET_ALL_SERVICES_OF_PRODUCT_SUCCESS: 'Successfully retrieved all services of product',
+  GET_ONE_SERVICE_OF_PRODUCT_SUCCESS: 'Successfully retrieved product service details',
+  PRODUCT_ALREADY_EXISTS_IN_SERVICE: 'Product already exists in service',
+  NO_DATA_TO_UPDATE: 'No data to update',
+  GET_PRODUCTS_BY_SERVICE_ID_SUCCESS: 'Successfully retrieved products by service ID',
+  GET_SERVICES_BY_PRODUCT_ID_SUCCESS: 'Successfully retrieved services by product ID',
+  SERVICE_PRODUCT_ID_IS_REQUIRED: 'Service product ID is required',
+  SERVICE_PRODUCT_ID_MUST_BE_A_VALID_MONGO_ID: 'Service product ID must be a valid MongoDB ID',
+  GET_RECOMMENDED_PRODUCTS_SUCCESS: 'Successfully retrieved recommended products',
+  UPDATE_SERVICE_PRODUCT_STATUS_SUCCESS: 'Successfully updated service product status',
+  DISCOUNT_PERCENT_MUST_BE_NUMBER: 'Discount percentage must be a number',
+  DISCOUNT_PERCENT_INVALID: 'Discount percentage must be between 0 and 100',
+  USAGE_INSTRUCTION_MUST_BE_STRING: 'Usage instruction must be a string',
+  STATUS_MUST_BE_NUMBER: 'Status must be a number',
+  STATUS_INVALID: 'Invalid status',
+  RECOMMENDED_MUST_BE_BOOLEAN: 'Recommended must be a boolean'
+} as const
+export const REWARD_POINT_MESSAGES = {
+  GET_BALANCE_SUCCESS: 'Successfully retrieved points balance',
+  GET_HISTORY_SUCCESS: 'Successfully retrieved reward points history',
+  ADD_POINTS_SUCCESS: 'Successfully added points',
+  REDEEM_POINTS_SUCCESS: 'Successfully redeemed points',
   REWARD_POINT_NOT_FOUND: 'Reward points not found',
   NOT_ENOUGH_POINTS: 'Not enough points to redeem',
   FAILED_TO_ADD_POINTS: 'Failed to add points',
@@ -568,6 +628,16 @@ export const VOUCHER_MESSAGES = {
   GET_VOUCHERS_SUCCESS: 'Get vouchers successfully',
   GET_VOUCHER_SUCCESS: 'Get voucher successfully',
   APPLY_VOUCHER_SUCCESS: 'Apply voucher successfully',
+  ACCOUNT_ID_INVALID: 'Invalid account ID',
+  ORDER_ID_INVALID: 'Invalid order ID',
+  HISTORY_REQUIRED: 'History is required',
+  HISTORY_MUST_BE_ARRAY: 'History must be an array'
+} as const
+export const VOUCHER_MESSAGES = {
+  CREATE_VOUCHER_SUCCESS: 'Voucher created successfully',
+  GET_VOUCHERS_SUCCESS: 'Vouchers retrieved successfully',
+  GET_VOUCHER_SUCCESS: 'Voucher details retrieved successfully',
+  APPLY_VOUCHER_SUCCESS: 'Voucher applied successfully',
   VOUCHER_NOT_FOUND: 'Voucher not found',
   VOUCHER_EXPIRED: 'Voucher has expired',
   VOUCHER_USED: 'Voucher has been used',
@@ -626,6 +696,47 @@ export const CONDITION_PRODUCTS_MESSAGES = {
 
   CONDITION_PRODUCT_ID_IS_REQUIRED: 'Condition-product link ID is required',
   CONDITION_PRODUCT_ID_MUST_BE_A_VALID_MONGO_ID: 'Condition-product link ID must be a valid MongoDB ID',
+=======
+  CHECK_EXPIRED_VOUCHERS_SUCCESS: 'Voucher status updated successfully',
+  CHECK_EXPIRED_VOUCHERS_FAILED: 'Failed to update voucher status'
+} as const
+export const SPECIALTY_MESSAGES = {
+  GET_ALL_SPECIALTIES_SUCCESS: 'Successfully retrieved all specialties',
+  GET_SPECIALTY_SUCCESS: 'Successfully retrieved specialty details',
+  CREATE_SPECIALTY_SUCCESS: 'Successfully created specialty',
+  UPDATE_SPECIALTY_SUCCESS: 'Successfully updated specialty',
+  DELETE_SPECIALTY_SUCCESS: 'Successfully deleted specialty',
+  SPECIALTY_NOT_FOUND: 'Specialty not found',
+  NAME_REQUIRED: 'Specialty name is required',
+  NAME_MUST_BE_STRING: 'Specialty name must be a string',
+  NAME_LENGTH: 'Specialty name must be between 1 to 100 characters',
+  DESCRIPTION_REQUIRED: 'Specialty description is required',
+  DESCRIPTION_MUST_BE_STRING: 'Specialty description must be a string',
+  DEVICE_IDS_MUST_BE_ARRAY: 'Device list must be an array',
+  DEVICE_ID_MUST_BE_MONGO_ID: 'Invalid device ID',
+  SERVICE_IDS_MUST_BE_ARRAY: 'Service list must be an array',
+  SERVICE_ID_MUST_BE_MONGO_ID: 'Invalid service ID',
+  SPECIALTY_ID_REQUIRED: 'Specialty ID is required',
+  SPECIALTY_ID_MUST_BE_MONGO_ID: 'Specialty ID must be a valid MongoDB ID',
+  CREATE_SPECIALTY_FAILED: 'Failed to create specialty',
+  UPDATE_SPECIALTY_FAILED: 'Failed to update specialty',
+  DELETE_SPECIALTY_FAILED: 'Failed to delete specialty'
+} as const
+export const CONDITION_PRODUCTS_MESSAGES = {
+  GET_ALL_CONDITION_PRODUCTS_SUCCESS: 'Successfully retrieved all condition-product associations',
+  GET_CONDITION_PRODUCT_SUCCESS: 'Successfully retrieved condition-product association details',
+  GET_PRODUCTS_BY_CONDITION_ID_SUCCESS: 'Successfully retrieved products by condition',
+  GET_CONDITIONS_BY_PRODUCT_ID_SUCCESS: 'Successfully retrieved conditions by product',
+  CREATE_CONDITION_PRODUCT_SUCCESS: 'Successfully created condition-product association',
+  UPDATE_CONDITION_PRODUCT_SUCCESS: 'Successfully updated condition-product association',
+  DELETE_CONDITION_PRODUCT_SUCCESS: 'Successfully deleted condition-product association',
+
+  CONDITION_PRODUCT_NOT_FOUND: 'Condition-product association not found',
+  CONDITION_PRODUCT_ALREADY_EXISTS: 'Condition-product association already exists',
+  NO_DATA_TO_UPDATE: 'No data to update',
+
+  CONDITION_PRODUCT_ID_IS_REQUIRED: 'Condition-product association ID is required',
+  CONDITION_PRODUCT_ID_MUST_BE_A_VALID_MONGO_ID: 'Condition-product association ID must be a valid MongoDB ID',
   CONDITION_ID_IS_REQUIRED: 'Condition ID is required',
   CONDITION_ID_MUST_BE_A_VALID_MONGO_ID: 'Condition ID must be a valid MongoDB ID',
   PRODUCT_ID_IS_REQUIRED: 'Product ID is required',
