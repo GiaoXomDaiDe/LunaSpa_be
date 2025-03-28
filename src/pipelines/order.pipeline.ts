@@ -107,7 +107,8 @@ export function buildOrdersPipeline(options: GetAllOrdersOptions) {
     branch_id: '',
     status: undefined as any,
     start_date: undefined as Date | undefined,
-    end_date: undefined as Date | undefined
+    end_date: undefined as Date | undefined,
+    order_id: ''
   }
 
   const _options = {
@@ -117,14 +118,26 @@ export function buildOrdersPipeline(options: GetAllOrdersOptions) {
     branch_id: options.branch_id ?? defaultOptions.branch_id,
     status: options.status ?? defaultOptions.status,
     start_date: options.start_date ?? defaultOptions.start_date,
-    end_date: options.end_date ?? defaultOptions.end_date
+    end_date: options.end_date ?? defaultOptions.end_date,
+    order_id: options.order_id ?? defaultOptions.order_id
   }
 
-  const { limit, page, customer_id, branch_id, status, start_date, end_date } = _options
+  const { limit, page, customer_id, branch_id, status, start_date, end_date, order_id } = _options
   const skip = (page - 1) * limit
 
   const pipeline: Record<string, any>[] = []
   const match: Record<string, any> = {}
+
+  // Lọc theo order_id
+  if (order_id) {
+    try {
+      match._id = new ObjectId(order_id)
+    } catch (error) {
+      // Nếu order_id không phải là ObjectId hợp lệ, sẽ không match với bất kỳ đơn hàng nào
+      // Điều này cho phép API trả về mảng rỗng thay vì lỗi
+      match._id = new ObjectId('000000000000000000000000')
+    }
+  }
 
   // Lọc theo customer_id
   if (customer_id) {

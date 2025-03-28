@@ -17,6 +17,7 @@ export interface OrdersQuery extends Pagination, Query {
   status?: OrderStatus
   start_date?: string
   end_date?: string
+  order_id?: string
 }
 
 export interface GetAllOrdersOptions {
@@ -27,6 +28,7 @@ export interface GetAllOrdersOptions {
   status?: OrderStatus
   start_date?: Date
   end_date?: Date
+  order_id?: string
 }
 
 export interface OrderItemReqBody {

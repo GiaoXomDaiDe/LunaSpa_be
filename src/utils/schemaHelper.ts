@@ -982,8 +982,8 @@ const deviceStatusSchema: ParamSchema = {
   custom: {
     options: (value) => {
       const allowedValues = [DeviceStatus.ACTIVE, DeviceStatus.INACTIVE, DeviceStatus.BROKEN, DeviceStatus.MAINTENANCE]
-      if (!allowedValues.includes(Number(value))) {
-        throw new Error(`Status phải là một trong các giá trị: ${allowedValues.join(', ')}`)
+      if (!allowedValues.includes(value)) {
+        throw new Error(`Status must be one of the following values: ${allowedValues.join(', ')}`)
       }
       return true
     }

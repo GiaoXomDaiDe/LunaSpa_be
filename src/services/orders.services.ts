@@ -10,6 +10,7 @@ import {
 } from '~/models/request/Orders.request'
 import Order, { OrderStatus, PaymentMethod } from '~/models/schema/Order.schema'
 import OrderDetail, { ItemType } from '~/models/schema/OrderDetail.schema'
+import { ProductStatus } from '~/models/schema/Product.schema'
 import { StaffSlotStatus } from '~/models/schema/StaffSlot.schema'
 import {
   CurrencyUnit,
@@ -99,6 +100,30 @@ class OrdersService {
       if (!product) {
         throw new ErrorWithStatus({
           message: ORDER_MESSAGES.ITEM_ID_INVALID,
+          status: HTTP_STATUS.BAD_REQUEST
+        })
+      }
+
+      // Kiểm tra trạng thái sản phẩm có phải ACTIVE không
+      if (product.status !== ProductStatus.ACTIVE) {
+        throw new ErrorWithStatus({
+          message: `Product ${product.name} is currently unavailable`,
+          status: HTTP_STATUS.BAD_REQUEST
+        })
+      }
+
+      // Kiểm tra số lượng sản phẩm có đủ không
+      if (product.quantity < product_item.quantity) {
+        throw new ErrorWithStatus({
+          message: `Product ${product.name} only has ${product.quantity} items left in stock`,
+          status: HTTP_STATUS.BAD_REQUEST
+        })
+      }
+
+      // Kiểm tra số lượng sản phẩm không được là 0
+      if (product.quantity === 0) {
+        throw new ErrorWithStatus({
+          message: `Product ${product.name} is out of stock`,
           status: HTTP_STATUS.BAD_REQUEST
         })
       }
@@ -278,30 +303,36 @@ class OrdersService {
     const bookingDate = new Date(service_item.booking_time)
 
     // Kiểm tra slot nếu đã được chỉ định
-    let staffSlot
+    let staffSlot = null
 
     if (service_item.slot_id) {
-      // Lấy thông tin slot
-      staffSlot = await staffSlotsService.getStaffSlot(service_item.slot_id)
+      // Sử dụng phương thức mới để kiểm tra slot availability
+      const slotAvailability = await staffSlotsService.checkSlotAvailability(
+        service_item.slot_id,
+        bookingDate,
+        selectedDuration.duration_in_minutes || 60
+      )
 
-      if (!staffSlot) {
+      if (!slotAvailability.available || !slotAvailability.slot) {
         throw new ErrorWithStatus({
-          message: ORDER_MESSAGES.SLOT_NOT_AVAILABLE,
+          message: slotAvailability.message || ORDER_MESSAGES.SLOT_NOT_AVAILABLE,
           status: HTTP_STATUS.BAD_REQUEST
         })
       }
 
-      // Kiểm tra slot có đủ thời gian cho dịch vụ không
-      const serviceDuration = selectedDuration.duration_in_minutes || 60
-      if (staffSlot.available_minutes < serviceDuration) {
-        throw new ErrorWithStatus({
-          message: 'Slot is not enough for this service',
-          status: HTTP_STATUS.BAD_REQUEST
-        })
-      }
+      // Cập nhật staffSlot từ kết quả kiểm tra - bây giờ chắc chắn không undefined
+      staffSlot = slotAvailability.slot
     } else {
       throw new ErrorWithStatus({
         message: 'Need to specify slot_id to book service',
+        status: HTTP_STATUS.BAD_REQUEST
+      })
+    }
+
+    // Kiểm tra một lần nữa để đảm bảo staffSlot không null
+    if (!staffSlot) {
+      throw new ErrorWithStatus({
+        message: ORDER_MESSAGES.SLOT_NOT_AVAILABLE,
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
@@ -326,7 +357,15 @@ class OrdersService {
       return await session.withTransaction(async () => {
         // Cập nhật slot trước
         const originalAvailableMinutes = staffSlot.available_minutes
+        const serviceDuration = selectedDuration.duration_in_minutes || 60
         const updatedAvailableMinutes = originalAvailableMinutes - serviceDuration
+
+        // Kiểm tra để đảm bảo used_minutes không bị NaN
+        const currentUsedMinutes = staffSlot.used_minutes || 0 // Đảm bảo là số nếu null hoặc undefined
+        console.log(currentUsedMinutes, 'currentUsedMinutes')
+        console.log(serviceDuration, 'serviceDuration')
+        console.log(updatedAvailableMinutes, 'updatedAvailableMinutes')
+        console.log(currentUsedMinutes + serviceDuration, 'currentUsedMinutes + serviceDuration')
 
         // Nếu slot vẫn còn thời gian trống sau khi đặt
         if (updatedAvailableMinutes > 0) {
@@ -335,8 +374,9 @@ class OrdersService {
             {
               $set: {
                 available_minutes: updatedAvailableMinutes,
-                used_minutes: staffSlot.used_minutes + serviceDuration,
-                status: StaffSlotStatus.PENDING
+                used_minutes: currentUsedMinutes + serviceDuration,
+                status: StaffSlotStatus.PENDING,
+                pending_at: new Date() // Lưu thời điểm bắt đầu đặt lịch để theo dõi
               },
               $push: { orders: new ObjectId() } // Placeholder, sẽ cập nhật order_id sau
             },
@@ -349,8 +389,9 @@ class OrdersService {
             {
               $set: {
                 available_minutes: 0,
-                used_minutes: staffSlot.used_minutes + serviceDuration,
-                status: StaffSlotStatus.PENDING
+                used_minutes: currentUsedMinutes + serviceDuration,
+                status: StaffSlotStatus.PENDING,
+                pending_at: new Date() // Lưu thời điểm bắt đầu đặt lịch để theo dõi
               },
               $push: { orders: new ObjectId() } // Placeholder, sẽ cập nhật order_id sau
             },
@@ -390,10 +431,15 @@ class OrdersService {
         }
         const orderId = result.insertedId
 
-        // Cập nhật orders array trong staffSlot với orderId thật
+        // Cập nhật orders array trong staffSlot với orderId thật và thay đổi status sang RESERVED
         await databaseService.staffSlots.updateOne(
           { _id: staffSlot._id, orders: { $elemMatch: { $eq: new ObjectId() } } },
-          { $set: { 'orders.$': orderId } },
+          {
+            $set: {
+              'orders.$': orderId,
+              status: StaffSlotStatus.RESERVED // Chuyển sang RESERVED vì đã có đơn hàng thật
+            }
+          },
           { session }
         )
 
@@ -476,16 +522,19 @@ class OrdersService {
             )
           } catch (error) {
             // Nếu có lỗi, khôi phục trạng thái slot
+            const currentUsedMinutes = staffSlot.used_minutes || 0 // Đảm bảo used_minutes là số
+
             await databaseService.staffSlots.updateOne(
               { _id: staffSlot._id },
               {
                 $set: {
                   available_minutes: originalAvailableMinutes,
-                  used_minutes: staffSlot.used_minutes,
+                  used_minutes: currentUsedMinutes,
                   status: StaffSlotStatus.AVAILABLE
                 },
                 $pull: { orders: orderId }
-              }
+              },
+              { session } // Sử dụng session để đảm bảo rollback đồng bộ
             )
 
             throw new ErrorWithStatus({
@@ -500,14 +549,6 @@ class OrdersService {
 
         // Lấy thông tin khách hàng để gửi email
         const customer = await accountsService.getAccount(customer_id)
-
-        // Gửi email xác nhận đặt lịch sau khi tạo đơn hàng thành công
-        // Thực hiện ngoài transaction để không ảnh hưởng đến việc đặt lịch nếu gửi email lỗi
-        setTimeout(() => {
-          this.sendServiceConfirmationEmail(order_data, customer).catch((err) =>
-            console.error(`Failed to send confirmation email for order ${orderId}:`, err)
-          )
-        }, 100)
 
         return {
           order: order_data,
@@ -569,12 +610,12 @@ class OrdersService {
           { session }
         )
 
-        // Cập nhật trạng thái order
+        // Cập nhật trạng thái order từ PENDING sang CONFIRMED
         await databaseService.orders.updateOne(
           { _id: transaction.order_id },
           {
             $set: {
-              status: OrderStatus.CONFIRMED,
+              status: OrderStatus.CONFIRMED, // Update status từ PENDING sang CONFIRMED
               transaction_id: transaction._id,
               updated_at: new Date()
             }
@@ -582,18 +623,83 @@ class OrdersService {
           { session }
         )
 
-        // Nếu là đặt dịch vụ, cập nhật trạng thái slot
-        if (transaction.metadata?.order_type === 'service' && transaction.metadata?.slot_id) {
-          const slot_id = transaction.metadata.slot_id
-          await databaseService.staffSlots.updateOne(
-            { _id: new ObjectId(slot_id), orders: { $elemMatch: { $eq: new ObjectId(order_id) } } },
-            { $set: { status: StaffSlotStatus.RESERVED } },
-            { session }
-          )
+        // Lấy thông tin order và chi tiết đơn hàng
+        const order = await this.getOrderById(transaction.order_id.toString(), session)
+
+        // Xử lý dựa trên loại đơn hàng
+        if (transaction.metadata?.order_type === 'service') {
+          // Nếu là đơn dịch vụ
+
+          // Cập nhật trạng thái slot
+          if (transaction.metadata?.slot_id) {
+            const slot_id = transaction.metadata.slot_id
+
+            // Lấy thông tin slot hiện tại để kiểm tra
+            const staffSlot = await staffSlotsService.getStaffSlot(slot_id)
+            if (staffSlot) {
+              // Đảm bảo các giá trị là số hợp lệ
+              const currentAvailableMinutes = staffSlot.available_minutes || 0
+              const currentUsedMinutes = staffSlot.used_minutes || 0
+
+              // Cập nhật trạng thái từ RESERVED sang CONFIRMED sau khi thanh toán thành công
+              await databaseService.staffSlots.updateOne(
+                { _id: new ObjectId(slot_id), orders: { $elemMatch: { $eq: new ObjectId(order_id) } } },
+                {
+                  $set: {
+                    status: StaffSlotStatus.CONFIRMED,
+                    available_minutes: currentAvailableMinutes,
+                    used_minutes: currentUsedMinutes
+                  },
+                  $unset: { pending_at: '' } // Xóa trường pending_at khi không còn ở trạng thái chờ
+                },
+                { session }
+              )
+            }
+          }
+
+          // QUAN TRỌNG: Cập nhật booking_count của dịch vụ.
+          // Chỉ cập nhật tại đây, không cập nhật trong processPayment để tránh tăng 2 lần.
+          const orderItems = order.items || []
+          for (const item of orderItems) {
+            if (item.item_type === ItemType.SERVICE) {
+              // Tăng booking_count lên 1
+              await databaseService.services.updateOne(
+                { _id: item.item_id },
+                { $inc: { booking_count: 1 } },
+                { session }
+              )
+            }
+          }
+        } else if (transaction.metadata?.order_type === 'product') {
+          // Nếu là đơn hàng sản phẩm, cập nhật số lượng sản phẩm
+          // QUAN TRỌNG: Chỉ cập nhật số lượng sản phẩm tại đây, không cập nhật trong processPayment
+          // để tránh giảm số lượng 2 lần.
+          const orderItems = order.items || []
+
+          for (const item of orderItems) {
+            if (item.item_type === ItemType.PRODUCT) {
+              // Lấy thông tin sản phẩm
+              const product = await databaseService.products.findOne({ _id: item.item_id })
+
+              if (product) {
+                const newQuantity = Math.max(0, product.quantity - item.quantity)
+                const updateData: any = {
+                  quantity: newQuantity
+                }
+
+                // Nếu số lượng = 0, chuyển trạng thái sang inactive
+                if (newQuantity === 0) {
+                  updateData.status = ProductStatus.INACTIVE
+                }
+
+                // Cập nhật số lượng sản phẩm
+                await databaseService.products.updateOne({ _id: item.item_id }, { $set: updateData }, { session })
+              }
+            }
+          }
         }
 
-        // Lấy thông tin order và customer
-        const order = await this.getOrderById(transaction.order_id.toString())
+        // Lấy thông tin customer
         const customer = await accountsService.getAccount(customer_id)
 
         if (!customer) {
@@ -638,7 +744,7 @@ class OrdersService {
     // Lấy thông tin nhân viên
     try {
       const staffProfile = await staffProfilesService.getStaffProfile(orderDetail.staff_profile_id.toString())
-      const staffName = staffProfile?.account?.name || 'Nhân viên Luna Spa'
+      const staffName = staffProfile?.account?.name || 'Luna Spa Staff'
       console.log('Staff name:', staffName)
       console.log('Branch name:', order.branch?.name)
 
@@ -682,7 +788,7 @@ class OrdersService {
 
           await emailService.sendBookingConfirmation(customer.email, {
             orderId: order._id.toString(),
-            customerName: customer.name || 'Quý khách',
+            customerName: customer.name || 'Customer',
             serviceName: orderDetail.item_name,
             staffName: staffName,
             branchName: order.branch.name,
@@ -718,13 +824,18 @@ class OrdersService {
 
     await emailService.sendPaymentConfirmation(customer.email, {
       orderId: order._id.toString(),
-      customerName: customer.name || 'Quý khách',
+      customerName: customer.name || 'Customer',
       amount: order.final_price,
       orderItems: orderItems
     })
   }
 
-  async cancelOrder(order_id: string, customer_id: string, body: CancelOrderReqBody) {
+  async cancelOrder(
+    order_id: string,
+    customer_id: string,
+    body: CancelOrderReqBody,
+    skipPermissionCheck: boolean = false
+  ) {
     const session = databaseService.getClient().startSession()
     try {
       return await session.withTransaction(async () => {
@@ -732,9 +843,9 @@ class OrdersService {
         const order = await this.getOrderById(order_id)
 
         // Kiểm tra quyền hủy đơn hàng
-        if (order.customer_account_id.toString() !== customer_id) {
+        if (!skipPermissionCheck && order.customer_account_id.toString() !== customer_id) {
           throw new ErrorWithStatus({
-            message: 'Bạn không có quyền hủy đơn hàng này',
+            message: 'You do not have permission to cancel this order',
             status: HTTP_STATUS.FORBIDDEN
           })
         }
@@ -762,17 +873,22 @@ class OrdersService {
                 // Lấy thời lượng dịch vụ từ item để hoàn trả thời gian cho slot
                 const serviceDuration = item.duration_info?.duration_in_minutes || 0
 
+                // Đảm bảo các giá trị là số hợp lệ
+                const currentAvailableMinutes = slot.available_minutes || 0
+                const currentUsedMinutes = slot.used_minutes || 0
+
                 // Cập nhật lại số phút trống và trạng thái của slot
                 await databaseService.staffSlots.updateOne(
                   { _id: slot._id },
                   {
                     $set: {
-                      available_minutes: slot.available_minutes + serviceDuration,
-                      used_minutes: Math.max(0, slot.used_minutes - serviceDuration),
+                      available_minutes: currentAvailableMinutes + serviceDuration,
+                      used_minutes: Math.max(0, currentUsedMinutes - serviceDuration),
                       status: StaffSlotStatus.AVAILABLE,
                       updated_at: new Date()
                     },
-                    $pull: { orders: new ObjectId(order_id) }
+                    $pull: { orders: new ObjectId(order_id) },
+                    $unset: { pending_at: '' } // Xóa trường pending_at khi hủy đơn hàng
                   },
                   { session }
                 )
@@ -787,7 +903,7 @@ class OrdersService {
           {
             $set: {
               status: OrderStatus.CANCELLED,
-              note: body.cancel_reason ? `${order.note || ''} | Lý do hủy: ${body.cancel_reason}` : order.note,
+              note: body.cancel_reason ? `${order.note || ''} | Cancel reason: ${body.cancel_reason}` : order.note,
               updated_at: new Date()
             }
           },
@@ -818,7 +934,7 @@ class OrdersService {
                 {
                   order_id: order_id,
                   customer_id: customer_id,
-                  cancel_reason: body.cancel_reason || 'Khách hàng yêu cầu hủy'
+                  cancel_reason: body.cancel_reason || 'Customer requested refund'
                 }
               )
 
@@ -828,7 +944,7 @@ class OrdersService {
                 {
                   $set: {
                     refund_id: refundResult.refundId,
-                    transaction_note: `Hoàn tiền thành công: ${refundResult.refundId}`,
+                    transaction_note: `Refund successful: ${refundResult.refundId}`,
                     updated_at: new Date()
                   }
                 },
@@ -836,17 +952,17 @@ class OrdersService {
               )
 
               console.log(
-                `Hoàn tiền thành công cho đơn hàng ${order_id} với payment intent ${order.transaction.payment_intent_id}`
+                `Refund successful for order ${order_id} with payment intent ${order.transaction.payment_intent_id}`
               )
             } catch (error: any) {
-              console.error('Lỗi khi hoàn tiền qua Stripe:', error)
+              console.error('Error refunding through Stripe:', error)
 
               // Cập nhật transaction với thông tin lỗi
               await databaseService.transactions.updateOne(
                 { _id: new ObjectId(order.transaction._id) },
                 {
                   $set: {
-                    transaction_note: `Hoàn tiền thất bại: ${error.message || 'Lỗi không xác định'}`,
+                    transaction_note: `Refund failed: ${error.message || 'Unknown error'}`,
                     updated_at: new Date()
                   }
                 },
@@ -876,7 +992,7 @@ class OrdersService {
     // Kiểm tra quyền thanh toán
     if (order.customer_account_id.toString() !== customer_id) {
       throw new ErrorWithStatus({
-        message: 'Bạn không có quyền thanh toán đơn hàng này',
+        message: 'You do not have permission to process payment for this order',
         status: HTTP_STATUS.FORBIDDEN
       })
     }
@@ -884,7 +1000,7 @@ class OrdersService {
     // Kiểm tra trạng thái đơn hàng
     if (order.status !== OrderStatus.PENDING) {
       throw new ErrorWithStatus({
-        message: 'Đơn hàng này không trong trạng thái chờ thanh toán',
+        message: 'This order is not in a pending payment state',
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
@@ -900,7 +1016,7 @@ class OrdersService {
 
     if (payment_method !== PaymentMethod.STRIPE) {
       throw new ErrorWithStatus({
-        message: 'Hiện tại chỉ hỗ trợ thanh toán qua Stripe',
+        message: 'Currently only Stripe payment is supported',
         status: HTTP_STATUS.BAD_REQUEST
       })
     }
@@ -920,92 +1036,157 @@ class OrdersService {
         payment_intent_id: existingTransaction.payment_intent_id || '',
         payment_method: PaymentMethod.STRIPE
       }
-    }
-
-    // Tạo payment intent mới
-    try {
-      const orderType = order.booking_time ? 'service' : 'product'
-      let metadata: ProductTransactionMetadata | ServiceTransactionMetadata
-
-      // Lấy thông tin orderDetail
-      const orderDetail = await databaseService.orderDetails.findOne({
-        order_id: new ObjectId(order_id)
-      })
-
-      if (orderType === 'service' && orderDetail) {
-        const serviceMetadata: ServiceTransactionMetadata = {
-          order_type: 'service',
-          service_name: orderDetail.item_name,
-          slot_id: orderDetail.slot_id ? orderDetail.slot_id.toString() : '',
-          client_secret: '' // Sẽ được cập nhật sau
-        }
-
-        if (orderDetail.start_time) {
-          serviceMetadata.start_time = orderDetail.start_time.toISOString().split('T')[1].slice(0, 5)
-        }
-        if (orderDetail.end_time) {
-          serviceMetadata.end_time = orderDetail.end_time.toISOString().split('T')[1].slice(0, 5)
-        }
-        if (order.booking_time) {
-          serviceMetadata.booking_time = order.booking_time.toISOString()
-        }
-
-        metadata = serviceMetadata
-      } else {
-        // Lấy tất cả các mặt hàng trong đơn hàng sản phẩm
-        const orderDetails = await databaseService.orderDetails.find({ order_id: new ObjectId(order_id) }).toArray()
-
-        metadata = {
-          order_type: 'product',
-          items: orderDetails.map((item) => item.item_name).join(', '),
-          client_secret: '' // Sẽ được cập nhật sau
-        }
-      }
-
-      const payment_intent = await stripeService.createPaymentIntent(order.final_price, account.email, {
-        order_id,
-        customer_id,
-        ...metadata
-      })
-
-      // Lưu client secret vào metadata nếu có
-      if (payment_intent.clientSecret) {
-        metadata.client_secret = payment_intent.clientSecret
-      } else {
-        // Nếu không có clientSecret, gán giá trị mặc định
-        metadata.client_secret = ''
-      }
-
-      // Lưu transaction
-      await databaseService.transactions.insertOne({
+    } else {
+      // Kiểm tra trường hợp đã tạo transaction trước đó (trong bookService hoặc createProductOrder)
+      // nhưng có thể cần tạo lại payment intent do hết hạn
+      const previousTransaction = await databaseService.transactions.findOne({
         order_id: new ObjectId(order_id),
-        customer_account_id: new ObjectId(customer_id),
-        payment_method,
-        payment_provider: 'stripe',
-        amount: order.final_price,
-        currency: CurrencyUnit.VND,
-        status: TransactionStatus.PENDING,
-        type: TransactionMethod.PAYMENT,
-        payment_intent_id: payment_intent.paymentIntentId,
-        created_at: new Date(),
-        updated_at: new Date(),
-        metadata
+        payment_method: PaymentMethod.STRIPE
       })
 
-      return {
-        client_secret: payment_intent.clientSecret,
-        payment_intent_id: payment_intent.paymentIntentId,
-        payment_method: PaymentMethod.STRIPE
+      // Tạo payment intent mới
+      try {
+        const orderType = order.booking_time ? 'service' : 'product'
+        let metadata: ProductTransactionMetadata | ServiceTransactionMetadata
+
+        // Lấy thông tin orderDetail
+        const orderDetail = await databaseService.orderDetails.findOne({
+          order_id: new ObjectId(order_id)
+        })
+
+        if (orderType === 'service' && orderDetail) {
+          const serviceMetadata: ServiceTransactionMetadata = {
+            order_type: 'service',
+            service_name: orderDetail.item_name,
+            slot_id: orderDetail.slot_id ? orderDetail.slot_id.toString() : '',
+            client_secret: '' // Sẽ được cập nhật sau
+          }
+
+          if (orderDetail.start_time) {
+            serviceMetadata.start_time = orderDetail.start_time.toISOString().split('T')[1].slice(0, 5)
+          }
+          if (orderDetail.end_time) {
+            serviceMetadata.end_time = orderDetail.end_time.toISOString().split('T')[1].slice(0, 5)
+          }
+          if (order.booking_time) {
+            serviceMetadata.booking_time = order.booking_time.toISOString()
+          }
+
+          metadata = serviceMetadata
+        } else {
+          // Lấy tất cả các mặt hàng trong đơn hàng sản phẩm
+          const orderDetails = await databaseService.orderDetails.find({ order_id: new ObjectId(order_id) }).toArray()
+
+          metadata = {
+            order_type: 'product',
+            items: orderDetails.map((item) => item.item_name).join(', '),
+            client_secret: '' // Sẽ được cập nhật sau
+          }
+        }
+
+        const payment_intent = await stripeService.createPaymentIntent(order.final_price, account.email, {
+          order_id,
+          customer_id,
+          ...metadata
+        })
+
+        // Lưu client secret vào metadata nếu có
+        if (payment_intent.clientSecret) {
+          metadata.client_secret = payment_intent.clientSecret
+        } else {
+          // Nếu không có clientSecret, gán giá trị mặc định
+          metadata.client_secret = ''
+        }
+
+        // Nếu đã có transaction trước đó, cập nhật thay vì tạo mới
+        if (previousTransaction) {
+          // Cập nhật transaction sang COMPLETED
+          await databaseService.transactions.updateOne(
+            { _id: previousTransaction._id },
+            {
+              $set: {
+                payment_intent_id: payment_intent.paymentIntentId,
+                status: TransactionStatus.COMPLETED, // Đã hoàn thành thanh toán
+                payment_method_id: payment_method, // Lưu phương thức thanh toán
+                updated_at: new Date(),
+                metadata
+              }
+            }
+          )
+        } else {
+          // Tạo mới transaction và đặt status là COMPLETED
+          const transaction = {
+            order_id: new ObjectId(order_id),
+            customer_account_id: new ObjectId(customer_id),
+            payment_method,
+            payment_method_id: payment_method, // Lưu phương thức thanh toán
+            payment_provider: 'stripe',
+            amount: order.final_price,
+            currency: CurrencyUnit.VND,
+            status: TransactionStatus.COMPLETED, // Đã hoàn thành thanh toán
+            type: TransactionMethod.PAYMENT,
+            payment_intent_id: payment_intent.paymentIntentId,
+            created_at: new Date(),
+            updated_at: new Date(),
+            metadata
+          }
+
+          const result = await databaseService.transactions.insertOne(transaction)
+
+          // Cập nhật trạng thái đơn hàng
+          await databaseService.orders.updateOne(
+            { _id: new ObjectId(order_id) },
+            {
+              $set: {
+                status: OrderStatus.CONFIRMED, // Đơn hàng đã xác nhận
+                transaction_id: result.insertedId,
+                updated_at: new Date()
+              }
+            }
+          )
+
+          // Cập nhật trạng thái slot nếu là đơn dịch vụ
+          if (orderType === 'service' && orderDetail?.slot_id) {
+            const slot_id = orderDetail.slot_id.toString()
+            const staffSlot = await staffSlotsService.getStaffSlot(slot_id)
+
+            if (staffSlot) {
+              // Đảm bảo các giá trị là số hợp lệ
+              const currentAvailableMinutes = staffSlot.available_minutes || 0
+              const currentUsedMinutes = staffSlot.used_minutes || 0
+
+              await databaseService.staffSlots.updateOne(
+                { _id: orderDetail.slot_id, orders: { $elemMatch: { $eq: new ObjectId(order_id) } } },
+                {
+                  $set: {
+                    status: StaffSlotStatus.CONFIRMED,
+                    available_minutes: currentAvailableMinutes,
+                    used_minutes: currentUsedMinutes
+                  }
+                }
+              )
+            }
+          }
+        }
+
+        return {
+          client_secret: payment_intent.clientSecret,
+          payment_intent_id: payment_intent.paymentIntentId,
+          payment_method: PaymentMethod.STRIPE
+        }
+      } catch (error) {
+        throw new ErrorWithStatus({
+          message: PAYMENT_MESSAGES.STRIPE_PAYMENT_INTENT_CREATE_FAILED,
+          status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+        })
       }
-    } catch (error) {
-      throw new ErrorWithStatus({
-        message: PAYMENT_MESSAGES.STRIPE_PAYMENT_INTENT_CREATE_FAILED,
-        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
-      })
     }
   }
 
   async confirmPayment(order_id: string, payment_intent_id: string, payment_method_id: string, customer_id: string) {
+    // Gọi handlePaymentSuccess để xử lý thanh toán và cập nhật booking_count/số lượng sản phẩm
+    // Việc cập nhật booking_count của dịch vụ và số lượng sản phẩm chỉ được thực hiện trong
+    // handlePaymentSuccess để tránh cập nhật trùng lặp
     return this.handlePaymentSuccess(order_id, payment_intent_id, payment_method_id, customer_id)
   }
 
@@ -1034,6 +1215,83 @@ class OrdersService {
 
     return {
       message: ORDER_MESSAGES.UPDATE_ORDER_SUCCESS
+    }
+  }
+
+  /**
+   * Phương thức này được chạy định kỳ để kiểm tra và giải phóng các slot đã PENDING quá lâu
+   * Slot sẽ bị giải phóng nếu đã ở trạng thái PENDING quá thời gian cho phép (mặc định 15 phút)
+   * @param timeoutMinutes Thời gian tính bằng phút để xác định timeout (mặc định 15 phút)
+   */
+  async cleanupPendingSlots(timeoutMinutes: number = 15) {
+    const timeoutThreshold = new Date(Date.now() - timeoutMinutes * 60 * 1000)
+
+    try {
+      // Tìm tất cả các slot ở trạng thái PENDING và đã quá thời gian chờ
+      const pendingSlots = await databaseService.staffSlots
+        .find({
+          status: StaffSlotStatus.PENDING,
+          pending_at: { $lt: timeoutThreshold }
+        })
+        .toArray()
+
+      if (!pendingSlots || pendingSlots.length === 0) {
+        return { message: 'No slot needs to be released', count: 0 }
+      }
+
+      const slot_ids = pendingSlots.map((slot) => slot._id.toString())
+      const orderIds: string[] = []
+
+      // Tìm các đơn hàng liên quan đến các slot này
+      for (const slot of pendingSlots) {
+        if (slot.orders && slot.orders.length > 0) {
+          const relatedOrders = await databaseService.orders
+            .find({
+              _id: { $in: slot.orders.map((id) => (typeof id === 'string' ? new ObjectId(id) : id)) },
+              status: OrderStatus.PENDING
+            })
+            .toArray()
+
+          orderIds.push(...relatedOrders.map((order) => order._id.toString()))
+        }
+      }
+
+      // Hủy các đơn hàng
+      for (const orderId of orderIds) {
+        try {
+          await this.cancelOrder(
+            orderId,
+            'system',
+            { cancel_reason: ORDER_MESSAGES.AUTO_CANCEL_ORDER_TIMEOUT },
+            true // skipPermissionCheck
+          )
+        } catch (error) {
+          console.error(`Error cancelling order ${orderId}:`, error)
+        }
+      }
+
+      // Giải phóng các slot (chuyển về AVAILABLE và xóa pending_at)
+      const result = await databaseService.staffSlots.updateMany(
+        { _id: { $in: pendingSlots.map((slot) => slot._id) } },
+        {
+          $set: {
+            status: StaffSlotStatus.AVAILABLE
+          },
+          $unset: { pending_at: '' }
+        }
+      )
+
+      return {
+        message: 'Slots released successfully',
+        count: result.modifiedCount,
+        ordersCancelled: orderIds.length
+      }
+    } catch (error) {
+      console.error('Error releasing slots:', error)
+      throw new ErrorWithStatus({
+        message: 'An error occurred while releasing slots',
+        status: HTTP_STATUS.INTERNAL_SERVER_ERROR
+      })
     }
   }
 }
