@@ -56,7 +56,7 @@ class RewardPointsService {
     )
     if (!result) {
       throw new ErrorWithStatus({
-        message: REWARD_POINT_MESSAGES.FAILED_TO_ADD_POINTS,
+        // message: REWARD_POINT_MESSAGES.FAILED_TO_ADD_POINTS,
         status: HTTP_STATUS.INTERNAL_SERVER_ERROR
       })
     }

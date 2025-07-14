@@ -545,6 +545,9 @@ export const SERVICE_PRODUCTS_MESSAGES = {
   RECOMMENDED_MUST_BE_BOOLEAN: 'Recommended must be a boolean'
 } as const
 export const REWARD_POINT_MESSAGES = {
+  FAILED_TO_REDEEM_POINTS: 'Failed to redeem points',
+  NOT_ENOUGH_POINTS: `Don't have enough points to change to Voucher`,
+  FAILED_TO_ADD_POINTS: `Can't add point to this user`,
   GET_BALANCE_SUCCESS: 'Get points balance successfully',
   GET_HISTORY_SUCCESS: 'Get reward points history successfully',
   ADD_POINTS_SUCCESS: 'Add points successfully',
@@ -802,6 +805,8 @@ export const CONDITION_SERVICES_MESSAGES = {
 } as const
 
 export const VOUCHER_MESSAGES = {
+  VOUCHER_INACTIVE: 'Voucher is not available',
+  VOUCHER_USED: 'Voucher has been used',
   VOUCHER_CODE_REQUIRED: 'Voucher code is required',
   VOUCHER_CODE_MUST_BE_STRING: 'Voucher code must be a string',
   POINTS_SPENT_INVALID: 'Points to redeem must be greater than 0',
