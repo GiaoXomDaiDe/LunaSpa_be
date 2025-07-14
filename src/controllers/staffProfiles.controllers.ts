@@ -31,7 +31,7 @@ export const getStaffProfilesController = async (
   }
   const result = await staffProfilesService.getAllStaffProfiles(options)
   res.status(HTTP_STATUS.OK).json({
-    message: STAFF_PROFILES_MESSAGES.GET_ALL_STAFF_PROFILES_SUCCESS,
+    // message: STAFF_PROFILES_MESSAGES.GET_ALL_STAFF_PROFILES_SUCCESS,
     result
   })
 }
